@@ -649,7 +649,7 @@
     }
   };
 
-  // 全域回調
+  // 全域回調 (對齊後端)
   window.callback = function (response) {
     try {
       isSubmitting = false;
@@ -664,31 +664,33 @@
         return;
       }
       if (response.status === "success") {
-        isSubmittedSuccess = true;
-        submitBtn.classList.add('success','permanent-disabled');
-        submitBtn.disabled = true;
-        btnText.textContent = '預約成功 ✅';
-        alert("✅ 預約成功！店家將透過LINE與您確認");
-        infoForm.reset();
-        document.getElementById('weekText').textContent="星期幾";
-        document.getElementById('timeGrid').innerHTML=`<div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
-        document.getElementById('appointTime').value="";
+        if(currentPage === "user"){
+          isSubmittedSuccess = true;
+          submitBtn.classList.add('success','permanent-disabled');
+          submitBtn.disabled = true;
+          btnText.textContent = '預約成功 ✅';
+          alert("✅ 預約成功！店家將透過LINE與您確認");
+          infoForm.reset();
+          document.getElementById('weekText').textContent="星期幾";
+          document.getElementById('timeGrid').innerHTML=`<div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
+          document.getElementById('appointTime').value="";
+        }else{
+          alert("✅ 操作成功");
+          loadAllReservations();
+          loadManageTime();
+          loadTimeData();
+        }
       } else if (response.status === "adminList") {
         renderReservationsList(response.data);
       } else if (response.status === "adminTimeList") {
         renderManageTimeList(response.date, response.times);
       } else if (response.status === "error") {
-        if(currentPage === "admin"){
-          alert("❌ 操作失敗：" + (response.message || "系統錯誤"));
-        }else{
-          submitBtn.classList.add('error');
-          btnText.textContent='操作失敗';
-          alert(response.message || "系統錯誤");
-          setTimeout(resetButtonState,2000);
-        }
+        alert("❌ 錯誤：" + (response.message || "系統異常"));
+        if(currentPage === "user") resetButtonState();
       }
     } catch (e) { 
-      if(currentPage !== "admin") resetButtonState();
+      console.error(e);
+      if(currentPage === "user") resetButtonState();
     }
   };
 
@@ -744,7 +746,10 @@
       const s=document.createElement('script');
       s.src=`${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(s);
-    } catch(e){ alert("提交失敗"); resetButtonState(); }
+    } catch(e){ 
+      alert("提交失敗"); 
+      resetButtonState(); 
+    }
   }
 
   // -------------------- 管理員 --------------------
@@ -758,53 +763,60 @@
     document.body.appendChild(s);
   }
 
-  // 修改
+  // 修改預約 (對齊後端)
   function editReservation(item) {
     if(!isAdmin||isAdminLoading)return;
     if(!confirm("確認修改？"))return;
-    const service=prompt("服務",item.serviceType||"");
-    const name=prompt("姓名",item.name||"");
-    const phone=prompt("電話",item.phone||"");
-    const date=prompt("日期(YYYY-MM-DD)",formatDate(item.appointDate));
-    const time=prompt("時段(HH:mm)",parseTime(item.appointTime));
-    const remark=prompt("備註",item.remark||"");
-    if(!service||!name||!phone||!date||!time)return;
-    const p=new URLSearchParams({
-      action:"adminUpdate",pageId:"美容預約系統",id:item.submitTime,
-      serviceType:service,name:name,phone:phone,
-      appointDate:date,appointTime:time,remark:remark,lineId:LINE_USER_ID
+    
+    const service = prompt("服務項目", item.serviceType || "");
+    const name = prompt("姓名", item.name || "");
+    const phone = prompt("電話", item.phone || "");
+    const date = prompt("預約日期(YYYY-MM-DD)", item.appointDate);
+    const time = prompt("預約時段(HH:mm)", item.appointTime);
+    const remark = prompt("備註", item.remark || "");
+
+    if (!service || !name || !phone || !date || !time) {
+      alert("請填寫完整資訊");
+      return;
+    }
+
+    setAdminLoading(true);
+    const params = new URLSearchParams({
+      action: "adminUpdate",
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      id: item.submitTime,
+      serviceType: service,
+      name: name,
+      phone: phone,
+      appointDate: date,
+      appointTime: time,
+      remark: remark
     });
-    const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(s);
-    setTimeout(loadAllReservations,1500);
+
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(script);
   }
 
-  // 渲染列表 + 自動清理過期 + 顯示姓名
+  // 渲染預約列表
   function renderReservationsList(list) {
-    const container=document.getElementById('reservationsList');
-    if(!list||list.length===0){container.innerHTML=`<div style="text-align:center;color:#999;">暫無預約</div>`;return;}
-    
-    const validList=list.filter(item=>!isOlderThanOneWeek(item.appointDate));
-    const expiredList=list.filter(item=>isOlderThanOneWeek(item.appointDate));
-    
-    if(expiredList.length>0){
-      expiredList.forEach(item=>deleteReservation(item.submitTime,true));
-      alert(`✅ 自動清理 ${expiredList.length} 筆一週前舊預約`);
+    const container = document.getElementById('reservationsList');
+    if (!list || list.length === 0) {
+      container.innerHTML = `<div style="text-align:center;color:#999;">暫無預約</div>`;
+      return;
     }
-    
-    let html="";
-    validList.forEach((item,idx)=>{
-      const d=formatDate(item.appointDate);
-      const t=parseTime(item.appointTime);
-      html+=`
+
+    let html = "";
+    list.forEach((item, idx) => {
+      html += `
       <div class="reservation-item">
-        <span class="reserve-num">${idx+1}</span>
+        <span class="reserve-num">${idx + 1}</span>
         <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
         <div class="reservation-info">
-          ${d} ${t}<br>
-          姓名：${item.name}<br>服務：${item.serviceType}<br>電話：${item.phone}<br>
-          備註：${item.remark||'無'}
+          ${item.appointDate} ${item.appointTime}<br>
+          姓名：${item.name}｜服務：${item.serviceType}｜電話：${item.phone}<br>
+          備註：${item.remark || '無'}
         </div>
         <div class="admin-action">
           <button onclick='editReservation(${JSON.stringify(item)})'>修改</button>
@@ -812,148 +824,191 @@
         </div>
       </div>`;
     });
-    container.innerHTML=html;
+    container.innerHTML = html;
   }
 
-  // 勾選
-  function toggleSelect(id){
-    const i=selectedReservations.indexOf(id);
-    i>-1?selectedReservations.splice(i,1):selectedReservations.push(id);
+  // 勾選預約
+  function toggleSelect(id) {
+    const index = selectedReservations.indexOf(id);
+    if (index > -1) {
+      selectedReservations.splice(index, 1);
+    } else {
+      selectedReservations.push(id);
+    }
   }
 
-  // 批次刪除
-  function batchDeleteReservations(){
-    if(!isAdmin||isAdminLoading||selectedReservations.length===0)return;
-    if(!confirm(`確定刪除 ${selectedReservations.length} 筆？`))return;
-    setAdminLoading(true,batchDeleteBtn);
-    
-    let completed = 0;
-    selectedReservations.forEach(id=>{
-      const p = new URLSearchParams({
-        action:"adminDelReserve",
-        pageId:"美容預約系統",
-        submitTime: id,
-        lineId:LINE_USER_ID
+  // 批次刪除預約
+  function batchDeleteReservations() {
+    if (!isAdmin || isAdminLoading || selectedReservations.length === 0) return;
+    if (!confirm(`確定刪除 ${selectedReservations.length} 筆預約？`)) return;
+
+    setAdminLoading(true, batchDeleteBtn);
+    let count = 0;
+    const total = selectedReservations.length;
+
+    selectedReservations.forEach(id => {
+      const params = new URLSearchParams({
+        action: "adminDelReserve",
+        pageId: "美容預約系統",
+        lineId: LINE_USER_ID,
+        submitTime: id
       });
-      const s=document.createElement('script');
-      s.src=`${CONFIG.SCRIPT_URL}?${p}&callback=()=>{
-        completed++;
-        if(completed === ${selectedReservations.length}){
-          alert("✅ 批量刪除成功");
-          loadAllReservations();
-        }
-      }&_=${Date.now()}`;
-      document.body.appendChild(s);
+      const script = document.createElement('script');
+      script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
+      document.body.appendChild(script);
+      count++;
     });
-    selectedReservations=[];
+
+    selectedReservations = [];
   }
 
-  // 載入時段
-  function loadManageTime(){
-    const date=document.getElementById('manageDate').value;
-    if(!date)return;setAdminLoading(true,loadTimeBtn);
-    const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=美容預約系統&date=${date}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(s);
+  // 載入當日時段
+  function loadManageTime() {
+    const date = document.getElementById('manageDate').value;
+    if (!date) return;
+    setAdminLoading(true, loadTimeBtn);
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=美容預約系統&lineId=${LINE_USER_ID}&date=${date}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(script);
   }
 
-  // 渲染時段
-  function renderManageTimeList(date,times){
-    const c=document.getElementById('manageTimeList');
-    if(!times||times.length===0){c.innerHTML=`<div style="text-align:center;color:#999;">當日無時段</div>`;return;}
-    let html="";times.forEach(t=>{html+=`<div class="time-manage-item"><span>${t.label}</span><button onclick="deleteTime('${date}','${t.value}')">刪除</button></div>`;});
-    c.innerHTML=html;
+  // 渲染時段列表
+  function renderManageTimeList(date, times) {
+    const container = document.getElementById('manageTimeList');
+    if (!times || times.length === 0) {
+      container.innerHTML = `<div style="text-align:center;color:#999;">當日無時段</div>`;
+      return;
+    }
+    let html = "";
+    times.forEach(t => {
+      html += `<div class="time-manage-item">
+        <span>${t.label}</span>
+        <button onclick="deleteTime('${date}','${t.value}')">刪除</button>
+      </div>`;
+    });
+    container.innerHTML = html;
   }
 
   // 新增時段
-  function addManageTime(){
-    const date=document.getElementById('manageDate').value;
-    const time=document.getElementById('manageTime').value;
-    if(!date||!time)return;setAdminLoading(true,addTimeBtn);
-    const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?action=adminAddTime&pageId=美容預約系統&date=${date}&time=${time}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(s);
-    setTimeout(()=>{loadManageTime();loadTimeData();},1200);
+  function addManageTime() {
+    const date = document.getElementById('manageDate').value;
+    const time = document.getElementById('manageTime').value;
+    if (!date || !time) {
+      alert("請輸入日期與時段");
+      return;
+    }
+    setAdminLoading(true, addTimeBtn);
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=adminAddTime&pageId=美容預約系統&lineId=${LINE_USER_ID}&date=${date}&time=${time}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(script);
   }
 
   // 刪除時段
-  function deleteTime(date,time){
-    if(!confirm("確定刪除此時段？"))return;
-    const p = new URLSearchParams({
-      action:"adminDelTime",
-      pageId:"美容預約系統",
-      date:date,
-      time:time,
-      lineId:LINE_USER_ID
+  function deleteTime(date, time) {
+    if (!confirm("確定刪除此時段？")) return;
+    const params = new URLSearchParams({
+      action: "adminDelTime",
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      date: date,
+      time: time
     });
-    const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?${p}&callback=()=>{
-      alert("✅ 時段刪除成功");
-      loadManageTime();
-      loadTimeData();
-    }&_=${Date.now()}`;
-    document.body.appendChild(s);
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(script);
   }
 
-  // 刪除預約
-  function deleteReservation(id,silent=false){
-    if(!isAdmin||isAdminLoading)return;
-    if(!silent && !confirm("確定刪除此預約？"))return;
-    
-    const p = new URLSearchParams({
-      action:"adminDelReserve",
-      pageId:"美容預約系統",
-      submitTime: id,
-      lineId:LINE_USER_ID
-    });
-    
-    const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?${p}&callback=()=>{
-      setAdminLoading(false);
-      if(!silent) alert("✅ 預約刪除成功");
-      loadAllReservations();
-    }&_=${Date.now()}`;
-    
-    document.body.appendChild(s);
+  // 刪除單筆預約
+  function deleteReservation(id, silent = false) {
+    if (!isAdmin || isAdminLoading) return;
+    if (!silent && !confirm("確定刪除此預約？")) return;
+
     setAdminLoading(true);
+    const params = new URLSearchParams({
+      action: "adminDelReserve",
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      submitTime: id
+    });
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(script);
   }
 
-  // LIFF
-  async function initLiff(){
-    try{await liff.init({liffId:CONFIG.LIFF_ID});if(liff.isLoggedIn()){const p=await liff.getProfile();if(p?.userId)LINE_USER_ID=p.userId;}}
-    catch(e){console.log("LIFF 略過");}
-    finally{document.getElementById('lineId').value=LINE_USER_ID;checkAdminByBackend();}
+  // LIFF 初始化
+  async function initLiff() {
+    try {
+      await liff.init({ liffId: CONFIG.LIFF_ID });
+      if (liff.isLoggedIn()) {
+        const profile = await liff.getProfile();
+        if (profile?.userId) {
+          LINE_USER_ID = profile.userId;
+        }
+      }
+    } catch (e) {
+      console.log("LIFF 初始化略過");
+    } finally {
+      document.getElementById('lineId').value = LINE_USER_ID;
+      checkAdminByBackend();
+    }
   }
 
-  document.addEventListener('DOMContentLoaded',async()=>{
-    submitBtn=document.getElementById('submitBtn');btnText=submitBtn.querySelector('.btn-text');infoForm=document.getElementById('infoForm');
-    const appointDate=document.getElementById('appointDate');const phoneInput=document.getElementById('phone');
-    loadReservationsBtn=document.getElementById('loadReservationsBtn');batchDeleteBtn=document.getElementById('batchDeleteBtn');
-    addTimeBtn=document.getElementById('addTimeBtn');loadTimeBtn=document.getElementById('loadTimeBtn');
-    manageDate=document.getElementById('manageDate');
-    switchBtn=document.getElementById('switchBtn');switchContainer=document.getElementById('switchContainer');
-    userPage=document.getElementById('userPage');adminPage=document.getElementById('adminPage');adminContent=document.getElementById('adminContent');adminAccessDenied=document.getElementById('adminAccessDenied');
-
-    switchBtn.onclick=togglePage;
-    loadReservationsBtn.onclick=loadAllReservations;
-    loadTimeBtn.onclick=loadManageTime;
-    addTimeBtn.onclick=addManageTime;
-    batchDeleteBtn.onclick=batchDeleteReservations;
-
-    // 管理介面：選擇日期自動載入時段
-    manageDate.addEventListener('change', loadManageTime);
-
-    phoneInput.addEventListener('input',e=>{e.target.value=formatPhoneNumber(e.target.value);});
-    appointDate.min=getToday();document.getElementById('manageDate').min=getToday();
-    await initLiff();loadTimeData();
-    appointDate.addEventListener('change',renderTimeList);
+  document.addEventListener('DOMContentLoaded', async () => {
+    submitBtn = document.getElementById('submitBtn');
+    btnText = submitBtn.querySelector('.btn-text');
+    infoForm = document.getElementById('infoForm');
+    const appointDate = document.getElementById('appointDate');
+    const phoneInput = document.getElementById('phone');
     
-    infoForm.onsubmit=(e)=>{
+    loadReservationsBtn = document.getElementById('loadReservationsBtn');
+    batchDeleteBtn = document.getElementById('batchDeleteBtn');
+    addTimeBtn = document.getElementById('addTimeBtn');
+    loadTimeBtn = document.getElementById('loadTimeBtn');
+    manageDate = document.getElementById('manageDate');
+    
+    switchBtn = document.getElementById('switchBtn');
+    switchContainer = document.getElementById('switchContainer');
+    userPage = document.getElementById('userPage');
+    adminPage = document.getElementById('adminPage');
+    adminContent = document.getElementById('adminContent');
+    adminAccessDenied = document.getElementById('adminAccessDenied');
+
+    switchBtn.onclick = togglePage;
+    loadReservationsBtn.onclick = loadAllReservations;
+    loadTimeBtn.onclick = loadManageTime;
+    addTimeBtn.onclick = addManageTime;
+    batchDeleteBtn.onclick = batchDeleteReservations;
+
+    manageDate.addEventListener('change', loadManageTime);
+    phoneInput.addEventListener('input', e => {
+      e.target.value = formatPhoneNumber(e.target.value);
+    });
+
+    appointDate.min = getToday();
+    manageDate.min = getToday();
+    
+    await initLiff();
+    loadTimeData();
+    
+    appointDate.addEventListener('change', renderTimeList);
+
+    infoForm.onsubmit = (e) => {
       e.preventDefault();
-      const phone=phoneInput.value.trim();
-      if(!validatePhone(phone)){alert("請輸入正確10碼手機");phoneInput.focus();return;}
-      const t=document.getElementById('appointTime').value;if(!t){alert("請選擇時段");return;}
-      isSubmitting=true;submitBtn.disabled=true;submitBtn.classList.add('loading');btnText.textContent='預約中...';
+      const phone = phoneInput.value.trim();
+      if (!validatePhone(phone)) {
+        alert("請輸入正確10碼手機號碼");
+        phoneInput.focus();
+        return;
+      }
+      const selectedTime = document.getElementById('appointTime').value;
+      if (!selectedTime) {
+        alert("請選擇預約時段");
+        return;
+      }
+      isSubmitting = true;
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      btnText.textContent = '預約中...';
       sendData();
     };
   });
