@@ -678,12 +678,18 @@
       } else if (response.status === "adminTimeList") {
         renderManageTimeList(response.date, response.times);
       } else if (response.status === "error") {
-        submitBtn.classList.add('error');
-        btnText.textContent='操作失敗';
-        alert(response.message || "系統錯誤");
-        setTimeout(resetButtonState,2000);
+        if(currentPage === "admin"){
+          alert("❌ 操作失敗：" + (response.message || "系統錯誤"));
+        }else{
+          submitBtn.classList.add('error');
+          btnText.textContent='操作失敗';
+          alert(response.message || "系統錯誤");
+          setTimeout(resetButtonState,2000);
+        }
       }
-    } catch (e) { resetButtonState(); }
+    } catch (e) { 
+      if(currentPage !== "admin") resetButtonState();
+    }
   };
 
   // 渲染時段
@@ -820,13 +826,26 @@
     if(!isAdmin||isAdminLoading||selectedReservations.length===0)return;
     if(!confirm(`確定刪除 ${selectedReservations.length} 筆？`))return;
     setAdminLoading(true,batchDeleteBtn);
+    
+    let completed = 0;
     selectedReservations.forEach(id=>{
+      const p = new URLSearchParams({
+        action:"adminDelReserve",
+        pageId:"美容預約系統",
+        submitTime: id,
+        lineId:LINE_USER_ID
+      });
       const s=document.createElement('script');
-      s.src=`${CONFIG.SCRIPT_URL}?action=adminDelReserve&pageId=美容預約系統&id=${encodeURIComponent(id)}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
+      s.src=`${CONFIG.SCRIPT_URL}?${p}&callback=()=>{
+        completed++;
+        if(completed === ${selectedReservations.length}){
+          alert("✅ 批量刪除成功");
+          loadAllReservations();
+        }
+      }&_=${Date.now()}`;
       document.body.appendChild(s);
     });
     selectedReservations=[];
-    setTimeout(()=>{alert("✅ 批量刪除成功");loadAllReservations();},1500);
   }
 
   // 載入時段
@@ -859,26 +878,44 @@
 
   // 刪除時段
   function deleteTime(date,time){
-    if(!confirm("確定刪除？"))return;
+    if(!confirm("確定刪除此時段？"))return;
+    const p = new URLSearchParams({
+      action:"adminDelTime",
+      pageId:"美容預約系統",
+      date:date,
+      time:time,
+      lineId:LINE_USER_ID
+    });
     const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?action=adminDelTime&pageId=美容預約系統&date=${date}&time=${time}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
+    s.src=`${CONFIG.SCRIPT_URL}?${p}&callback=()=>{
+      alert("✅ 時段刪除成功");
+      loadManageTime();
+      loadTimeData();
+    }&_=${Date.now()}`;
     document.body.appendChild(s);
-    setTimeout(()=>{loadManageTime();loadTimeData();},1200);
   }
 
   // 刪除預約
   function deleteReservation(id,silent=false){
     if(!isAdmin||isAdminLoading)return;
     if(!silent && !confirm("確定刪除此預約？"))return;
-    setAdminLoading(true);
+    
+    const p = new URLSearchParams({
+      action:"adminDelReserve",
+      pageId:"美容預約系統",
+      submitTime: id,
+      lineId:LINE_USER_ID
+    });
+    
     const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?action=adminDelReserve&pageId=美容預約系統&id=${encodeURIComponent(id)}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(s);
-    setTimeout(()=>{
+    s.src=`${CONFIG.SCRIPT_URL}?${p}&callback=()=>{
       setAdminLoading(false);
       if(!silent) alert("✅ 預約刪除成功");
       loadAllReservations();
-    },1200);
+    }&_=${Date.now()}`;
+    
+    document.body.appendChild(s);
+    setAdminLoading(true);
   }
 
   // LIFF
