@@ -359,6 +359,12 @@
       height: 44px;
       font-size: 0.9rem;
     }
+    .reserve-num {
+      font-size:0.8rem;
+      color:#ff4d88;
+      font-weight:bold;
+      min-width:24px;
+    }
   </style>
 </head>
 <body>
@@ -535,13 +541,13 @@
     return clean.length === 10;
   }
 
-  // 解析中文時間格式 2026/3/26 上午 1:20:48
+  // 解析中文時間格式 2026/3/25 下午 11:15:52
   function parseChineseDateTime(str) {
     if (!str) return new Date();
     try {
       str = str.trim();
       str = str.replace(/(\d+)\/(\d+)\/(\d+)/, '$1-$2-$3');
-      str = str.replace(/上午|下午/g, (t) => t === "上午" ? "AM" : "PM");
+      str = str.replace(/上午/g, "AM").replace(/下午/g, "PM");
       const d = new Date(str);
       return isNaN(d.getTime()) ? new Date() : d;
     } catch (e) {
@@ -806,7 +812,7 @@
     setTimeout(loadAllReservations, 1500);
   }
 
-  // 渲染預約列表
+  // 渲染預約列表 + 自動編號
   function renderReservationsList(list) {
     const container = document.getElementById('reservationsList');
     if (!list || list.length === 0) {
@@ -815,11 +821,12 @@
     }
     
     let html = "";
-    list.forEach(item => {
+    list.forEach((item, index) => {
       const fullDateTime = formatDateTime(`${item.appointDate} ${item.appointTime}`);
       
       html += `
         <div class="reservation-item">
+          <span class="reserve-num">${index + 1}</span>
           <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
           <div class="reservation-info">
             ${fullDateTime}<br>
@@ -925,10 +932,14 @@
     if (!isAdmin || isAdminLoading) return alert("無權限或操作中");
     if (!confirm("確定刪除該預約？")) return;
     
+    setAdminLoading(true);
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=adminDelReserve&id=${id}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(script);
-    setTimeout(loadAllReservations, 1200);
+    setTimeout(() => {
+      setAdminLoading(false);
+      loadAllReservations();
+    }, 1200);
   }
 
   // LIFF 初始化
