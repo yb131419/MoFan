@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>彥彬 🌿系統美學</title>
+  <style>
+    :root {
+      --bg: #fffdf7;
+      --text: #333;
+      --subtext: #777;
+      --accent: #d4af37;
+      --shadow: rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      margin: 0;
+      padding: 24px 16px;
+      font-family: 'Helvetica Neue', 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 8px 30px var(--shadow);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.6em;
+      margin-bottom: 12px;
+    }
+
+    p {
+      font-size: 1em;
+      color: var(--subtext);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.85em;
+      color: #bbb;
+      margin-top: 30px;
+    }
+
+    .btn {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1em;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: background-color 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #bfa332;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌿 搶先預約</h1>
+    <p>搶先預約、健康講座</p>
+    <button class="btn" onclick="handleClick()">👉 點擊前往預約</button>
+    <div class="footer">© 2025 彥彬 🌿系統美學 · 保留所有權利</div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    const liffId = '2007475335-Z0LKm1wQ';
+    const gasUrl = 'https://script.google.com/macros/s/AKfycbwS1hebUmigYIrY04BWyZ-en7Vx27Yr0KhbeWNIcoc_4kgZZkZ2QforhetnoH03hzx7/exec';
+    const redirectUrl = 'https://lihi.cc/nXzqN';
+
+    let liffReady = false;
+
+    async function initLiff() {
+      if (!liffReady) {
+        try {
+          await liff.init({ liffId });
+          liffReady = true;
+        } catch (err) {
+          console.error("LIFF 初始化失敗", err);
+        }
+      }
+    }
+
+    async function handleClick() {
+      await initLiff();
+
+      if (!liff.isLoggedIn()) {
+        localStorage.setItem('wantToRedirect', '1');
+        liff.login();
+        return;
+      }
+
+      await sendThenRedirect();
+    }
+
+    async function sendThenRedirect() {
+      try {
+        const profile = await liff.getProfile();
+        const data = {
+          userId: profile.userId || "無法取得",
+          displayName: profile.displayName || "未知使用者",
+          message: "Liff網頁",
+          replyMessage: "預約/連結預約",
+          timestamp: new Date().toISOString()
+        };
+        const query = new URLSearchParams(data).toString();
+        await fetch(`${gasUrl}?${query}`);
+        console.log("✅ 資料已送出");
+
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 500);
+      } catch (e) {
+        console.error("❌ 發生錯誤：", e);
+        window.location.href = redirectUrl;
+      }
+    }
+
+    window.addEventListener('load', async () => {
+      await initLiff();
+
+      if (liff.isLoggedIn() && localStorage.getItem('wantToRedirect') === '1') {
+        localStorage.removeItem('wantToRedirect');
+        await sendThenRedirect();
+      }
+    });
+  </script>
+</body>
+</html>
