@@ -2,144 +2,546 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>彥彬 🌿系統美學</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>莫凡韓式皮膚管理</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    :root {
-      --bg: #fffdf7;
-      --text: #333;
-      --subtext: #777;
-      --accent: #d4af37;
-      --shadow: rgba(0, 0, 0, 0.08);
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
-      padding: 24px 16px;
-      font-family: 'Helvetica Neue', 'Segoe UI', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
+      background: #fdf2f8;
+      font-family: 'Noto Sans TC', sans-serif;
+      color: #444;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 30px 15px;
     }
 
-    .container {
+    main {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 12px 40px rgba(255, 133, 162, 0.1);
       width: 100%;
-      max-width: 500px;
-      background: white;
-      padding: 20px;
-      border-radius: 18px;
-      box-shadow: 0 8px 30px var(--shadow);
+      max-width: 440px;
+      padding: 45px 32px;
+    }
+
+    h2 {
+      font-weight: 700;
+      margin-bottom: 40px;
       text-align: center;
+      line-height: 1.6;
     }
 
-    h1 {
-      font-size: 1.6em;
-      margin-bottom: 12px;
+    h2 .main-title {
+      font-size: 1.8rem;
+      display: block;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #ff8da1, #c77dff);
+      -webkit-background-clip: text;
+      color: transparent;
+      white-space: nowrap;
+      letter-spacing: 1px;
     }
 
-    p {
-      font-size: 1em;
-      color: var(--subtext);
+    h2 .sub-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #888;
+      letter-spacing: 0.5px;
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #555;
+      letter-spacing: 0.3px;
+    }
+
+    /* 日期 + 星期 水平排列 */
+    .date-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .date-row input {
+      flex: 1.2;
+      margin-bottom: 0 !important;
+    }
+    .date-row .week-box {
+      flex: 1;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid #f3f3f3;
+      background: #fefefe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      height: 54px;
+      padding: 0 18px;
+      border-radius: 14px;
+      border: 1px solid #f3f3f3;
+      font-size: 1rem;
+      background: #fefefe;
+      color: #333;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 500;
+    }
+
+    textarea {
+      min-height: 100px;
+      height: auto;
+      resize: vertical;
       line-height: 1.5;
-      margin-bottom: 20px;
+      padding: 16px 18px;
     }
 
-    .footer {
-      text-align: center;
-      font-size: 0.85em;
-      color: #bbb;
-      margin-top: 30px;
+    input:focus, select:focus, textarea:focus {
+      background: #fff;
+      border-color: #ff85a2;
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(255,133,162,0.12);
     }
 
-    .btn {
-      background-color: var(--accent);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 1em;
-      border-radius: 8px;
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 24 24' fill='none' stroke='%23777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 16px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      transition: background-color 0.2s;
     }
 
-    .btn:hover {
-      background-color: #bfa332;
+    /* 時段格狀美化 */
+    .time-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 26px;
+    }
+
+    .time-btn {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      border: 1px solid #eee;
+      background: #fff;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #444;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .time-btn:hover {
+      border-color: #ff85a2;
+      color: #ff4d88;
+      transform: translateY(-1px);
+    }
+
+    .time-btn.active {
+      background: linear-gradient(135deg, #ff8da1, #ff85a2);
+      color: #fff;
+      border-color: #ff85a2;
+      box-shadow: 0 4px 12px rgba(255,133,162,0.2);
+    }
+
+    .time-btn.expired {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background: #f7f7f7;
+      color: #bbb;
+      border-color: #eee;
+    }
+
+    .btn-container {
+      margin-top: 20px;
+    }
+
+    button {
+      width: 100%;
+      height: 58px;
+      background: linear-gradient(135deg, #ff87b2, #e05686);
+      border: none;
+      border-radius: 16px;
+      font-size: 1rem;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 22px rgba(255,135,178,0.25);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Noto Sans TC', sans-serif;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(255,135,178,0.3);
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    button.permanent-disabled {
+      opacity: 0.5;
+      background: #777 !important;
+      box-shadow: none;
+    }
+
+    .loader {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #fff;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      animation: rotation 1s linear infinite;
+      display: none;
+    }
+
+    button.loading .loader {
+      display: block;
+    }
+
+    @keyframes rotation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes successPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .success {
+      animation: successPulse 0.6s ease-in-out;
+      background: #2dd386 !important;
+      box-shadow: 0 6px 18px rgba(45,211,134,0.25) !important;
+    }
+
+    .error {
+      animation: successPulse 0.6s ease-in-out;
+      background: #ff4d6d !important;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🌿 搶先預約</h1>
-    <p>搶先預約、健康講座</p>
-    <button class="btn" onclick="handleClick()">👉 點擊前往預約</button>
-    <div class="footer">© 2025 彥彬 🌿系統美學 · 保留所有權利</div>
-  </div>
 
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script>
-    const liffId = '2007475335-Z0LKm1wQ';
-    const gasUrl = 'https://script.google.com/macros/s/AKfycbwS1hebUmigYIrY04BWyZ-en7Vx27Yr0KhbeWNIcoc_4kgZZkZ2QforhetnoH03hzx7/exec';
-    const redirectUrl = 'https://lihi.cc/nXzqN';
+<main>
+  <h2>
+    <span class="main-title">莫凡韓式皮膚管理<br>線上預約系統</span>
+    <span class="sub-title">選擇服務項目<br>填寫資料預約｜LINE即時通知</span>
+  </h2>
 
-    let liffReady = false;
+  <form id="infoForm">
+    <input type="hidden" id="pageId" value="美容預約系統">
+    <input type="hidden" id="lineId">
+    <input type="hidden" id="appointTime" name="appointTime">
 
-    async function initLiff() {
-      if (!liffReady) {
-        try {
-          await liff.init({ liffId });
-          liffReady = true;
-        } catch (err) {
-          console.error("LIFF 初始化失敗", err);
-        }
-      }
-    }
+    <label>服務項目</label>
+    <select id="serviceType" required>
+      <option value="">請選擇服務項目</option>
+      <option value="手足保養">手足保養</option>
+      <option value="美甲光療凝膠">美甲光療凝膠</option>
+      <option value="霧眉">霧眉</option>
+      <option value="臉部保養">臉部保養</option>
+      <option value="粉刺管理">粉刺管理</option>
+      <option value="韓式皮膚管理">韓式皮膚管理</option>
+      <option value="重返青春">重返青春</option>
+      <option value="雷射換膚">雷射換膚</option>
+    </select>
 
-    async function handleClick() {
-      await initLiff();
+    <label>預約日期</label>
+    <div class="date-row">
+      <input type="date" id="appointDate" required>
+      <div class="week-box" id="weekText">星期幾</div>
+    </div>
 
-      if (!liff.isLoggedIn()) {
-        localStorage.setItem('wantToRedirect', '1');
-        liff.login();
+    <label>預約時段</label>
+    <div class="time-grid" id="timeGrid">
+      <div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>
+    </div>
+
+    <label>姓名</label>
+    <input type="text" id="name" required placeholder="請輸入您的姓名">
+
+    <label>聯絡電話</label>
+    <input type="tel" id="phone" required placeholder="0912-345-678" autocomplete="off">
+
+    <label>電子信箱（選填）</label>
+    <input type="email" id="email" placeholder="請輸入電子信箱">
+
+    <label>備註說明（選填）</label>
+    <textarea id="extraInfo" placeholder="肌膚狀況、特殊需求備註"></textarea>
+
+    <div class="btn-container">
+      <button type="submit" id="submitBtn">
+        <span class="loader"></span>
+        <span class="btn-text">確認預約</span>
+      </button>
+    </div>
+  </form>
+</main>
+
+<script>
+  const CONFIG = {
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzK69yZdryeXLsZZsgeIyqy-DNLrJ3aztFDyc8fhXABUEOfBP8OsAF8_v-Dfi4E9JVDtA/exec",
+    LIFF_ID: "2008578880-lCRzVTyk"
+  };
+
+  let submitBtn, btnText, infoForm;
+  let isSubmitting = false;
+  let isSubmittedSuccess = false;
+  let timeDataMap = {};
+  let LINE_USER_ID = "guest_" + Date.now();
+
+  // 取得今日日期，禁止選過去日期
+  function getToday() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // 取得星期幾
+  function getWeekDay(dateStr) {
+    const date = new Date(dateStr + "T00:00:00+08:00");
+    const week = ["日", "一", "二", "三", "四", "五", "六"];
+    return "星期" + week[date.getDay()];
+  }
+
+  // 判斷時段是否已過期
+  function isTimeExpired(timeStr) {
+    const now = new Date();
+    const today = getToday();
+    const selectDate = document.getElementById('appointDate').value;
+    if (selectDate !== today) return false;
+
+    const [h, m] = timeStr.split(':').map(Number);
+    const nowH = now.getHours();
+    const nowM = now.getMinutes();
+
+    if (h < nowH) return true;
+    if (h === nowH && m <= nowM) return true;
+    return false;
+  }
+
+  // 電話號碼格式化 4-3-3
+  function formatPhoneNumber(value) {
+    const phone = value.replace(/\D/g, '');
+    if (phone.length <= 4) return phone;
+    if (phone.length <= 7) return `${phone.slice(0,4)}-${phone.slice(4)}`;
+    return `${phone.slice(0,4)}-${phone.slice(4,7)}-${phone.slice(7,10)}`;
+  }
+
+  // 驗證電話號碼 10碼
+  function validatePhone(phone) {
+    const clean = phone.replace(/\D/g, '');
+    return clean.length === 10;
+  }
+
+  // 全域回調
+  window.callback = function (response) {
+    try {
+      isSubmitting = false;
+      submitBtn.classList.remove('loading');
+      
+      if (response.status === "init") {
+        timeDataMap = response.timeMap || {};
         return;
       }
 
-      await sendThenRedirect();
+      if (response.status === "success") {
+        isSubmittedSuccess = true;
+        submitBtn.classList.add('success','permanent-disabled');
+        submitBtn.disabled = true;
+        btnText.textContent = '預約成功 ✅';
+        alert("\n✅ 預約資料已成功送出！\n\n『莫凡韓式美容』\n將透過LINE與您確認預約！");
+        infoForm.reset();
+        document.getElementById('weekText').textContent = "星期幾";
+        document.getElementById('timeGrid').innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
+        document.getElementById('appointTime').value = '';
+      } else {
+        submitBtn.classList.add('error');
+        btnText.textContent = '預約失敗 ❌';
+        alert(response.message || "系統錯誤，請稍後再試");
+        setTimeout(resetButtonState, 2500);
+      }
+    } catch (e) {
+      resetButtonState();
+    }
+  };
+
+  // 渲染時段格子 + 自動屏蔽過期時段
+  function renderTimeList() {
+    const date = document.getElementById('appointDate').value;
+    const grid = document.getElementById('timeGrid');
+    const timeInput = document.getElementById('appointTime');
+    grid.innerHTML = "";
+    timeInput.value = "";
+
+    // 顯示星期幾
+    document.getElementById('weekText').textContent = date ? getWeekDay(date) : "星期幾";
+
+    const list = timeDataMap[date] || [];
+    if (list.length === 0) {
+      grid.innerHTML = `<div style="grid-column:1/3;text-align:center;color:#999;height:54px;display:flex;align-items:center;justify-content:center;">當日無可預約時段</div>`;
+      return;
     }
 
-    async function sendThenRedirect() {
-      try {
-        const profile = await liff.getProfile();
-        const data = {
-          userId: profile.userId || "無法取得",
-          displayName: profile.displayName || "未知使用者",
-          message: "Liff網頁",
-          replyMessage: "預約/連結預約",
-          timestamp: new Date().toISOString()
+    list.forEach(t => {
+      const expired = isTimeExpired(t.value);
+      const btn = document.createElement('div');
+      btn.className = "time-btn";
+      if (expired) btn.classList.add("expired");
+      
+      btn.textContent = t.label;
+      btn.dataset.val = t.value;
+
+      if (!expired) {
+        btn.onclick = () => {
+          document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          timeInput.value = t.value;
         };
-        const query = new URLSearchParams(data).toString();
-        await fetch(`${gasUrl}?${query}`);
-        console.log("✅ 資料已送出");
-
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 500);
-      } catch (e) {
-        console.error("❌ 發生錯誤：", e);
-        window.location.href = redirectUrl;
       }
-    }
 
-    window.addEventListener('load', async () => {
-      await initLiff();
-
-      if (liff.isLoggedIn() && localStorage.getItem('wantToRedirect') === '1') {
-        localStorage.removeItem('wantToRedirect');
-        await sendThenRedirect();
-      }
+      grid.appendChild(btn);
     });
-  </script>
+  }
+
+  function resetButtonState() {
+    if (isSubmittedSuccess) return;
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading','success','error');
+    btnText.textContent = '確認預約';
+    isSubmitting = false;
+  }
+
+  // 載入日期&時段
+  function loadTimeData() {
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=getDates&pageId=美容預約系統&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(script);
+  }
+
+  // 提交資料
+  function sendData() {
+    try {
+      const data = {
+        pageId: "美容預約系統",
+        lineId: LINE_USER_ID,
+        serviceType: document.getElementById('serviceType').value,
+        appointDate: document.getElementById('appointDate').value,
+        appointTime: document.getElementById('appointTime').value,
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        extraInfo: document.getElementById('extraInfo').value
+      };
+      const p = new URLSearchParams(data);
+      const s = document.createElement('script');
+      s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
+      document.body.appendChild(s);
+    } catch (e) {
+      alert("提交失敗，請重試");
+      resetButtonState();
+    }
+  }
+
+  // LIFF 初始化（安全不報錯）
+  async function initLiff() {
+    try {
+      await liff.init({ liffId: CONFIG.LIFF_ID });
+      if (liff.isLoggedIn()) {
+        const profile = await liff.getProfile();
+        if (profile?.userId) LINE_USER_ID = profile.userId;
+      }
+    } catch (e) {
+      console.log("LIFF 略過，不影響使用");
+    } finally {
+      document.getElementById('lineId').value = LINE_USER_ID;
+    }
+  }
+
+  // 頁面載入完成
+  document.addEventListener('DOMContentLoaded', async () => {
+    submitBtn = document.getElementById('submitBtn');
+    btnText = submitBtn.querySelector('.btn-text');
+    infoForm = document.getElementById('infoForm');
+    const appointDate = document.getElementById('appointDate');
+    const phoneInput = document.getElementById('phone');
+
+    // 電話號碼即時格式化
+    phoneInput.addEventListener('input', (e) => {
+      e.target.value = formatPhoneNumber(e.target.value);
+    });
+
+    // 禁止選過去日期
+    appointDate.min = getToday();
+
+    await initLiff();
+    loadTimeData();
+
+    // 日期改變 → 刷新時段 + 星期
+    appointDate.addEventListener('change', renderTimeList);
+
+    // 表單提交
+    infoForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // 驗證電話
+      const phone = phoneInput.value.trim();
+      if (!validatePhone(phone)) {
+        alert("請輸入正確 10 碼手機號碼！\n格式：0912-345-678");
+        phoneInput.focus();
+        return;
+      }
+
+      const t = document.getElementById('appointTime').value;
+      if (!t) return alert("請選擇預約時段");
+      
+      isSubmitting = true;
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      btnText.textContent = '預約中...';
+      sendData();
+    });
+  });
+</script>
+
 </body>
 </html>
