@@ -504,32 +504,35 @@
   let switchBtn, userPage, adminPage, adminContent, adminAccessDenied, switchContainer;
   let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, manageDate;
 
-  // 取得今日日期，禁止選過去日期
+  // 取得今日日期(台北時區)
   function getToday() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    const now = new Date();
+    const twDate = new Date(now.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
+    const year = twDate.getFullYear();
+    const month = String(twDate.getMonth() + 1).padStart(2, '0');
+    const day = String(twDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
-  // 取得星期幾
+  // 取得星期幾(台北時區)
   function getWeekDay(dateStr) {
     const date = new Date(dateStr + "T00:00:00+08:00");
+    const twDate = new Date(date.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
     const week = ["日", "一", "二", "三", "四", "五", "六"];
-    return "星期" + week[date.getDay()];
+    return "星期" + week[twDate.getDay()];
   }
 
-  // 判斷時段是否已過期
+  // 判斷時段是否已過期(台北時區)
   function isTimeExpired(timeStr) {
     const now = new Date();
+    const twNow = new Date(now.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
     const today = getToday();
     const selectDate = document.getElementById('appointDate').value;
     if (selectDate !== today) return false;
 
     const [h, m] = timeStr.split(':').map(Number);
-    const nowH = now.getHours();
-    const nowM = now.getMinutes();
+    const nowH = twNow.getHours();
+    const nowM = twNow.getMinutes();
 
     if (h < nowH) return true;
     if (h === nowH && m <= nowM) return true;
@@ -550,7 +553,7 @@
     return clean.length === 10;
   }
 
-  // 解析 ISO 日期 + 中文時間格式
+  // 解析日期(台北時區)
   function parseDate(str) {
     if (!str) return new Date();
     try {
@@ -558,47 +561,52 @@
       str = str.replace(/(\d+)\/(\d+)\/(\d+)/, '$1-$2-$3');
       str = str.replace(/上午/g, "AM").replace(/下午/g, "PM");
       const d = new Date(str);
-      return isNaN(d.getTime()) ? new Date() : d;
+      const twDate = new Date(d.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
+      return isNaN(twDate.getTime()) ? new Date() : twDate;
     } catch (e) {
       return new Date();
     }
   }
 
-  // 解析 12h / ISO 時間 → HH:mm
+  // 解析時間
   function parseTime(timeStr) {
     if (!timeStr) return "";
     try {
       timeStr = timeStr.trim().split("T").pop().split(".")[0];
       if (timeStr.includes("上午") || timeStr.includes("下午")) {
         const d = new Date(`2000-01-01 ${timeStr}`);
-        return `${String(d.getHours()).padStart(2,0)}:${String(d.getMinutes()).padStart(2,0)}`;
+        const twDate = new Date(d.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
+        return `${String(twDate.getHours()).padStart(2,0)}:${String(twDate.getMinutes()).padStart(2,0)}`;
       }
       if (/^\d{1,2}:\d{2}/.test(timeStr)) {
         const [h, m] = timeStr.split(":");
         return `${String(h).padStart(2,0)}:${String(m).padStart(2,0)}`;
       }
       const d = new Date(`2000-01-01T${timeStr}`);
-      return `${String(d.getHours()).padStart(2,0)}:${String(d.getMinutes()).padStart(2,0)}`;
+      const twDate = new Date(d.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
+      return `${String(twDate.getHours()).padStart(2,0)}:${String(twDate.getMinutes()).padStart(2,0)}`;
     } catch (e) {
       return timeStr;
     }
   }
 
-  // 格式化日期：YYYY-MM-DD
+  // 格式化日期
   function formatDate(d) {
     if (!(d instanceof Date)) d = parseDate(d);
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,0);
-    const day = String(d.getDate()).padStart(2,0);
+    const twDate = new Date(d.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
+    const y = twDate.getFullYear();
+    const m = String(twDate.getMonth()+1).padStart(2,0);
+    const day = String(twDate.getDate()).padStart(2,0);
     return `${y}-${m}-${day}`;
   }
 
-  // 檢查是否超過一週
+  // 檢查是否超過一週(台北時區)
   function isOlderThanOneWeek(dateStr) {
     const now = new Date();
+    const twNow = new Date(now.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
     const target = parseDate(dateStr);
     const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
-    return now - target > oneWeekMs;
+    return twNow - target > oneWeekMs;
   }
 
   // 管理按鈕加載狀態
@@ -763,7 +771,7 @@
     document.body.appendChild(s);
   }
 
-  // 修改預約 (對齊後端)
+  // 修改預約
   function editReservation(item) {
     if(!isAdmin||isAdminLoading)return;
     if(!confirm("確認修改？"))return;
