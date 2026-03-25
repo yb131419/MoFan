@@ -555,6 +555,32 @@
     }
   }
 
+  // 解析 12 小時制時間（下午 5:00:00 → 17:00）
+  function parse12HourTime(timeStr) {
+    if (!timeStr) return "";
+    timeStr = timeStr.trim();
+    
+    try {
+      if (timeStr.includes("上午") || timeStr.includes("下午")) {
+        const tempDate = new Date(`2000-01-01 ${timeStr}`);
+        const hh = String(tempDate.getHours()).padStart(2, '0');
+        const mm = String(tempDate.getMinutes()).padStart(2, '0');
+        return `${hh}:${mm}`;
+      }
+      
+      if (/^\d{1,2}:\d{2}/.test(timeStr)) {
+        const parts = timeStr.split(':');
+        const hh = String(parts[0]).padStart(2, '0');
+        const mm = String(parts[1]).padStart(2, '0');
+        return `${hh}:${mm}`;
+      }
+      
+      return timeStr;
+    } catch (e) {
+      return timeStr;
+    }
+  }
+
   // 強制統一格式：YYYY-MM-DD HH:mm:ss
   function formatDateTime(dateTimeStr) {
     if (!dateTimeStr) return "";
@@ -786,7 +812,7 @@
     const date = prompt("修改日期 (YYYY-MM-DD)", item.appointDate || "");
     if (!date) return;
     
-    const time = prompt("修改時段 (HH:mm)", item.appointTime || "");
+    const time = prompt("修改時段 (HH:mm)", parse12HourTime(item.appointTime || ""));
     if (!time) return;
     
     const remark = prompt("修改備註", item.remark || "");
@@ -822,7 +848,8 @@
     
     let html = "";
     list.forEach((item, index) => {
-      const fullDateTime = formatDateTime(`${item.appointDate} ${item.appointTime}`);
+      const cleanTime = parse12HourTime(item.appointTime);
+      const fullDateTime = `${item.appointDate} ${cleanTime}`;
       
       html += `
         <div class="reservation-item">
@@ -857,18 +884,21 @@
   function batchDeleteReservations() {
     if (!isAdmin || isAdminLoading) return alert("無權限或操作中");
     if (selectedReservations.length === 0) return alert("請勾選要刪除的預約");
-    if (!confirm(`確定刪除 ${selectedReservations.length} 筆預約？`)) return;
+    if (!confirm(`確定刪除 ${selectedReservations.length} 筆預約？\n刪除後試算表會同步更新！`)) return;
     
     setAdminLoading(true, batchDeleteBtn);
     
     selectedReservations.forEach(id => {
       const script = document.createElement('script');
-      script.src = `${CONFIG.SCRIPT_URL}?action=adminDelReserve&id=${id}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
+      script.src = `${CONFIG.SCRIPT_URL}?action=adminDelReserve&pageId=美容預約系統&id=${encodeURIComponent(id)}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(script);
     });
     
     selectedReservations = [];
-    setTimeout(loadAllReservations, 1500);
+    setTimeout(() => {
+      alert("批量刪除完成 ✅");
+      loadAllReservations();
+    }, 1500);
   }
 
   // 載入日期時段
@@ -930,14 +960,16 @@
   // 刪除預約
   function deleteReservation(id) {
     if (!isAdmin || isAdminLoading) return alert("無權限或操作中");
-    if (!confirm("確定刪除該預約？")) return;
+    if (!confirm("確定刪除該預約？\n刪除後試算表會同步移除！")) return;
     
     setAdminLoading(true);
     const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=adminDelReserve&id=${id}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
+    script.src = `${CONFIG.SCRIPT_URL}?action=adminDelReserve&pageId=美容預約系統&id=${encodeURIComponent(id)}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(script);
+    
     setTimeout(() => {
       setAdminLoading(false);
+      alert("預約刪除成功 ✅");
       loadAllReservations();
     }, 1200);
   }
