@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
@@ -22,26 +22,6 @@
       align-items: flex-start;
       min-height: 100vh;
       padding: 30px 15px;
-      position: relative;
-    }
-
-    /* 頂部切換按鈕 */
-    .page-switch {
-      position: fixed;
-      top: 12px;
-      right: 15px;
-      z-index: 999;
-    }
-    .switch-btn {
-      padding: 8px 14px;
-      border-radius: 20px;
-      background: #fff;
-      border: 1px solid #ff85a2;
-      color: #ff4d88;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     main {
@@ -87,6 +67,7 @@
       letter-spacing: 0.3px;
     }
 
+    /* 日期 + 星期 水平排列 */
     .date-row {
       display: flex;
       gap: 10px;
@@ -155,6 +136,7 @@
       cursor: pointer;
     }
 
+    /* 時段格狀美化 */
     .time-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -273,176 +255,64 @@
       animation: successPulse 0.6s ease-in-out;
       background: #ff4d6d !important;
     }
-
-    /* 管理介面樣式 */
-    .admin-section {
-      display: none;
-      margin-top: 20px;
-    }
-    .admin-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #ff4d88;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .admin-card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .admin-card h3 {
-      font-size: 1rem;
-      margin-bottom: 15px;
-      color: #555;
-    }
-    .admin-btn {
-      height: 44px;
-      font-size: 0.9rem;
-      margin-bottom: 10px;
-    }
-    .reservation-item {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      margin-bottom: 8px;
-    }
-    .reservation-item:last-child {
-      border-bottom: none;
-    }
-    .reservation-info {
-      font-size: 0.85rem;
-      line-height: 1.4;
-      margin-bottom: 8px;
-    }
-    .admin-action {
-      display: flex;
-      gap: 8px;
-    }
-    .admin-action button {
-      height: 36px;
-      font-size: 0.8rem;
-      flex: 1;
-    }
-    .time-manage-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-    }
-    .time-manage-item span {
-      flex: 1;
-      font-size: 0.9rem;
-    }
-    .tip-text {
-      font-size: 0.8rem;
-      color: #999;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    .access-denied {
-      text-align: center;
-      padding: 40px 20px;
-      color: #ff4d6d;
-      font-weight: 500;
-    }
   </style>
 </head>
 <body>
 
-<!-- 頁面切換按鈕 -->
-<div class="page-switch">
-  <button class="switch-btn" id="switchBtn">切換管理介面</button>
-</div>
-
 <main>
-  <!-- 一般預約介面 -->
-  <div id="userPage">
-    <h2>
-      <span class="main-title">莫凡韓式皮膚管理<br>線上預約系統</span>
-      <span class="sub-title">選擇服務項目<br>填寫資料預約｜LINE即時通知</span>
-    </h2>
+  <h2>
+    <span class="main-title">莫凡韓式皮膚管理<br>線上預約系統</span>
+    <span class="sub-title">選擇服務項目<br>填寫資料預約｜LINE即時通知</span>
+  </h2>
 
-    <form id="infoForm">
-      <input type="hidden" id="pageId" value="美容預約系統">
-      <input type="hidden" id="lineId">
-      <input type="hidden" id="appointTime" name="appointTime">
+  <form id="infoForm">
+    <input type="hidden" id="pageId" value="美容預約系統">
+    <input type="hidden" id="lineId">
+    <input type="hidden" id="appointTime" name="appointTime">
 
-      <label>服務項目</label>
-      <select id="serviceType" required>
-        <option value="">請選擇服務項目</option>
-        <option value="手足保養">手足保養</option>
-        <option value="美甲光療凝膠">美甲光療凝膠</option>
-        <option value="霧眉">霧眉</option>
-        <option value="臉部保養">臉部保養</option>
-        <option value="粉刺管理">粉刺管理</option>
-        <option value="韓式皮膚管理">韓式皮膚管理</option>
-        <option value="重返青春">重返青春</option>
-        <option value="雷射換膚">雷射換膚</option>
-      </select>
+    <label>服務項目</label>
+    <select id="serviceType" required>
+      <option value="">請選擇服務項目</option>
+      <option value="手足保養">手足保養</option>
+      <option value="美甲光療凝膠">美甲光療凝膠</option>
+      <option value="霧眉">霧眉</option>
+      <option value="臉部保養">臉部保養</option>
+      <option value="粉刺管理">粉刺管理</option>
+      <option value="韓式皮膚管理">韓式皮膚管理</option>
+      <option value="重返青春">重返青春</option>
+      <option value="雷射換膚">雷射換膚</option>
+    </select>
 
-      <label>預約日期</label>
-      <div class="date-row">
-        <input type="date" id="appointDate" required>
-        <div class="week-box" id="weekText">星期幾</div>
-      </div>
-
-      <label>預約時段</label>
-      <div class="time-grid" id="timeGrid">
-        <div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>
-      </div>
-
-      <label>姓名</label>
-      <input type="text" id="name" required placeholder="請輸入您的姓名">
-
-      <label>聯絡電話</label>
-      <input type="tel" id="phone" required placeholder="0912-345-678" autocomplete="off">
-
-      <label>電子信箱（選填）</label>
-      <input type="email" id="email" placeholder="請輸入電子信箱">
-
-      <label>備註說明（選填）</label>
-      <textarea id="extraInfo" placeholder="肌膚狀況、特殊需求備註"></textarea>
-
-      <div class="btn-container">
-        <button type="submit" id="submitBtn">
-          <span class="loader"></span>
-          <span class="btn-text">確認預約</span>
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- 管理員介面 -->
-  <div id="adminPage" class="admin-section">
-    <div class="admin-title">📊 預約管理後台</div>
-    <p class="tip-text">僅管理員可操作，請勿隨意修改</p>
-    
-    <div id="adminAccessDenied" class="access-denied" style="display:none;">
-      ❌ 您無管理員權限<br>請聯繫店家開通權限
+    <label>預約日期</label>
+    <div class="date-row">
+      <input type="date" id="appointDate" required>
+      <div class="week-box" id="weekText">星期幾</div>
     </div>
 
-    <div id="adminContent" style="display:none;">
-      <!-- 預約管理 -->
-      <div class="admin-card">
-        <h3>📋 預約記錄管理</h3>
-        <button class="admin-btn" id="loadReservationsBtn">載入全部預約</button>
-        <div id="reservationsList"></div>
-      </div>
-
-      <!-- 日期時段管理 -->
-      <div class="admin-card">
-        <h3>⏰ 日期&時段設定</h3>
-        <input type="date" id="manageDate" placeholder="選擇日期">
-        <input type="text" id="manageTime" placeholder="輸入時段 例：10:00">
-        <button class="admin-btn" id="addTimeBtn">新增此時段</button>
-        <button class="admin-btn" id="loadTimeBtn">載入當日時段</button>
-        <div id="manageTimeList"></div>
-      </div>
+    <label>預約時段</label>
+    <div class="time-grid" id="timeGrid">
+      <div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>
     </div>
-  </div>
+
+    <label>姓名</label>
+    <input type="text" id="name" required placeholder="請輸入您的姓名">
+
+    <label>聯絡電話</label>
+    <input type="tel" id="phone" required placeholder="0912-345-678" autocomplete="off">
+
+    <label>電子信箱（選填）</label>
+    <input type="email" id="email" placeholder="請輸入電子信箱">
+
+    <label>備註說明（選填）</label>
+    <textarea id="extraInfo" placeholder="肌膚狀況、特殊需求備註"></textarea>
+
+    <div class="btn-container">
+      <button type="submit" id="submitBtn">
+        <span class="loader"></span>
+        <span class="btn-text">確認預約</span>
+      </button>
+    </div>
+  </form>
 </main>
 
 <script>
@@ -456,11 +326,6 @@
   let isSubmittedSuccess = false;
   let timeDataMap = {};
   let LINE_USER_ID = "guest_" + Date.now();
-  let isAdmin = false;
-  let currentPage = "user";
-
-  // DOM元素
-  let switchBtn, userPage, adminPage, adminContent, adminAccessDenied;
 
   // 取得今日日期，禁止選過去日期
   function getToday() {
@@ -508,41 +373,6 @@
     return clean.length === 10;
   }
 
-  // 切換頁面
-  function togglePage() {
-    if (currentPage === "user") {
-      currentPage = "admin";
-      userPage.style.display = "none";
-      adminPage.style.display = "block";
-      switchBtn.textContent = "返回預約頁面";
-      checkAdminByBackend();
-    } else {
-      currentPage = "user";
-      adminPage.style.display = "none";
-      userPage.style.display = "block";
-      switchBtn.textContent = "切換管理介面";
-    }
-  }
-
-  // 🔑 關鍵修正：從後端驗證管理員
-  function checkAdminByBackend() {
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=checkAdmin&lineId=${LINE_USER_ID}&callback=onAdminCheck&_=${Date.now()}`;
-    document.body.appendChild(script);
-  }
-
-  // 後端回傳管理員權限結果
-  window.onAdminCheck = function(res) {
-    isAdmin = res.isAdmin === true;
-    if (isAdmin) {
-      adminAccessDenied.style.display = "none";
-      adminContent.style.display = "block";
-    } else {
-      adminAccessDenied.style.display = "block";
-      adminContent.style.display = "none";
-    }
-  };
-
   // 全域回調
   window.callback = function (response) {
     try {
@@ -564,13 +394,9 @@
         document.getElementById('weekText').textContent = "星期幾";
         document.getElementById('timeGrid').innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
         document.getElementById('appointTime').value = '';
-      } else if (response.status === "adminList") {
-        renderReservationsList(response.data);
-      } else if (response.status === "adminTimeList") {
-        renderManageTimeList(response.date, response.times);
       } else {
         submitBtn.classList.add('error');
-        btnText.textContent = '操作失敗 ❌';
+        btnText.textContent = '預約失敗 ❌';
         alert(response.message || "系統錯誤，請稍後再試");
         setTimeout(resetButtonState, 2500);
       }
@@ -587,6 +413,7 @@
     grid.innerHTML = "";
     timeInput.value = "";
 
+    // 顯示星期幾
     document.getElementById('weekText').textContent = date ? getWeekDay(date) : "星期幾";
 
     const list = timeDataMap[date] || [];
@@ -611,6 +438,7 @@
           timeInput.value = t.value;
         };
       }
+
       grid.appendChild(btn);
     });
   }
@@ -654,109 +482,7 @@
     }
   }
 
-  // -------------------- 管理員功能 --------------------
-  // 載入所有預約
-  function loadAllReservations() {
-    if (!isAdmin) return alert("無權限");
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=美容預約系統&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(script);
-  }
-
-  // 渲染預約列表
-  function renderReservationsList(list) {
-    const container = document.getElementById('reservationsList');
-    if (!list || list.length === 0) {
-      container.innerHTML = `<div style="text-align:center;color:#999;">暫無預約記錄</div>`;
-      return;
-    }
-    let html = "";
-    list.forEach(item => {
-      html += `
-        <div class="reservation-item">
-          <div class="reservation-info">
-            ${item.appointDate} ${item.appointTime}<br>
-            ${item.serviceType}｜${item.name}｜${item.phone}<br>
-           備註：${item.extraInfo || '無'}
-          </div>
-          <div class="admin-action">
-            <button onclick="editReservation('${item.id}')">修改</button>
-            <button onclick="deleteReservation('${item.id}')">刪除</button>
-          </div>
-        </div>
-      `;
-    });
-    container.innerHTML = html;
-  }
-
-  // 載入日期時段
-  function loadManageTime() {
-    if (!isAdmin) return;
-    const date = document.getElementById('manageDate').value;
-    if (!date) return alert("請選擇日期");
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=美容預約系統&date=${date}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(script);
-  }
-
-  // 渲染時段管理列表
-  function renderManageTimeList(date, times) {
-    const container = document.getElementById('manageTimeList');
-    if (!times || times.length === 0) {
-      container.innerHTML = `<div style="text-align:center;color:#999;">當日無時段</div>`;
-      return;
-    }
-    let html = "";
-    times.forEach(t => {
-      html += `
-        <div class="time-manage-item">
-          <span>${t.label}</span>
-          <button style="height:36px;font-size:0.8rem;" onclick="deleteTime('${date}','${t.value}')">刪除</button>
-        </div>
-      `;
-    });
-    container.innerHTML = html;
-  }
-
-  // 新增時段
-  function addManageTime() {
-    if (!isAdmin) return;
-    const date = document.getElementById('manageDate').value;
-    const time = document.getElementById('manageTime').value;
-    if (!date || !time) return alert("請填寫日期&時段");
-    
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=adminAddTime&pageId=美容預約系統&date=${date}&time=${time}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(script);
-    setTimeout(() => { loadManageTime(); loadTimeData(); }, 1000);
-  }
-
-  // 刪除時段
-  function deleteTime(date, time) {
-    if (!isAdmin) return;
-    if (!confirm("確定刪除該時段？")) return;
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=adminDelTime&pageId=美容預約系統&date=${date}&time=${time}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(script);
-    setTimeout(() => { loadManageTime(); loadTimeData(); }, 1000);
-  }
-
-  // 刪除預約
-  function deleteReservation(id) {
-    if (!isAdmin) return;
-    if (!confirm("確定刪除該預約？")) return;
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=adminDelReserve&id=${id}&lineId=${LINE_USER_ID}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(script);
-    setTimeout(loadAllReservations, 1000);
-  }
-
-  // 修改預約
-  function editReservation(id) {
-    alert("請前往後台試算表修改詳細資料");
-  }
-
-  // LIFF 初始化
+  // LIFF 初始化（安全不報錯）
   async function initLiff() {
     try {
       await liff.init({ liffId: CONFIG.LIFF_ID });
@@ -779,33 +505,25 @@
     const appointDate = document.getElementById('appointDate');
     const phoneInput = document.getElementById('phone');
 
-    switchBtn = document.getElementById('switchBtn');
-    userPage = document.getElementById('userPage');
-    adminPage = document.getElementById('adminPage');
-    adminContent = document.getElementById('adminContent');
-    adminAccessDenied = document.getElementById('adminAccessDenied');
-
-    switchBtn.addEventListener('click', togglePage);
-
-    document.getElementById('loadReservationsBtn').addEventListener('click', loadAllReservations);
-    document.getElementById('loadTimeBtn').addEventListener('click', loadManageTime);
-    document.getElementById('addTimeBtn').addEventListener('click', addManageTime);
-
+    // 電話號碼即時格式化
     phoneInput.addEventListener('input', (e) => {
       e.target.value = formatPhoneNumber(e.target.value);
     });
 
+    // 禁止選過去日期
     appointDate.min = getToday();
-    document.getElementById('manageDate').min = getToday();
 
     await initLiff();
     loadTimeData();
 
+    // 日期改變 → 刷新時段 + 星期
     appointDate.addEventListener('change', renderTimeList);
 
+    // 表單提交
     infoForm.addEventListener('submit', (e) => {
       e.preventDefault();
       
+      // 驗證電話
       const phone = phoneInput.value.trim();
       if (!validatePhone(phone)) {
         alert("請輸入正確 10 碼手機號碼！\n格式：0912-345-678");
