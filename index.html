@@ -304,6 +304,15 @@
       font-size: 0.9rem;
       margin-bottom: 10px;
     }
+
+    /* 按鈕顏色區分：新增=粉色 / 載入=紫色 */
+    #addTimeBtn {
+      background: linear-gradient(135deg, #ff8da1, #ff5c8d) !important;
+    }
+    #loadTimeBtn {
+      background: linear-gradient(135deg, #9c6aff, #7c5aff) !important;
+    }
+
     .reservation-item {
       padding: 12px;
       border-bottom: 1px solid #eee;
@@ -493,7 +502,7 @@
 
   // DOM元素
   let switchBtn, userPage, adminPage, adminContent, adminAccessDenied, switchContainer;
-  let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn;
+  let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, manageDate;
 
   // 取得今日日期，禁止選過去日期
   function getToday() {
@@ -765,7 +774,7 @@
     setTimeout(loadAllReservations,1500);
   }
 
-  // 渲染列表 + 自動清理過期
+  // 渲染列表 + 自動清理過期 + 顯示姓名
   function renderReservationsList(list) {
     const container=document.getElementById('reservationsList');
     if(!list||list.length===0){container.innerHTML=`<div style="text-align:center;color:#999;">暫無預約</div>`;return;}
@@ -786,7 +795,11 @@
       <div class="reservation-item">
         <span class="reserve-num">${idx+1}</span>
         <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
-        <div class="reservation-info">${d} ${t}<br>${item.serviceType}｜${item.name}｜${item.phone}<br>備註：${item.remark||'無'}</div>
+        <div class="reservation-info">
+          ${d} ${t}<br>
+          姓名：${item.name}｜服務：${item.serviceType}｜電話：${item.phone}<br>
+          備註：${item.remark||'無'}
+        </div>
         <div class="admin-action">
           <button onclick='editReservation(${JSON.stringify(item)})'>修改</button>
           <button onclick="deleteReservation('${item.submitTime}')">刪除</button>
@@ -880,6 +893,7 @@
     const appointDate=document.getElementById('appointDate');const phoneInput=document.getElementById('phone');
     loadReservationsBtn=document.getElementById('loadReservationsBtn');batchDeleteBtn=document.getElementById('batchDeleteBtn');
     addTimeBtn=document.getElementById('addTimeBtn');loadTimeBtn=document.getElementById('loadTimeBtn');
+    manageDate=document.getElementById('manageDate');
     switchBtn=document.getElementById('switchBtn');switchContainer=document.getElementById('switchContainer');
     userPage=document.getElementById('userPage');adminPage=document.getElementById('adminPage');adminContent=document.getElementById('adminContent');adminAccessDenied=document.getElementById('adminAccessDenied');
 
@@ -888,6 +902,9 @@
     loadTimeBtn.onclick=loadManageTime;
     addTimeBtn.onclick=addManageTime;
     batchDeleteBtn.onclick=batchDeleteReservations;
+
+    // 管理介面：選擇日期自動載入時段
+    manageDate.addEventListener('change', loadManageTime);
 
     phoneInput.addEventListener('input',e=>{e.target.value=formatPhoneNumber(e.target.value);});
     appointDate.min=getToday();document.getElementById('manageDate').min=getToday();
