@@ -1006,8 +1006,8 @@
         </div>
         <div class="reservation-info">
           ${formatToStandardDateSafe(item.appointDate)} ${formatToStandardTimeSafe(item.appointTime)}<br>
-          姓名：${item.name}｜服務：${item.serviceType}<br>
-          電話：${item.phone}｜LINE：${item.lineName || '未取得'}<br>
+          姓名：${item.name}<br>服務：${item.serviceType}<br>
+          電話：${item.phone}<br>LINE：${item.lineName || '未取得'}<br>
           備註：${item.remark || '無'}
         </div>
       </div>`).join('');
