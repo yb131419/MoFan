@@ -586,12 +586,18 @@ button {
       color: #555;
       white-space: nowrap;
     }
+    /* 修正：刪除按鈕 縮短、文字放大、置中 */
     .time-manage-item button {
-      height: 34px;
-      font-size: 0.8rem;
-      min-width: 55px;
-      padding: 0 10px;
-      border-radius: 10px;
+      height: 32px;
+      min-width: 46px;
+      width: auto;
+      padding: 0 8px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* 無權限樣式 - 頂級 */
@@ -809,6 +815,9 @@ button {
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzK69yZdryeXLsZZsgeIyqy-DNLrJ3aztFDyc8fhXABUEOfBP8OsAF8_v-Dfi4E9JVDtA/exec",
     LIFF_ID: "2009598216-ZsS47DM8"
   };
+
+  // 後端固定表頭格式：日期 + 時段1~時段12
+  const fixedHeader = ["日期", "時段1", "時段2", "時段3", "時段4", "時段5", "時段6", "時段7", "時段8", "時段9", "時段10", "時段11", "時段12"];
 
   let submitBtn, btnText, infoForm;
   let isSubmitting = false;
@@ -1243,7 +1252,7 @@ button {
           <input type="checkbox" class="reserve-check" value="${timeVal}" onchange="toggleTimeSlot('${date}','${timeVal}')">
           <span>${timeVal}</span>
           <button onclick="deleteTime('${date}','${timeVal}')">
-            <span class="loader"></span>刪除
+            <span class="loader"></span>刪
           </button>
         </div>`;
       }).join('');
@@ -1279,7 +1288,7 @@ const DEFAULT_TIMES = [
     }
   }
 
-  // 多筆新增時段 - 完全修復
+  // 多筆新增時段 - 完全修復 + 對齊後端格式
   function addSelectedTimes() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
     const selected = Array.from(document.querySelectorAll('.time-select-item.active'))
