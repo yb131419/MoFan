@@ -567,37 +567,28 @@ button {
       border-top: 1px dashed #eee;
     }
 
-    /* 時段管理項目 */
-    .time-manage-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* 時段管理項目 - 網格排版 */
+    .time-manage-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      padding: 12px 0;
-      border-bottom: 1px solid #f5f5f3;
+      margin: 12px 0;
     }
-    .time-manage-item:last-child {
-      border-bottom: none;
+    .time-manage-item {
+      padding: 10px 6px;
+      border-radius: 10px;
+      background: #fafbfc;
+      border: 1px solid #eee;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
     }
-    .time-manage-item span {
-      flex: 1;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #555;
-      white-space: nowrap;
-    }
-    /* 修正：刪除按鈕 縮短、文字放大、置中 */
-    .time-manage-item button {
-      height: 32px;
-      min-width: 46px;
-      width: auto;
-      padding: 0 8px;
-      font-size: 15px;
+    .time-manage-item:hover {
+      background: #FDF2F8;
+      border-color: #D894A7;
+      color: #6D4C5D;
       font-weight: 700;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     /* 無權限樣式 - 頂級 */
@@ -798,10 +789,6 @@ button {
               <span class="loader"></span>
               <span>載入當日時段</span>
             </button>
-            <button class="admin-btn batch-delete-btn" id="batchDeleteTimeBtn" style="margin-top:10px;">
-              <span class="loader"></span>
-              <span>刪除選取時段</span>
-            </button>
             <div id="manageTimeList"></div>
           </div>
         </div>
@@ -827,12 +814,11 @@ button {
   let isAdmin = false;
   let currentPage = "user";
   let selectedReservations = [];
-  let selectedTimeSlots = [];
   let isAdminLoading = false;
   let deleteCount = 0;
 
   let switchBtn, userPage, adminPage, adminContent, adminAccessDenied, switchContainer;
-  let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, batchDeleteTimeBtn, manageDate;
+  let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, manageDate;
   let headerTimeEl;
 
   function toggleCollapse(id) {
@@ -965,10 +951,10 @@ button {
     try {
       isSubmitting = false;
       isAdminLoading = false;
-      [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn,batchDeleteTimeBtn].forEach(btn=>{
+      [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn].forEach(btn=>{
         if(btn) {btn.classList.remove('loading'); btn.disabled=false;}
       });
-      document.querySelectorAll('.reserve-btns button, .time-manage-item button').forEach(btn=>{
+      document.querySelectorAll('.reserve-btns button, .time-manage-item').forEach(btn=>{
         btn.classList.remove('loading');
         btn.disabled = false;
       });
@@ -991,30 +977,6 @@ button {
           document.getElementById('timeGrid').innerHTML=`<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
           document.getElementById('appointTime').value="";
         }else{
-          if(window.batchDeletingTimes){
-            deleteCount++;
-            if(deleteCount >= window.totalDeleteCount){
-              alert(`✅ 成功刪除 ${deleteCount} 個時段`);
-              deleteCount = 0;
-              window.batchDeletingTimes = false;
-              window.totalDeleteCount = 0;
-              selectedTimeSlots = [];
-              loadManageTime();
-              loadTimeData();
-            }
-            return;
-          }
-          if(window.batchDeleting){
-            deleteCount++;
-            if(deleteCount >= window.totalDeleteCount){
-              alert(`✅ 成功刪除 ${deleteCount} 筆預約`);
-              deleteCount = 0;
-              window.batchDeleting = false;
-              window.totalDeleteCount = 0;
-              loadAllReservations();
-            }
-            return;
-          }
           alert("✅ 操作成功");
           loadAllReservations();
           loadManageTime();
@@ -1204,10 +1166,6 @@ button {
     if (!isAdmin || isAdminLoading || !selectedReservations.length || !confirm(`確定刪除 ${selectedReservations.length} 筆預約？`)) return;
     setAdminLoading(true, batchDeleteBtn);
     
-    window.batchDeleting = true;
-    window.totalDeleteCount = selectedReservations.length;
-    deleteCount = 0;
-    
     selectedReservations.forEach(id => {
       const p = new URLSearchParams({action:"adminDelReserve",pageId:"美容預約系統",lineId:LINE_USER_ID,submitTime:id});
       const s = document.createElement('script');
@@ -1232,16 +1190,10 @@ button {
     document.getElementById('timeCount').textContent = `(${timeArray.length} 筆)`;
     
     c.innerHTML = !timeArray.length ? `<div class="empty-state">當日無時段</div>` :
-      timeArray.map(t => {
+      `<div class="time-manage-grid">${timeArray.map(t => {
         const timeVal = formatToStandardTimeSafe(t.value || t);
-        return `<div class="time-manage-item">
-          <input type="checkbox" class="reserve-check" value="${timeVal}" onchange="toggleTimeSlot('${date}','${timeVal}')">
-          <span>${timeVal}</span>
-          <button onclick="deleteTime('${date}','${timeVal}')">
-            <span class="loader"></span>刪
-          </button>
-        </div>`;
-      }).join('');
+        return `<div class="time-manage-item" onclick="deleteTime('${date}','${timeVal}')">${timeVal}</div>`;
+      }).join('')}</div>`;
   }
 
   const DEFAULT_TIMES = [
@@ -1262,18 +1214,8 @@ button {
     el.classList.toggle('active');
   }
 
-  function toggleTimeSlot(date, time) {
-    const key = `${date}|${time}`;
-    const index = selectedTimeSlots.findIndex(item => item.key === key);
-    if (index > -1) {
-      selectedTimeSlots.splice(index, 1);
-    } else {
-      selectedTimeSlots.push({ date, time, key });
-    }
-  }
-
   // ==============================
-  // 【已完整修正】批次新增時段（一次請求寫入工作表）
+  // 批次新增時段
   // ==============================
   function addSelectedTimes() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
@@ -1306,41 +1248,13 @@ button {
   }
 
   function deleteTime(date, time) {
-    if (!confirm("確定刪除此時段？")) return;
-    const btn = event.target;
-    btn.classList.add('loading');
-    btn.disabled = true;
+    if (!isAdmin || isAdminLoading || !confirm(`確定刪除 ${time} 時段？`)) return;
     
+    setAdminLoading(true);
     const p = new URLSearchParams({action:"adminDelTime",pageId:"美容預約系統",lineId:LINE_USER_ID,date:date,time:time});
     const s = document.createElement('script');
     s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
-  }
-
-  function batchDeleteTimeSlots() {
-    if (!isAdmin || isAdminLoading || selectedTimeSlots.length === 0) {
-      alert("請先勾選要刪除的時段");
-      return;
-    }
-    if (!confirm(`確定刪除 ${selectedTimeSlots.length} 個時段？`)) return;
-    
-    setAdminLoading(true, batchDeleteTimeBtn);
-    window.batchDeletingTimes = true;
-    window.totalDeleteCount = selectedTimeSlots.length;
-    deleteCount = 0;
-
-    selectedTimeSlots.forEach(item => {
-      const p = new URLSearchParams({
-        action: "adminDelTime",
-        pageId: "美容預約系統",
-        lineId: LINE_USER_ID,
-        date: item.date,
-        time: item.time
-      });
-      const s = document.createElement('script');
-      s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
-      document.body.appendChild(s);
-    });
   }
 
   function deleteReservation(id) {
@@ -1385,7 +1299,6 @@ button {
     batchDeleteBtn = document.getElementById('batchDeleteBtn');
     addTimeBtn = document.getElementById('addTimeBtn');
     loadTimeBtn = document.getElementById('loadTimeBtn');
-    batchDeleteTimeBtn = document.getElementById('batchDeleteTimeBtn');
     manageDate = document.getElementById('manageDate');
     
     switchBtn = document.getElementById('switchBtn');
@@ -1404,7 +1317,6 @@ button {
     loadTimeBtn.onclick = loadManageTime;
     addTimeBtn.onclick = addSelectedTimes;
     batchDeleteBtn.onclick = batchDeleteReservations;
-    batchDeleteTimeBtn.onclick = batchDeleteTimeSlots;
     manageDate.addEventListener('change', loadManageTime);
     
     phoneInput.addEventListener('input', e => e.target.value = formatPhoneNumber(e.target.value));
