@@ -206,22 +206,22 @@
       padding: 18px 20px;
     }
 
-    /* 統一樣式：選中/聚焦 = 黑框 + 黑字 + 淡粉背景 */
-    input:focus, select:focus, textarea:focus {
-      background: #ffd6e7 !important;
-      border: 2px solid #000000 !important;
-      color: #000000 !important;
-      font-weight: 900 !important;
-      outline: none !important;
-      box-shadow: none !important;
-      transform: translateY(-1px);
-    }
-    select:valid {
-      background: #ffd6e7;
-      border: 2px solid #000;
-      color: #000;
-      font-weight: 900;
-    }
+/* 統一樣式：選中/聚焦 = 美業高質感霧粉 */
+input:focus, select:focus, textarea:focus {
+  background: #FDF2F8 !important;
+  border: 2px solid #D894A7 !important;
+  color: #6D4C5D !important;
+  font-weight: 700 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(216,148,167,0.15) !important;
+  transform: translateY(-1px);
+}
+select:valid {
+  background: #FDF2F8;
+  border: 2px solid #D894A7;
+  color: #6D4C5D;
+  font-weight: 700;
+}
 
     select {
       appearance: none;
@@ -263,16 +263,15 @@
       box-shadow: 0 4px 12px rgba(255,133,162,0.1);
     }
 
-    /* 點選時段樣式 - 純色淡粉背景+黑字粗體+黑框 */
-    .time-btn.active {
-      background: #ffd6e7;
-      color: #000000;
-      font-weight: 900;
-      border: 2px solid #000000 !important;
-      box-shadow: 0 6px 18px rgba(255,77,136,0.25);
-      transform: translateY(-1px);
-    }
-
+/* 點選時段樣式 - 美業高質感 */
+.time-btn.active {
+  background: #FDF2F8;
+  color: #6D4C5D;
+  font-weight: 700;
+  border: 2px solid #D894A7 !important;
+  box-shadow: 0 6px 18px rgba(216,148,167,0.2);
+  transform: translateY(-1px);
+}
     /* 過期時段：直接灰化不可點擊 */
     .time-btn.expired {
       opacity: 0.4;
@@ -288,28 +287,28 @@
       margin-top: 20px;
     }
 
-    /* 頂級提交按鈕 */
-    button {
-      width: 100%;
-      height: 56px;
-      background: linear-gradient(135deg, #ff4d88, #ff8da1);
-      border: none;
-      border-radius: 18px;
-      font-size: 1.05rem;
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-      box-shadow: 0 8px 25px rgba(255,77,136,0.25);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      font-family: 'Noto Sans TC', sans-serif;
-      letter-spacing: 1px;
-      position: relative;
-      overflow: hidden;
-    }
+/* 頂級提交按鈕 - 美業質感 */
+button {
+  width: 100%;
+  height: 56px;
+  background: linear-gradient(135deg, #D894A7, #E8B4C3);
+  border: none;
+  border-radius: 18px;
+  font-size: 1.05rem;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 8px 25px rgba(216,148,167,0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Noto Sans TC', sans-serif;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
 
     /* 移除按鈕點擊漸層效果 */
     button::before {
