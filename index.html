@@ -394,6 +394,7 @@
     <form id="infoForm">
       <input type="hidden" id="pageId" value="美容預約系統">
       <input type="hidden" id="lineId">
+      <input type="hidden" id="lineName">
       <input type="hidden" id="appointTime" name="appointTime">
 
       <label>服務項目</label>
@@ -495,6 +496,7 @@
   let isSubmittedSuccess = false;
   let timeDataMap = {};
   let LINE_USER_ID = "guest_" + Date.now();
+  let LINE_USER_NAME = "LINE使用者";
   let isAdmin = false;
   let currentPage = "user";
   let selectedReservations = [];
@@ -514,10 +516,11 @@
     return `${year}-${month}-${day}`;
   }
 
-  // 取得星期幾(台北時區)
+  // 取得星期幾(修正：純台北時區計算)
   function getWeekDay(dateStr) {
-    const date = new Date(dateStr + "T00:00:00+08:00");
-    const twDate = new Date(date.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
+    if (!dateStr) return "星期幾";
+    const [y, m, d] = dateStr.split("-");
+    const twDate = new Date(y, m - 1, d);
     const week = ["日", "一", "二", "三", "四", "五", "六"];
     return "星期" + week[twDate.getDay()];
   }
@@ -596,7 +599,7 @@
     const twDate = new Date(d.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
     const y = twDate.getFullYear();
     const m = String(twDate.getMonth()+1).padStart(2,0);
-    const day = String(twDate.getDate()).padStart(2,0);
+    const day = String(twDate.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
   }
 
@@ -647,13 +650,15 @@
 
   // 後端回傳管理員權限結果
   window.onAdminCheck = function(res) {
-    isAdmin = res.isAdmin === true;
+    isAdmin = res && res.isAdmin === true;
     if (isAdmin) {
       switchContainer.style.display = "block";
       adminAccessDenied.style.display = "none";
       adminContent.style.display = "block";
     } else {
       switchContainer.style.display = "none";
+      adminAccessDenied.style.display = "block";
+      adminContent.style.display = "none";
     }
   };
 
@@ -737,11 +742,13 @@
     document.body.appendChild(s);
   }
 
-  // 送出預約
+  // 送出預約 + 傳送LINE暱稱
   function sendData() {
     try {
       const data={
-        pageId:"美容預約系統", lineId:LINE_USER_ID,
+        pageId:"美容預約系統",
+        lineId:LINE_USER_ID,
+        lineName:LINE_USER_NAME,
         serviceType:document.getElementById('serviceType').value,
         appointDate:document.getElementById('appointDate').value,
         appointTime:document.getElementById('appointTime').value,
@@ -824,7 +831,7 @@
         <div class="reservation-info">
           ${item.appointDate} ${item.appointTime}<br>
           姓名：${item.name}｜服務：${item.serviceType}｜電話：${item.phone}<br>
-          備註：${item.remark || '無'}
+          LINE：${item.lineName || '未取得'}｜備註：${item.remark || '無'}
         </div>
         <div class="admin-action">
           <button onclick='editReservation(${JSON.stringify(item)})'>修改</button>
@@ -851,9 +858,6 @@
     if (!confirm(`確定刪除 ${selectedReservations.length} 筆預約？`)) return;
 
     setAdminLoading(true, batchDeleteBtn);
-    let count = 0;
-    const total = selectedReservations.length;
-
     selectedReservations.forEach(id => {
       const params = new URLSearchParams({
         action: "adminDelReserve",
@@ -864,9 +868,7 @@
       const script = document.createElement('script');
       script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(script);
-      count++;
     });
-
     selectedReservations = [];
   }
 
@@ -943,20 +945,20 @@
     document.body.appendChild(script);
   }
 
-  // LIFF 初始化
+  // LIFF 初始化 + 取得LINE暱稱
   async function initLiff() {
     try {
       await liff.init({ liffId: CONFIG.LIFF_ID });
       if (liff.isLoggedIn()) {
         const profile = await liff.getProfile();
-        if (profile?.userId) {
-          LINE_USER_ID = profile.userId;
-        }
+        if (profile?.userId) LINE_USER_ID = profile.userId;
+        if (profile?.displayName) LINE_USER_NAME = profile.displayName;
       }
     } catch (e) {
       console.log("LIFF 初始化略過");
     } finally {
       document.getElementById('lineId').value = LINE_USER_ID;
+      document.getElementById('lineName').value = LINE_USER_NAME;
       checkAdminByBackend();
     }
   }
