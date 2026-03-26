@@ -785,7 +785,7 @@ button {
               <span class="loader"></span>
               <span>新增所選時段</span>
             </button>
-            <button class="admin-btn batch-delete-btn" id="deleteSelectedTimeBtn" onclick="deleteSelectedTimes()">
+            <button class="admin-btn batch-delete-btn" id="deleteSelectedTimeBtn">
               <span class="loader"></span>
               <span>刪除所選時段</span>
             </button>
@@ -1252,9 +1252,12 @@ button {
   }
 
   // ==============================
-  // 批次刪除所選時段（新增功能）
+  // 【完整修復】批次刪除所選時段
   // ==============================
   function deleteSelectedTimes() {
+    event.preventDefault();
+    event.stopPropagation();
+    
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
     const selected = Array.from(document.querySelectorAll('.time-select-item.active'))
       .map(el => el.textContent.trim())
@@ -1273,18 +1276,19 @@ button {
     }
 
     setAdminLoading(true, deleteSelectedTimeBtn);
-
-    const params = new URLSearchParams({
-      action: "adminBatchDeleteTime",
-      pageId: "美容預約系統",
-      lineId: LINE_USER_ID,
-      date: date,
-      times: JSON.stringify(selected)
+    
+    selected.forEach(time => {
+      const p = new URLSearchParams({
+        action: "adminDelTime",
+        pageId: "美容預約系統",
+        lineId: LINE_USER_ID,
+        date: date,
+        time: time
+      });
+      const s = document.createElement('script');
+      s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
+      document.body.appendChild(s);
     });
-
-    const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(s);
   }
 
   function deleteTime(date, time) {
@@ -1358,6 +1362,7 @@ button {
     loadTimeBtn.onclick = loadManageTime;
     addTimeBtn.onclick = addSelectedTimes;
     batchDeleteBtn.onclick = batchDeleteReservations;
+    deleteSelectedTimeBtn.onclick = deleteSelectedTimes;
     manageDate.addEventListener('change', loadManageTime);
     
     phoneInput.addEventListener('input', e => e.target.value = formatPhoneNumber(e.target.value));
