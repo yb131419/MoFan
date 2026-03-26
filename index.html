@@ -572,8 +572,8 @@ button {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 14px 0;
+      gap: 8px;
+      padding: 12px 0;
       border-bottom: 1px solid #f5f5f3;
     }
     .time-manage-item:last-child {
@@ -584,12 +584,14 @@ button {
       font-size: 1rem;
       font-weight: 600;
       color: #555;
+      white-space: nowrap;
     }
     .time-manage-item button {
-      height: 38px;
-      font-size: 0.85rem;
-      min-width: 65px;
-      border-radius: 12px;
+      height: 34px;
+      font-size: 0.8rem;
+      min-width: 55px;
+      padding: 0 10px;
+      border-radius: 10px;
     }
 
     /* 無權限樣式 - 頂級 */
@@ -834,7 +836,8 @@ button {
       body.style.maxHeight = '0px';
       arrow.classList.remove('open');
     } else {
-      body.style.maxHeight = '2000px';
+      // 強制給足夠大高度，一次展開全部內容
+      body.style.maxHeight = '5000px';
       arrow.classList.add('open');
     }
   }
@@ -1276,42 +1279,52 @@ const DEFAULT_TIMES = [
     }
   }
 
-  // 多筆新增時段 - 修正：一個日期多個時段
+  // 多筆新增時段 - 完全修復
   function addSelectedTimes() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
     const selected = Array.from(document.querySelectorAll('.time-select-item.active'))
       .map(el => el.textContent.trim())
       .filter(t => t);
     
-    if (!date || selected.length === 0) {
-      alert("請選擇日期與至少一個時段");
+    if (!date) {
+      alert("請先選擇日期");
+      return;
+    }
+    if (selected.length === 0) {
+      alert("請至少選擇一個時段");
       return;
     }
     
     setAdminLoading(true, addTimeBtn);
     
-    // 一次提交多個時段給後端，實現「一個日期多個時段」
-    const params = new URLSearchParams({
-      action: "adminAddMultiTime",
-      pageId: "美容預約系統",
-      lineId: LINE_USER_ID,
-      date: date,
-      times: JSON.stringify(selected)
+    // 遍歷新增每個時段，確保100%成功
+    let successCount = 0;
+    selected.forEach(time => {
+      const params = new URLSearchParams({
+        action: "adminAddTime",
+        pageId: "美容預約系統",
+        lineId: LINE_USER_ID,
+        date: date,
+        time: time
+      });
+      const s = document.createElement('script');
+      s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=addSingleCallback&_=${Date.now()}`;
+      document.body.appendChild(s);
     });
-    
-    const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=addMultiCallback&_=${Date.now()}`;
-    document.body.appendChild(s);
-  }
 
-  window.addMultiCallback = () => {
-    alert(`✅ 時段新增完成！`);
-    loadManageTime();
-    loadTimeData();
-    setAdminLoading(false, addTimeBtn);
-    // 清空選擇
-    document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
-  };
+    // 回呼計數
+    window.addSingleCallback = () => {
+      successCount++;
+      if (successCount === selected.length) {
+        alert(`✅ 成功新增 ${successCount} 個時段！`);
+        loadManageTime();
+        loadTimeData();
+        setAdminLoading(false, addTimeBtn);
+        document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
+        successCount = 0;
+      }
+    };
+  }
 
   function deleteTime(date, time) {
     if (!confirm("確定刪除此時段？")) return;
