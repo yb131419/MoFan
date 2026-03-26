@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>莫凡韓式皮膚管理</title>
+  <title>莫凡韓式皮膚管理｜頂級預約系統</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
     * {
       box-sizing: border-box;
       margin: 0;
@@ -14,7 +14,7 @@
     }
 
     body {
-      background: #fdf2f8;
+      background: linear-gradient(135deg, #fdf2f8 0%, #fef7fb 50%, #fce8f3 100%);
       font-family: 'Noto Sans TC', sans-serif;
       color: #444;
       display: flex;
@@ -23,6 +23,20 @@
       min-height: 100vh;
       padding: 30px 15px;
       position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 Q100,20 100,100 L0,100 Z" fill="rgba(255,179,217,0.05)"/></svg>');
+      background-size: cover;
+      opacity: 0.3;
+      z-index: -1;
     }
 
     /* 頂部切換按鈕 */
@@ -31,87 +45,107 @@
       top: 12px;
       right: 15px;
       z-index: 999;
-      display: none; /* 預設隱藏，只有管理員會顯示 */
+      display: none;
     }
     .switch-btn {
-      padding: 8px 14px;
-      border-radius: 20px;
+      padding: 10px 18px;
+      border-radius: 50px;
       background: #fff;
-      border: 1px solid #ff85a2;
+      border: 1px solid rgba(255, 77, 136, 0.2);
       color: #ff4d88;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255,77,136,0.1);
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .switch-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(255,133,162,0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255,77,136,0.15);
+      background: #fff5f8;
     }
 
     main {
       background: #ffffff;
-      border-radius: 24px;
-      box-shadow: 0 12px 40px rgba(255, 133, 162, 0.1);
+      border-radius: 28px;
+      box-shadow: 0 15px 50px rgba(255, 133, 162, 0.12);
       width: 100%;
-      max-width: 440px;
-      padding: 45px 32px;
-      transition: all 0.3s ease;
+      max-width: 460px;
+      padding: 50px 35px;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
     }
 
-    /* 響應式：平板 & 電腦放大容器 */
+    main::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, #ff8da1, #ff4d88, #c77dff);
+    }
+
+    /* 頂級響應式 */
     @media (min-width: 768px) {
       main {
-        max-width: 700px;
-        padding: 50px 40px;
+        max-width: 720px;
+        padding: 60px 45px;
       }
     }
     @media (min-width: 1024px) {
       main {
-        max-width: 800px;
+        max-width: 820px;
       }
     }
 
     h2 {
-      font-weight: 700;
-      margin-bottom: 40px;
+      font-weight: 900;
+      margin-bottom: 45px;
       text-align: center;
       line-height: 1.6;
     }
 
     h2 .main-title {
-      font-size: 1.8rem;
+      font-size: 2.1rem;
       display: block;
-      margin-bottom: 10px;
-      background: linear-gradient(90deg, #ff8da1, #c77dff);
+      margin-bottom: 12px;
+      background: linear-gradient(90deg, #ff4d88, #ff8da1, #c77dff);
+      background-size: 200% auto;
       -webkit-background-clip: text;
       color: transparent;
       white-space: nowrap;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
+      animation: titleShine 3s linear infinite;
+    }
+
+    @keyframes titleShine {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
     }
 
     h2 .sub-title {
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 500;
-      color: #888;
-      letter-spacing: 0.5px;
+      color: #999;
+      letter-spacing: 1px;
     }
 
     form label {
       display: block;
-      margin-bottom: 10px;
-      font-weight: 500;
+      margin-bottom: 12px;
+      font-weight: 600;
       font-size: 0.95rem;
       color: #555;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
     }
 
     .date-row {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 28px;
     }
     .date-row input {
       flex: 1.2;
@@ -119,18 +153,20 @@
     }
     .date-row .week-box {
       flex: 1;
-      height: 54px;
-      border-radius: 14px;
+      height: 56px;
+      border-radius: 16px;
       border: 1px solid #f3f3f3;
-      background: #fefefe;
+      background: #fafbfc;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1rem;
-      font-weight: 500;
-      color: #555;
+      font-weight: 600;
+      color: #666;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
+    /* 頂級輸入框樣式 */
     input[type="text"],
     input[type="email"],
     input[type="tel"],
@@ -138,113 +174,140 @@
     select,
     textarea {
       width: 100%;
-      height: 54px;
-      padding: 0 18px;
-      border-radius: 14px;
-      border: 1px solid #f3f3f3;
+      height: 56px;
+      padding: 0 20px;
+      border-radius: 16px;
+      border: 1px solid #f0f0f0;
       font-size: 1rem;
-      background: #fefefe;
+      background: #fafbfc;
       color: #333;
-      margin-bottom: 24px;
-      transition: all 0.3s ease;
+      margin-bottom: 28px;
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
       font-family: 'Noto Sans TC', sans-serif;
       font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
     textarea {
-      min-height: 100px;
+      min-height: 120px;
       height: auto;
       resize: vertical;
-      line-height: 1.5;
-      padding: 16px 18px;
+      line-height: 1.6;
+      padding: 18px 20px;
     }
 
     input:focus, select:focus, textarea:focus {
       background: #fff;
-      border-color: #ff85a2;
+      border-color: #ff4d88;
       outline: none;
-      box-shadow: 0 0 0 4px rgba(255,133,162,0.12);
+      box-shadow: 0 0 0 5px rgba(255,77,136,0.08);
+      transform: translateY(-1px);
     }
 
     select {
       appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 24 24' fill='none' stroke='%23777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 16px center;
-      background-size: 16px;
+      background-position: right 18px center;
+      background-size: 18px;
       cursor: pointer;
     }
 
+    /* 時段網格 - 頂級樣式 */
     .time-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 26px;
+      gap: 12px;
+      margin-bottom: 30px;
     }
 
     .time-btn {
-      height: 54px;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1px solid #eee;
       background: #fff;
       font-size: 0.95rem;
-      font-weight: 500;
-      color: #444;
+      font-weight: 600;
+      color: #555;
       cursor: pointer;
-      transition: 0.25s ease;
+      transition: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-    .time-btn:hover {
+    .time-btn:hover:not(.expired) {
       border-color: #ff85a2;
       color: #ff4d88;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255,133,162,0.1);
     }
 
     .time-btn.active {
-      background: linear-gradient(135deg, #ff8da1, #ff85a2);
+      background: linear-gradient(135deg, #ff4d88, #ff8da1);
       color: #fff;
-      border-color: #ff85a2;
-      box-shadow: 0 4px 12px rgba(255,133,162,0.2);
+      border-color: #ff4d88;
+      box-shadow: 0 6px 18px rgba(255,77,136,0.25);
+      transform: translateY(-1px);
     }
 
+    /* 過期時段：直接灰化不可點擊 */
     .time-btn.expired {
       opacity: 0.4;
       cursor: not-allowed;
-      background: #f7f7f7;
-      color: #bbb;
+      background: #f5f5f5;
+      color: #ccc;
       border-color: #eee;
+      box-shadow: none;
+      transform: none !important;
     }
 
     .btn-container {
-      margin-top: 20px;
+      margin-top: 25px;
     }
 
+    /* 頂級提交按鈕 */
     button {
       width: 100%;
-      height: 58px;
-      background: linear-gradient(135deg, #ff87b2, #e05686);
+      height: 60px;
+      background: linear-gradient(135deg, #ff4d88, #ff8da1);
       border: none;
-      border-radius: 16px;
-      font-size: 1rem;
+      border-radius: 18px;
+      font-size: 1.05rem;
       color: #fff;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 22px rgba(255,135,178,0.25);
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      box-shadow: 0 8px 25px rgba(255,77,136,0.25);
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: 'Noto Sans TC', sans-serif;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.6s ease;
+    }
+
+    button:hover:not(:disabled)::before {
+      left: 100%;
     }
 
     button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(255,135,178,0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(255,77,136,0.3);
     }
 
     button:disabled {
@@ -253,14 +316,14 @@
     }
 
     button.permanent-disabled {
-      opacity: 0.5;
-      background: #777 !important;
-      box-shadow: none;
+      opacity: 0.8;
+      background: #2dd386 !important;
+      box-shadow: 0 6px 20px rgba(45,211,134,0.25) !important;
     }
 
     .loader {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border: 2px solid #fff;
       border-bottom-color: transparent;
       border-radius: 50%;
@@ -279,159 +342,181 @@
 
     @keyframes successPulse {
       0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      50% { transform: scale(1.06); }
       100% { transform: scale(1); }
     }
 
     .success {
       animation: successPulse 0.6s ease-in-out;
       background: #2dd386 !important;
-      box-shadow: 0 6px 18px rgba(45,211,134,0.25) !important;
+      box-shadow: 0 8px 25px rgba(45,211,134,0.25) !important;
     }
 
     .error {
       animation: successPulse 0.6s ease-in-out;
-      background: #ff4d6d !important;
+      background: #ff3366 !important;
     }
 
-    /* ====================== 管理介面 高質感樣式 + 全響應式 ====================== */
+    /* ====================== 頂級管理介面 - 美業奢華風 ====================== */
     .admin-section {
       display: none;
-      margin-top: 20px;
-      animation: fadeIn 0.3s ease;
+      margin-top: 25px;
+      animation: fadeIn 0.45s cubic-bezier(0.25, 1, 0.5, 1);
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     .admin-title {
-      font-size: 1.3rem;
-      font-weight: 700;
+      font-size: 1.5rem;
+      font-weight: 900;
       color: #ff4d88;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       text-align: center;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
+      letter-spacing: 1px;
     }
 
     .tip-text {
-      font-size: 0.85rem;
-      color: #999;
-      margin-bottom: 24px;
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 30px;
       text-align: center;
-      line-height: 1.5;
+      line-height: 1.6;
+      font-weight: 500;
     }
 
-    /* 管理卡片容器 - 電腦雙列排版 */
+    /* 管理卡片容器 - 電腦雙列 */
     .admin-container {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 25px;
     }
     @media (min-width: 768px) {
       .admin-container {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 20px;
+        gap: 25px;
       }
     }
 
     .admin-card {
       background: #ffffff;
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
-      border: 1px solid #f8f8f8;
-      transition: all 0.3s ease;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.06);
+      border: 1px solid rgba(255,77,136,0.05);
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      position: relative;
+      overflow: hidden;
     }
+
+    .admin-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: linear-gradient(180deg, #ff4d88, #ff8da1);
+    }
+
     .admin-card:hover {
-      box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.09);
+      transform: translateY(-2px);
     }
+
     .admin-card h3 {
-      font-size: 1.05rem;
-      font-weight: 600;
+      font-size: 1.15rem;
+      font-weight: 700;
       color: #555;
-      margin-bottom: 18px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #f3f3f3;
+      margin-bottom: 22px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f5f5f5;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      letter-spacing: 0.5px;
     }
 
     /* 管理按鈕 */
     .admin-btn {
-      height: 48px;
-      font-size: 0.95rem;
-      margin-bottom: 12px;
-      border-radius: 14px;
+      height: 52px;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(255,77,136,0.15);
     }
     .batch-delete-btn {
-      background: #ff4d6d !important;
-      margin-top: 12px;
-      height: 48px;
-      font-size: 0.95rem;
-      border-radius: 14px;
+      background: #ff3366 !important;
+      margin-top: 15px;
+      height: 52px;
+      font-size: 1rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(255,51,102,0.15);
     }
 
     /* 管理輸入框 */
     .admin-card input {
-      height: 48px;
-      border-radius: 14px;
-      margin-bottom: 12px;
-      font-size: 0.95rem;
+      height: 52px;
+      border-radius: 16px;
+      margin-bottom: 15px;
+      font-size: 1rem;
     }
 
     /* 預約列表項目 */
     .reservation-item {
-      padding: 14px;
-      border-radius: 12px;
-      background: #fafafa;
-      margin-bottom: 10px;
+      padding: 16px;
+      border-radius: 14px;
+      background: #fafbfc;
+      margin-bottom: 12px;
       display: flex;
       align-items: flex-start;
-      gap: 10px;
+      gap: 12px;
       border: 1px solid #f3f3f3;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
     }
     .reservation-item:hover {
-      background: #fdf6f8;
-      border-color: #ffe0ea;
+      background: #fff5f8;
+      border-color: rgba(255,77,136,0.15);
+      transform: translateX(2px);
     }
     .reservation-item:last-child {
       margin-bottom: 0;
     }
     .reserve-check {
       margin-top: 4px;
-      transform: scale(1.1);
+      transform: scale(1.2);
     }
     .reservation-info {
-      font-size: 0.85rem;
-      line-height: 1.5;
+      font-size: 0.9rem;
+      line-height: 1.6;
       flex: 1;
       color: #555;
+      font-weight: 500;
     }
     .reserve-num {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: #ff4d88;
-      font-weight: bold;
-      min-width: 26px;
+      font-weight: 900;
+      min-width: 28px;
       text-align: center;
       margin-top: 2px;
     }
     .admin-action {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      min-width: 70px;
+      gap: 8px;
+      min-width: 75px;
     }
     .admin-action button {
-      height: 38px;
-      font-size: 0.8rem;
-      border-radius: 10px;
+      height: 40px;
+      font-size: 0.85rem;
+      border-radius: 12px;
     }
 
     /* 時段管理項目 */
@@ -439,50 +524,52 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      padding: 12px 0;
-      border-bottom: 1px solid #f3f3f3;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid #f5f5f5;
     }
     .time-manage-item:last-child {
       border-bottom: none;
     }
     .time-manage-item span {
       flex: 1;
-      font-size: 0.95rem;
-      font-weight: 500;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #555;
     }
     .time-manage-item button {
-      height: 36px;
-      font-size: 0.8rem;
-      min-width: 60px;
-      border-radius: 10px;
+      height: 38px;
+      font-size: 0.85rem;
+      min-width: 65px;
+      border-radius: 12px;
     }
 
-    /* 無權限樣式 */
+    /* 無權限樣式 - 頂級 */
     .access-denied {
       text-align: center;
-      padding: 50px 20px;
-      color: #ff4d6d;
-      font-weight: 500;
-      font-size: 1rem;
-      line-height: 1.6;
-      background: #fff0f3;
-      border-radius: 16px;
-      margin: 10px 0;
+      padding: 60px 20px;
+      color: #ff3366;
+      font-weight: 600;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      background: linear-gradient(135deg, #fff0f3, #fff5f8);
+      border-radius: 20px;
+      margin: 15px 0;
+      border: 1px solid rgba(255,51,102,0.1);
     }
 
     /* 空狀態樣式 */
     .empty-state {
       text-align: center;
-      padding: 30px 10px;
+      padding: 40px 10px;
       color: #999;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      font-weight: 500;
     }
   </style>
 </head>
 <body>
 
-<!-- 頁面切換按鈕 - 預設隱藏，只有管理員會顯示 -->
 <div class="page-switch" id="switchContainer">
   <button class="switch-btn" id="switchBtn">切換管理介面</button>
 </div>
@@ -491,8 +578,8 @@
   <!-- 一般預約介面 -->
   <div id="userPage">
     <h2>
-      <span class="main-title">莫凡韓式皮膚管理<br>線上預約系統</span>
-      <span class="sub-title">選擇服務項目<br>填寫資料預約｜LINE即時通知</span>
+      <span class="main-title">莫凡韓式皮膚管理<br>頂級線上預約系統</span>
+      <span class="sub-title">奢華護膚｜專業預約｜LINE一對一服務</span>
     </h2>
 
     <form id="infoForm">
@@ -511,7 +598,7 @@
         <option value="粉刺管理">粉刺管理</option>
         <option value="韓式皮膚管理">韓式皮膚管理</option>
         <option value="重返青春">重返青春</option>
-        <option value="雷射換膚">雷射換膚</option>
+        <option value="雷射煥膚">雷射煥膚</option>
       </select>
 
       <label>預約日期</label>
@@ -522,7 +609,7 @@
 
       <label>預約時段</label>
       <div class="time-grid" id="timeGrid">
-        <div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>
+        <div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>
       </div>
 
       <label>姓名</label>
@@ -548,15 +635,14 @@
 
   <!-- 管理員介面 -->
   <div id="adminPage" class="admin-section">
-    <div class="admin-title">📊 預約管理後台</div>
-    <p class="tip-text">載入時自動清理一週前舊紀錄<br>操作後請等待完成提示</p>
+    <div class="admin-title">📊 頂級預約管理後台</div>
+    <p class="tip-text">自動清理一週前紀錄｜實時管理預約與時段<br>專屬美業高效管理系統</p>
     
     <div id="adminAccessDenied" class="access-denied" style="display:none;">
-      ❌ 您無管理員權限<br>請聯繫店家開通權限
+      ❌ 您無管理員權限<br>請聯繫店家開通高級管理權限
     </div>
 
     <div id="adminContent" style="display:none;">
-      <!-- 雙欄排版容器 -->
       <div class="admin-container">
         <!-- 預約管理 -->
         <div class="admin-card">
@@ -609,19 +695,17 @@
   let selectedReservations = [];
   let isAdminLoading = false;
 
-  // DOM元素
   let switchBtn, userPage, adminPage, adminContent, adminAccessDenied, switchContainer;
   let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, manageDate;
 
-  // 取得今日日期(台北時區) - 純字串，永遠正確
+  // 台北日期
   function getTaipeiDateString() {
     const now = new Date();
     const twOptions = { timeZone: "Asia/Taipei", year: 'numeric', month: '2-digit', day: '2-digit' };
-    const twDateStr = now.toLocaleDateString('zh-CN', twOptions).replace(/\//g, '-');
-    return twDateStr;
+    return now.toLocaleDateString('zh-CN', twOptions).replace(/\//g, '-');
   }
 
-  // 取得星期幾(台北時區)
+  // 星期
   function getWeekDayStr(dateStr) {
     if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return "星期幾";
     const week = ["日", "一", "二", "三", "四", "五", "六"];
@@ -633,13 +717,12 @@
     }
   }
 
-  // 判斷日期是否已過期
+  // 日期過期
   function isDateExpired(dateStr) {
-    const today = getTaipeiDateString();
-    return dateStr < today;
+    return dateStr < getTaipeiDateString();
   }
 
-  // 隱藏當天 3 小時內的時段
+  // 3小時內禁止預約
   function isTimeWithin3Hours(timeStr) {
     if (!/^\d{2}:\d{2}$/.test(timeStr)) return false;
     const selectDate = document.getElementById('appointDate').value;
@@ -649,16 +732,13 @@
     const now = new Date();
     const twNow = new Date(now.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }));
     const [h, m] = timeStr.split(':').map(Number);
-    const nowH = twNow.getHours();
-    const nowM = twNow.getMinutes();
-
     const timeStamp = h * 60 + m;
-    const nowStamp = nowH * 60 + nowM;
+    const nowStamp = twNow.getHours() * 60 + twNow.getMinutes();
 
     return timeStamp - nowStamp <= 180;
   }
 
-  // 舊版：判斷時段是否已過期
+  // 時間已過期
   function isTimeExpiredSafe(timeStr) {
     if (!/^\d{2}:\d{2}$/.test(timeStr)) return false;
     const selectDate = document.getElementById('appointDate').value;
@@ -668,12 +748,10 @@
     const now = new Date();
     const twNow = new Date(now.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }));
     const [h, m] = timeStr.split(':').map(Number);
-    const nowH = twNow.getHours();
-    const nowM = twNow.getMinutes();
-    return h < nowH || (h === nowH && m <= nowM);
+    return h < twNow.getHours() || (h === twNow.getHours() && m <= twNow.getMinutes());
   }
 
-  // 電話號碼格式化 4-3-3
+  // 電話格式化
   function formatPhoneNumber(value) {
     const phone = value.replace(/\D/g, '');
     if (phone.length <= 4) return phone;
@@ -681,118 +759,77 @@
     return `${phone.slice(0,4)}-${phone.slice(4,7)}-${phone.slice(7,10)}`;
   }
 
-  // 驗證電話號碼 10碼
   function validatePhone(phone) {
-    const clean = phone.replace(/\D/g, '');
-    return clean.length === 10;
+    return phone.replace(/\D/g, '').length === 10;
   }
 
-  // 安全日期格式化
   function formatToStandardDateSafe(dateVal) {
     if (!dateVal) return "";
     const str = String(dateVal).trim().replace(/\//g, "-");
-    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-    return "";
+    return /^\d{4}-\d{2}-\d{2}$/.test(str) ? str : "";
   }
 
-  // 安全時間格式化
   function formatToStandardTimeSafe(timeVal) {
     if (!timeVal) return "";
-    const str = String(timeVal).trim();
-    const match = str.match(/^(\d{1,2}):(\d{1,2})/);
+    const match = String(timeVal).trim().match(/^(\d{1,2}):(\d{1,2})/);
     if (!match) return "";
-    const h = parseInt(match[1], 10);
-    const m = parseInt(match[2], 10);
-    if (h < 0 || h > 23 || m < 0 || m > 59) return "";
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    const h = parseInt(match[1]), m = parseInt(match[2]);
+    return (h >= 0 && h <= 23 && m >= 0 && m <= 59) ? `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}` : "";
   }
 
-  // 管理按鈕加載狀態
   function setAdminLoading(loading, btn = null) {
     isAdminLoading = loading;
     if (btn) {
-      if (loading) {
-        btn.classList.add('loading');
-        btn.disabled = true;
-      } else {
-        btn.classList.remove('loading');
-        btn.disabled = false;
-      }
+      btn.classList.toggle('loading', loading);
+      btn.disabled = loading;
     }
   }
 
-  // 切換頁面
   function togglePage() {
-    if (currentPage === "user") {
-      currentPage = "admin";
-      userPage.style.display = "none";
-      adminPage.style.display = "block";
-      switchBtn.textContent = "返回預約頁面";
-    } else {
-      currentPage = "user";
-      adminPage.style.display = "none";
-      userPage.style.display = "block";
-      switchBtn.textContent = "切換管理介面";
-    }
+    currentPage = currentPage === "user" ? "admin" : "user";
+    userPage.style.display = currentPage === "user" ? "block" : "none";
+    adminPage.style.display = currentPage === "admin" ? "block" : "none";
+    switchBtn.textContent = currentPage === "admin" ? "返回預約頁面" : "切換管理介面";
   }
 
-  // 驗證管理員
   function checkAdminByBackend() {
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=checkAdmin&lineId=${LINE_USER_ID}&callback=onAdminCheck&_=${Date.now()}`;
     document.body.appendChild(script);
   }
 
-  // 後端回傳管理員權限結果
   window.onAdminCheck = function(res) {
-    isAdmin = res && res.isAdmin === true;
-    if (isAdmin) {
-      switchContainer.style.display = "block";
-      adminAccessDenied.style.display = "none";
-      adminContent.style.display = "block";
-    } else {
-      switchContainer.style.display = "none";
-      adminAccessDenied.style.display = "block";
-      adminContent.style.display = "none";
-    }
+    isAdmin = res?.isAdmin === true;
+    switchContainer.style.display = isAdmin ? "block" : "none";
+    adminAccessDenied.style.display = isAdmin ? "none" : "block";
+    adminContent.style.display = isAdmin ? "block" : "none";
   };
 
-  // 全域回調
   window.callback = function (response) {
     try {
       isSubmitting = false;
       isAdminLoading = false;
-      
       [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn].forEach(btn=>{
         if(btn) {btn.classList.remove('loading'); btn.disabled=false;}
       });
 
       if (response.status === "init") {
         timeDataMap = response.timeMap || {};
-        
-        // 自動清除過期日期設定
-        for (let date in timeDataMap) {
-          if (isDateExpired(date)) {
-            delete timeDataMap[date];
-          }
-        }
-        
-        const date = document.getElementById('appointDate').value;
-        if(date){
-          renderTimeList();
-        }
+        Object.keys(timeDataMap).forEach(date => isDateExpired(date) && delete timeDataMap[date]);
+        document.getElementById('appointDate').value && renderTimeList();
         return;
       }
+      
       if (response.status === "success") {
         if(currentPage === "user"){
           isSubmittedSuccess = true;
           submitBtn.classList.add('success','permanent-disabled');
           submitBtn.disabled = true;
           btnText.textContent = '預約成功 ✅';
-          alert("✅ 預約成功！店家將透過LINE與您確認");
+          alert("✅ 預約成功！專人將透過LINE與您聯繫");
           infoForm.reset();
           document.getElementById('weekText').textContent="星期幾";
-          document.getElementById('timeGrid').innerHTML=`<div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
+          document.getElementById('timeGrid').innerHTML=`<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
           document.getElementById('appointTime').value="";
         }else{
           alert("✅ 操作成功");
@@ -806,96 +843,94 @@
         renderManageTimeList(response.date, response.times);
       } else if (response.status === "error") {
         alert("❌ 錯誤：" + (response.message || "系統異常"));
-        if(currentPage === "user") resetButtonState();
+        currentPage === "user" && resetButtonState();
       }
-    } catch (e) { 
+    } catch (e) {
       console.error(e);
-      if(currentPage === "user") resetButtonState();
+      currentPage === "user" && resetButtonState();
     }
   };
 
-  // 渲染時段（隱藏 3 小時內）
+  // 核心：過期時段直接灰化無法點擊，不隱藏
   function renderTimeList() {
     const date = document.getElementById('appointDate').value;
     const grid = document.getElementById('timeGrid');
     const timeInput = document.getElementById('appointTime');
     grid.innerHTML = ""; timeInput.value="";
     document.getElementById('weekText').textContent = getWeekDayStr(date);
-    const list = timeDataMap[date] || [];
-    if (list.length===0) { grid.innerHTML=`<div style="grid-column:1/3;text-align:center;color:#999;">當日無可預約時段</div>`; return; }
     
-    list.forEach(t=>{
+    const list = timeDataMap[date] || [];
+    if (!list.length) {
+      grid.innerHTML = `<div style="grid-column:1/3;text-align:center;color:#999;">當日無可預約時段</div>`;
+      return;
+    }
+    
+    list.forEach(t => {
       const standardTime = formatToStandardTimeSafe(t.value);
-      const expired = isTimeExpiredSafe(standardTime);
-      const hide3h = isTimeWithin3Hours(standardTime);
-      
-      if (hide3h) return;
+      const expired = isTimeExpiredSafe(standardTime) || isTimeWithin3Hours(standardTime);
       
       const btn = document.createElement('div');
-      btn.className="time-btn"+(expired?" expired":"");
+      btn.className = "time-btn" + (expired ? " expired" : "");
       btn.textContent = standardTime;
-      if (!expired) btn.onclick=()=>{
-        document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active'); timeInput.value=standardTime;
-      };
+      
+      if (!expired) {
+        btn.onclick = () => {
+          document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          timeInput.value = standardTime;
+        };
+      }
+      
       grid.appendChild(btn);
     });
   }
 
   function resetButtonState() {
-    if(isSubmittedSuccess)return;
-    submitBtn.disabled=false; submitBtn.classList.remove('loading','success','error');
-    btnText.textContent='確認預約'; isSubmitting=false;
+    if(isSubmittedSuccess) return;
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading','success','error');
+    btnText.textContent = '確認預約';
+    isSubmitting = false;
   }
 
-  // 載入時段
   function loadTimeData() {
-    const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?action=getDates&pageId=美容預約系統&callback=callback&_=${Date.now()}`;
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?action=getDates&pageId=美容預約系統&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
-  // 送出預約
   function sendData() {
     try {
-      const data={
-        pageId:"美容預約系統",
-        lineId:LINE_USER_ID,
-        lineName:LINE_USER_NAME,
-        serviceType:document.getElementById('serviceType').value,
-        appointDate:formatToStandardDateSafe(document.getElementById('appointDate').value),
-        appointTime:formatToStandardTimeSafe(document.getElementById('appointTime').value),
-        name:document.getElementById('name').value,
-        phone:document.getElementById('phone').value,
-        email:document.getElementById('email').value,
-        extraInfo:document.getElementById('extraInfo').value
+      const data = {
+        pageId: "美容預約系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
+        serviceType: document.getElementById('serviceType').value,
+        appointDate: formatToStandardDateSafe(document.getElementById('appointDate').value),
+        appointTime: formatToStandardTimeSafe(document.getElementById('appointTime').value),
+        name: document.getElementById('name').value, phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value, extraInfo: document.getElementById('extraInfo').value
       };
-      const p=new URLSearchParams(data);
-      const s=document.createElement('script');
-      s.src=`${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
+      const p = new URLSearchParams(data);
+      const s = document.createElement('script');
+      s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(s);
-    } catch(e){ 
-      alert("提交失敗"); 
-      resetButtonState(); 
+    } catch(e) {
+      alert("提交失敗");
+      resetButtonState();
     }
   }
 
-  // -------------------- 管理員 --------------------
-  // 載入全部預約（自動清除一週前）
+  // 管理功能
   function loadAllReservations() {
-    if(!isAdmin||isAdminLoading)return;
-    setAdminLoading(true,loadReservationsBtn);
-    selectedReservations=[];
-    const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=美容預約系統&lineId=${LINE_USER_ID}&cleanOld=7&callback=callback&_=${Date.now()}`;
+    if(!isAdmin||isAdminLoading) return;
+    setAdminLoading(true, loadReservationsBtn);
+    selectedReservations = [];
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=美容預約系統&lineId=${LINE_USER_ID}&cleanOld=7&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
-  // 修改預約
   function editReservation(item) {
-    if(!isAdmin||isAdminLoading)return;
-    if(!confirm("確認修改？"))return;
-    
+    if(!isAdmin||isAdminLoading||!confirm("確認修改？")) return;
     const service = prompt("服務項目", item.serviceType || "");
     const name = prompt("姓名", item.name || "");
     const phone = prompt("電話", item.phone || "");
@@ -903,179 +938,111 @@
     const time = prompt("預約時段(HH:mm)", formatToStandardTimeSafe(item.appointTime));
     const remark = prompt("備註", item.remark || "");
 
-    if (!service || !name || !phone || !date || !time) {
-      alert("請填寫完整資訊");
-      return;
-    }
-
+    if (!service || !name || !phone || !date || !time) { alert("請填寫完整資訊"); return; }
     setAdminLoading(true);
+    
     const params = new URLSearchParams({
-      action: "adminUpdate",
-      pageId: "美容預約系統",
-      lineId: LINE_USER_ID,
-      id: item.submitTime,
-      serviceType: service,
-      name: name,
-      phone: phone,
-      appointDate: formatToStandardDateSafe(date),
-      appointTime: formatToStandardTimeSafe(time),
-      remark: remark
+      action: "adminUpdate", pageId: "美容預約系統", lineId: LINE_USER_ID, id: item.submitTime,
+      serviceType: service, name: name, phone: phone,
+      appointDate: formatToStandardDateSafe(date), appointTime: formatToStandardTimeSafe(time), remark: remark
     });
-
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(script);
   }
 
-  // 渲染預約列表
   function renderReservationsList(list) {
     const container = document.getElementById('reservationsList');
-    if (!list || list.length === 0) {
-      container.innerHTML = `<div class="empty-state">暫無預約</div>`;
-      return;
-    }
-
-    let html = "";
-    list.forEach((item, idx) => {
-      const stdDate = formatToStandardDateSafe(item.appointDate);
-      const stdTime = formatToStandardTimeSafe(item.appointTime);
-      html += `
+    container.innerHTML = !list?.length ? `<div class="empty-state">暫無預約</div>` : 
+      list.map((item, idx) => `
       <div class="reservation-item">
         <span class="reserve-num">${idx + 1}</span>
         <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
         <div class="reservation-info">
-          ${stdDate} ${stdTime}<br>
+          ${formatToStandardDateSafe(item.appointDate)} ${formatToStandardTimeSafe(item.appointTime)}<br>
           姓名：${item.name}｜服務：${item.serviceType}<br>
-          電話：${item.phone}<br>
-          LINE：${item.lineName || '未取得'}｜備註：${item.remark || '無'}
+          電話：${item.phone}<br>LINE：${item.lineName || '未取得'}｜備註：${item.remark || '無'}
         </div>
         <div class="admin-action">
           <button onclick='editReservation(${JSON.stringify(item)})'>修改</button>
           <button onclick="deleteReservation('${item.submitTime}')">刪除</button>
         </div>
-      </div>`;
-    });
-    container.innerHTML = html;
+      </div>`).join('');
   }
 
-  // 勾選預約
   function toggleSelect(id) {
-    const index = selectedReservations.indexOf(id);
-    if (index > -1) {
-      selectedReservations.splice(index, 1);
-    } else {
-      selectedReservations.push(id);
-    }
+    const i = selectedReservations.indexOf(id);
+    i > -1 ? selectedReservations.splice(i, 1) : selectedReservations.push(id);
   }
 
-  // 批次刪除預約
   function batchDeleteReservations() {
-    if (!isAdmin || isAdminLoading || selectedReservations.length === 0) return;
-    if (!confirm(`確定刪除 ${selectedReservations.length} 筆預約？`)) return;
-
+    if (!isAdmin || isAdminLoading || !selectedReservations.length || !confirm(`確定刪除 ${selectedReservations.length} 筆預約？`)) return;
     setAdminLoading(true, batchDeleteBtn);
     selectedReservations.forEach(id => {
-      const params = new URLSearchParams({
-        action: "adminDelReserve",
-        pageId: "美容預約系統",
-        lineId: LINE_USER_ID,
-        submitTime: id
-      });
-      const script = document.createElement('script');
-      script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
-      document.body.appendChild(script);
+      const p = new URLSearchParams({action:"adminDelReserve",pageId:"美容預約系統",lineId:LINE_USER_ID,submitTime:id});
+      const s = document.createElement('script');
+      s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
+      document.body.appendChild(s);
     });
     selectedReservations = [];
   }
 
-  // 載入當日時段
   function loadManageTime() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
     if (!date) return;
     setAdminLoading(true, loadTimeBtn);
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=美容預約系統&lineId=${LINE_USER_ID}&date=${date}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(script);
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=美容預約系統&lineId=${LINE_USER_ID}&date=${date}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(s);
   }
 
-  // 渲染時段列表
   function renderManageTimeList(date, times) {
-    const container = document.getElementById('manageTimeList');
-    if (!times || times.length === 0) {
-      container.innerHTML = `<div class="empty-state">當日無時段</div>`;
-      return;
-    }
-    let html = "";
-    times.forEach(t => {
-      const stdTime = formatToStandardTimeSafe(t.value);
-      html += `<div class="time-manage-item">
-        <span>${stdTime}</span>
-        <button onclick="deleteTime('${date}','${stdTime}')">刪除</button>
-      </div>`;
-    });
-    container.innerHTML = html;
+    const c = document.getElementById('manageTimeList');
+    c.innerHTML = !times?.length ? `<div class="empty-state">當日無時段</div>` :
+      times.map(t => `<div class="time-manage-item">
+        <span>${formatToStandardTimeSafe(t.value)}</span>
+        <button onclick="deleteTime('${date}','${t.value}')">刪除</button>
+      </div>`).join('');
   }
 
-  // 新增時段
   function addManageTime() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
     const time = formatToStandardTimeSafe(document.getElementById('manageTime').value);
-    if (!date || !time) {
-      alert("請輸入日期與時段");
-      return;
-    }
+    if (!date || !time) { alert("請輸入日期與時段"); return; }
     setAdminLoading(true, addTimeBtn);
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=adminAddTime&pageId=美容預約系統&lineId=${LINE_USER_ID}&date=${date}&time=${time}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(script);
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminAddTime&pageId=美容預約系統&lineId=${LINE_USER_ID}&date=${date}&time=${time}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(s);
   }
 
-  // 刪除時段
   function deleteTime(date, time) {
     if (!confirm("確定刪除此時段？")) return;
-    const stdDate = formatToStandardDateSafe(date);
-    const stdTime = formatToStandardTimeSafe(time);
-    const params = new URLSearchParams({
-      action: "adminDelTime",
-      pageId: "美容預約系統",
-      lineId: LINE_USER_ID,
-      date: stdDate,
-      time: stdTime
-    });
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(script);
+    const p = new URLSearchParams({action:"adminDelTime",pageId:"美容預約系統",lineId:LINE_USER_ID,date:date,time:time});
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(s);
   }
 
-  // 刪除單筆預約
   function deleteReservation(id) {
-    if (!isAdmin || isAdminLoading) return;
-    if (!confirm("確定刪除此預約？")) return;
-
+    if (!isAdmin || isAdminLoading || !confirm("確定刪除此預約？")) return;
     setAdminLoading(true);
-    const params = new URLSearchParams({
-      action: "adminDelReserve",
-      pageId: "美容預約系統",
-      lineId: LINE_USER_ID,
-      submitTime: id
-    });
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
-    document.body.appendChild(script);
+    const p = new URLSearchParams({action:"adminDelReserve",pageId:"美容預約系統",lineId:LINE_USER_ID,submitTime:id});
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(s);
   }
 
-  // LIFF 初始化
+  // LIFF
   async function initLiff() {
     try {
       await liff.init({ liffId: CONFIG.LIFF_ID });
       if (liff.isLoggedIn()) {
-        const profile = await liff.getProfile();
-        if (profile?.userId) LINE_USER_ID = profile.userId;
-        if (profile?.displayName) LINE_USER_NAME = profile.displayName;
+        const p = await liff.getProfile();
+        LINE_USER_ID = p.userId || LINE_USER_ID;
+        LINE_USER_NAME = p.displayName || LINE_USER_NAME;
       }
-    } catch (e) {
-      console.log("LIFF 初始化略過");
-    } finally {
+    } catch (e) { console.log("LIFF 略過"); }
+    finally {
       document.getElementById('lineId').value = LINE_USER_ID;
       document.getElementById('lineName').value = LINE_USER_NAME;
       checkAdminByBackend();
@@ -1108,33 +1075,21 @@
     loadTimeBtn.onclick = loadManageTime;
     addTimeBtn.onclick = addManageTime;
     batchDeleteBtn.onclick = batchDeleteReservations;
-
     manageDate.addEventListener('change', loadManageTime);
-    phoneInput.addEventListener('input', e => {
-      e.target.value = formatPhoneNumber(e.target.value);
-    });
-
-    const todayStr = getTaipeiDateString();
-    appointDate.min = todayStr;
-    manageDate.min = todayStr;
+    
+    phoneInput.addEventListener('input', e => e.target.value = formatPhoneNumber(e.target.value));
+    const today = getTaipeiDateString();
+    appointDate.min = today; manageDate.min = today;
     
     await initLiff();
-    
     appointDate.addEventListener('change', renderTimeList);
 
     infoForm.onsubmit = (e) => {
       e.preventDefault();
       const phone = phoneInput.value.trim();
-      if (!validatePhone(phone)) {
-        alert("請輸入正確10碼手機號碼");
-        phoneInput.focus();
-        return;
-      }
-      const selectedTime = document.getElementById('appointTime').value;
-      if (!selectedTime) {
-        alert("請選擇預約時段");
-        return;
-      }
+      if (!validatePhone(phone)) { alert("請輸入正確10碼手機號碼"); phoneInput.focus(); return; }
+      if (!document.getElementById('appointTime').value) { alert("請選擇預約時段"); return; }
+      
       isSubmitting = true;
       submitBtn.disabled = true;
       submitBtn.classList.add('loading');
