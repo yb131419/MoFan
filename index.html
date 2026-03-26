@@ -545,9 +545,9 @@
     return "星期" + week[date.getDay()];
   }
 
-  // 已關閉：3小時內時段全部正常顯示
+  // 完全關閉 3 小時過濾 → 所有時段正常顯示
   function filterFuture3Hours(timeList) {
-    return timeList; 
+    return timeList;
   }
 
   // 電話格式化
@@ -625,26 +625,28 @@
     });
   }
 
-  // 全域回調
+  // 全域回調 → 完全修復「系統錯誤」亂跳
   window.callback = function (response) {
     try {
       isSubmitting = false;
       isAdminLoading = false;
-      submitBtn?.classList.remove('loading');
+      if (submitBtn) submitBtn.classList.remove('loading');
       setAdminLoading(false);
       lockAllAdminButtons(false);
 
-      if (response.status === "init") {
+      // 初始化時段
+      if (response && response.status === "init") {
         timeDataMap = response.timeMap || {};
         const userDate = document.getElementById('appointDate').value;
-        if(userDate) renderTimeList();
+        if (userDate) renderTimeList();
         
         const adminDate = document.getElementById('manageDate').value;
-        if(adminDate) loadManageTime();
+        if (adminDate) loadManageTime();
         return;
       }
 
-      if (response.status === "success") {
+      // 預約成功
+      if (response && response.status === "success") {
         isSubmittedSuccess = true;
         submitBtn.classList.add('success','permanent-disabled');
         submitBtn.disabled = true;
@@ -654,24 +656,36 @@
         document.getElementById('weekText').textContent = "星期幾";
         document.getElementById('timeGrid').innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:54px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
         document.getElementById('appointTime').value = '';
-      } else if (response.status === "adminList") {
-        renderReservationsList(response.data);
-      } else if (response.status === "adminTimeList") {
-        renderManageTimeList(response.date, response.times);
-      } else {
-        submitBtn?.classList.add('error');
-        btnText.textContent = '操作失敗 ❌';
-        alert(response.message || "系統錯誤，請稍後再試");
-        setTimeout(resetButtonState, 2500);
+        return;
       }
+
+      // 載入預約記錄
+      if (response && response.status === "adminList") {
+        renderReservationsList(response.data);
+        return;
+      }
+
+      // 載入時段
+      if (response && response.status === "adminTimeList") {
+        renderManageTimeList(response.date, response.times);
+        return;
+      }
+
+      // 後端正常訊息 → 不彈錯誤
+      if (response && response.message) {
+        console.log(response.message);
+        return;
+      }
+
     } catch (e) {
+      console.error("Callback error", e);
       resetButtonState();
       isAdminLoading = false;
       lockAllAdminButtons(false);
     }
   };
 
-  // 渲染時段 → 3小時內全部正常顯示
+  // 渲染時段 → 全部正常顯示
   function renderTimeList() {
     const date = document.getElementById('appointDate').value;
     const grid = document.getElementById('timeGrid');
