@@ -724,31 +724,38 @@
     }
   }
 
-  // ====================== 核心修正：日期 + 時段 一起判斷 ======================
-  // 判斷 日期+時段 是否已經過期
-  function isDateTimeExpired(dateStr, timeStr) {
-    if (!dateStr || !timeStr) return true;
-    const now = getTaipeiNow();
-    try {
-      const target = new Date(`${dateStr}T${timeStr}:00+08:00`);
-      return target <= now;
-    } catch (e) {
-      return true;
-    }
+  // ====================== 全新修正：日期+時段判斷 ======================
+  // 1. 判斷是否為「今天」
+  function isToday(dateStr) {
+    return dateStr === getTaipeiDateString();
   }
 
-  // 判斷 日期+時段 是否在 3 小時內
-  function isDateTimeWithin3Hours(dateStr, timeStr) {
-    if (!dateStr || !timeStr) return false;
+  // 2. 判斷時段是否已過
+  function isTimePassed(timeStr) {
     const now = getTaipeiNow();
-    try {
-      const target = new Date(`${dateStr}T${timeStr}:00+08:00`);
-      const diffMs = target - now;
-      const diffMin = diffMs / (1000 * 60);
-      return diffMin > 0 && diffMin <= 180;
-    } catch (e) {
-      return false;
-    }
+    const nowHour = now.getHours();
+    const nowMin = now.getMinutes();
+    const [h, m] = timeStr.split(':').map(Number);
+    return h < nowHour || (h === nowHour && m <= nowMin);
+  }
+
+  // 3. 判斷是否在 3 小時內
+  function isWithin3Hours(timeStr) {
+    const now = getTaipeiNow();
+    const target = new Date(now);
+    const [h, m] = timeStr.split(':').map(Number);
+    target.setHours(h, m, 0);
+
+    const diffMs = target - now;
+    const diffMin = diffMs / (1000 * 60);
+    return diffMin > 0 && diffMin <= 180;
+  }
+
+  // 4. 最終：是否要禁用該時段
+  function isTimeBlocked(dateStr, timeStr) {
+    if (!dateStr || !timeStr) return true;
+    if (!isToday(dateStr)) return false; // 未來日期 → 全部開放
+    return isTimePassed(timeStr) || isWithin3Hours(timeStr);
   }
 
   // 電話格式化
@@ -815,10 +822,6 @@
 
       if (response.status === "init") {
         timeDataMap = response.timeMap || {};
-        Object.keys(timeDataMap).forEach(date => {
-          if(date < getTaipeiDateString()) delete timeDataMap[date];
-        });
-        // ✅ 修復：強制渲染時段（不管有沒有選日期）
         renderTimeList();
         return;
       }
@@ -854,16 +857,16 @@
     }
   };
 
-  // ====================== 修正後的時段渲染 ======================
+  // ====================== 全新時段渲染 ======================
   function renderTimeList() {
     const date = document.getElementById('appointDate').value;
     const grid = document.getElementById('timeGrid');
     const timeInput = document.getElementById('appointTime');
+    
     grid.innerHTML = "";
     timeInput.value = "";
     document.getElementById('weekText').textContent = getWeekDayStr(date);
-    
-    // 沒選日期 → 顯示提示
+
     if (!date) {
       grid.innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
       return;
@@ -876,16 +879,14 @@
     }
     
     list.forEach(t => {
-      const standardTime = formatToStandardTimeSafe(t.value);
-      // 統一判斷：過期 OR 3小時內 → 全部鎖定
-      const isBlock = isDateTimeExpired(date, standardTime) || isDateTimeWithin3Hours(date, standardTime);
+      const standardTime = t.value || t;
+      const blocked = isTimeBlocked(date, standardTime);
       
       const btn = document.createElement('div');
-      btn.className = "time-btn" + (isBlock ? " expired" : "");
+      btn.className = "time-btn" + (blocked ? " expired" : "");
       btn.textContent = standardTime;
       
-      // 只有未鎖定的時段才能點選
-      if (!isBlock) {
+      if (!blocked) {
         btn.onclick = () => {
           document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
@@ -1012,8 +1013,8 @@
     const c = document.getElementById('manageTimeList');
     c.innerHTML = !times?.length ? `<div class="empty-state">當日無時段</div>` :
       times.map(t => `<div class="time-manage-item">
-        <span>${formatToStandardTimeSafe(t.value)}</span>
-        <button onclick="deleteTime('${date}','${t.value}')">刪除</button>
+        <span>${formatToStandardTimeSafe(t.value || t)}</span>
+        <button onclick="deleteTime('${date}','${t.value || t}')">刪除</button>
       </div>`).join('');
   }
 
@@ -1095,7 +1096,9 @@
     manageDate.min = today;
     
     await initLiff();
+    
     appointDate.addEventListener('change', renderTimeList);
+    appointDate.addEventListener('input', renderTimeList);
 
     infoForm.onsubmit = (e) => {
       e.preventDefault();
