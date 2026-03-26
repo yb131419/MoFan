@@ -632,7 +632,7 @@ button {
     .collapse-body {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.4s ease;
+      transition: max-height 0.5s ease;
     }
       
     /* 多時段選擇面板 */
@@ -825,15 +825,16 @@ button {
   let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, batchDeleteTimeBtn, manageDate;
   let headerTimeEl;
 
-  // 折疊面板
+  // 折疊面板 - 修正：一次點擊完全展開
   function toggleCollapse(id) {
     const body = document.getElementById(id);
     const arrow = document.getElementById(id.replace('Collapse','Arrow'));
-    if (body.style.maxHeight) {
-      body.style.maxHeight = null;
+    
+    if (body.style.maxHeight && body.style.maxHeight !== '0px') {
+      body.style.maxHeight = '0px';
       arrow.classList.remove('open');
     } else {
-      body.style.maxHeight = body.scrollHeight + 500 + "px";
+      body.style.maxHeight = '2000px';
       arrow.classList.add('open');
     }
   }
