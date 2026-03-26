@@ -525,7 +525,7 @@
     return "星期" + week[twDate.getDay()];
   }
 
-  // 判斷時段是否已過期(台北時區)
+  // 判斷時段是否已過期(台北時區) - 修正：只判斷當前時間，不限制3小時
   function isTimeExpired(timeStr) {
     const now = new Date();
     const twNow = new Date(now.toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
@@ -767,23 +767,6 @@
     }
   }
 
-  // 格式化日期用於刪除（修正刪除失敗）
-  function formatSubmitTimeForDelete(timeStr) {
-    if (!timeStr) return "";
-    try {
-      const d = new Date(timeStr);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      const h = String(d.getHours()).padStart(2, '0');
-      const m = String(d.getMinutes()).padStart(2, '0');
-      const s = String(d.getSeconds()).padStart(2, '0');
-      return `${year}-${month}-${day} ${h}:${m}:${s}`;
-    } catch (e) {
-      return timeStr;
-    }
-  }
-
   // -------------------- 管理員 --------------------
   // 載入全部預約 + 自動清理一週前
   function loadAllReservations() {
@@ -813,12 +796,11 @@
     }
 
     setAdminLoading(true);
-    const formattedId = formatSubmitTimeForDelete(item.submitTime);
     const params = new URLSearchParams({
       action: "adminUpdate",
       pageId: "美容預約系統",
       lineId: LINE_USER_ID,
-      id: formattedId,
+      id: item.submitTime,
       serviceType: service,
       name: name,
       phone: phone,
@@ -842,11 +824,10 @@
 
     let html = "";
     list.forEach((item, idx) => {
-      const formattedTime = formatSubmitTimeForDelete(item.submitTime);
       html += `
       <div class="reservation-item">
         <span class="reserve-num">${idx + 1}</span>
-        <input type="checkbox" class="reserve-check" value="${formattedTime}" onchange="toggleSelect('${formattedTime}')">
+        <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
         <div class="reservation-info">
           ${item.appointDate} ${item.appointTime}<br>
           姓名：${item.name}｜服務：${item.serviceType}｜電話：${item.phone}<br>
@@ -854,7 +835,7 @@
         </div>
         <div class="admin-action">
           <button onclick='editReservation(${JSON.stringify(item)})'>修改</button>
-          <button onclick="deleteReservation('${formattedTime}')">刪除</button>
+          <button onclick="deleteReservation('${item.submitTime}')">刪除</button>
         </div>
       </div>`;
     });
@@ -947,10 +928,10 @@
     document.body.appendChild(script);
   }
 
-  // 刪除單筆預約
-  function deleteReservation(id, silent = false) {
+  // 刪除單筆預約 - 修正：直接使用原始時間，不做任何格式化
+  function deleteReservation(id) {
     if (!isAdmin || isAdminLoading) return;
-    if (!silent && !confirm("確定刪除此預約？")) return;
+    if (!confirm("確定刪除此預約？")) return;
 
     setAdminLoading(true);
     const params = new URLSearchParams({
