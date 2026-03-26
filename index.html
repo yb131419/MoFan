@@ -767,6 +767,23 @@
     }
   }
 
+  // 格式化日期用於刪除（修正刪除失敗）
+  function formatSubmitTimeForDelete(timeStr) {
+    if (!timeStr) return "";
+    try {
+      const d = new Date(timeStr);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      const s = String(d.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${h}:${m}:${s}`;
+    } catch (e) {
+      return timeStr;
+    }
+  }
+
   // -------------------- 管理員 --------------------
   // 載入全部預約 + 自動清理一週前
   function loadAllReservations() {
@@ -796,11 +813,12 @@
     }
 
     setAdminLoading(true);
+    const formattedId = formatSubmitTimeForDelete(item.submitTime);
     const params = new URLSearchParams({
       action: "adminUpdate",
       pageId: "美容預約系統",
       lineId: LINE_USER_ID,
-      id: item.submitTime,
+      id: formattedId,
       serviceType: service,
       name: name,
       phone: phone,
@@ -824,10 +842,11 @@
 
     let html = "";
     list.forEach((item, idx) => {
+      const formattedTime = formatSubmitTimeForDelete(item.submitTime);
       html += `
       <div class="reservation-item">
         <span class="reserve-num">${idx + 1}</span>
-        <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
+        <input type="checkbox" class="reserve-check" value="${formattedTime}" onchange="toggleSelect('${formattedTime}')">
         <div class="reservation-info">
           ${item.appointDate} ${item.appointTime}<br>
           姓名：${item.name}｜服務：${item.serviceType}｜電話：${item.phone}<br>
@@ -835,7 +854,7 @@
         </div>
         <div class="admin-action">
           <button onclick='editReservation(${JSON.stringify(item)})'>修改</button>
-          <button onclick="deleteReservation('${item.submitTime}')">刪除</button>
+          <button onclick="deleteReservation('${formattedTime}')">刪除</button>
         </div>
       </div>`;
     });
