@@ -744,7 +744,7 @@ button {
         <!-- 預約管理 -->
         <div class="admin-card">
           <div class="collapse-header" onclick="toggleCollapse('reserveCollapse')">
-            <h3>📋 預約管理紀錄</h3>
+            <h3>📋 預約管理紀錄 <span id="reserveCount" style="color:#ff4d88;">(0 筆)</span></h3>
             <span class="collapse-arrow" id="reserveArrow">▼</span>
           </div>
           <div class="collapse-body" id="reserveCollapse">
@@ -772,7 +772,7 @@ button {
         <!-- 日期時段管理 -->
         <div class="admin-card">
           <div class="collapse-header" onclick="toggleCollapse('timeCollapse')">
-            <h3>⏰ 日期&時段設定</h3>
+            <h3>⏰ 日期&時段設定 <span id="timeCount" style="color:#ff4d88;">(0 筆)</span></h3>
             <span class="collapse-arrow" id="timeArrow">▼</span>
           </div>
           <div class="collapse-body" id="timeCollapse">
@@ -1164,6 +1164,9 @@ button {
       });
     }
 
+    // 顯示預約總筆數
+    document.getElementById('reserveCount').textContent = `(${filtered.length} 筆)`;
+
     const container = document.getElementById('reservationsList');
     container.innerHTML = !filtered?.length ? `<div class="empty-state">暫無預約</div>` : 
       filtered.map((item, idx) => `
@@ -1225,8 +1228,12 @@ button {
 
   function renderManageTimeList(date, times) {
     const c = document.getElementById('manageTimeList');
-    c.innerHTML = !times?.length ? `<div class="empty-state">當日無時段</div>` :
-      times.map(t => {
+    const timeArray = times || [];
+    // 顯示時段總筆數
+    document.getElementById('timeCount').textContent = `(${timeArray.length} 筆)`;
+    
+    c.innerHTML = !timeArray.length ? `<div class="empty-state">當日無時段</div>` :
+      timeArray.map(t => {
         const timeVal = formatToStandardTimeSafe(t.value || t);
         return `<div class="time-manage-item">
           <input type="checkbox" class="reserve-check" value="${timeVal}" onchange="toggleTimeSlot('${date}','${timeVal}')">
@@ -1268,7 +1275,7 @@ const DEFAULT_TIMES = [
     }
   }
 
-  // 多筆新增時段
+  // 多筆新增時段 - 修正：一個日期多個時段
   function addSelectedTimes() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
     const selected = Array.from(document.querySelectorAll('.time-select-item.active'))
@@ -1282,32 +1289,27 @@ const DEFAULT_TIMES = [
     
     setAdminLoading(true, addTimeBtn);
     
-    let successCount = 0;
-    selected.forEach(time => {
-      const p = new URLSearchParams({
-        action:"adminAddTime", pageId:"美容預約系統", lineId:LINE_USER_ID, date:date, time:time
-      });
-      const s = document.createElement('script');
-      s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=addMultiCallback&_=${Date.now()}`;
-      document.body.appendChild(s);
+    // 一次提交多個時段給後端，實現「一個日期多個時段」
+    const params = new URLSearchParams({
+      action: "adminAddMultiTime",
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      date: date,
+      times: JSON.stringify(selected)
     });
     
-    window.addingTimes = true;
-    window.totalAddCount = selected.length;
-    window.addedCount = 0;
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=addMultiCallback&_=${Date.now()}`;
+    document.body.appendChild(s);
   }
 
   window.addMultiCallback = () => {
-    window.addedCount++;
-    if(window.addedCount >= window.totalAddCount){
-      alert(`✅ 成功新增 ${window.addedCount} 個時段`);
-      window.addingTimes = false;
-      window.addedCount = 0;
-      window.totalAddCount = 0;
-      loadManageTime();
-      loadTimeData();
-      setAdminLoading(false, addTimeBtn);
-    }
+    alert(`✅ 時段新增完成！`);
+    loadManageTime();
+    loadTimeData();
+    setAdminLoading(false, addTimeBtn);
+    // 清空選擇
+    document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
   };
 
   function deleteTime(date, time) {
