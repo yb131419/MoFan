@@ -238,10 +238,12 @@
       box-shadow: 0 4px 12px rgba(255,133,162,0.1);
     }
 
+    /* 修正：點選時段樣式 - 純色淡粉背景+白字粗體+黑框 */
     .time-btn.active {
-      background: linear-gradient(135deg, #ff4d88, #ff8da1);
-      color: #fff;
-      border-color: #ff4d88;
+      background: #ffd6e7; /* 純色淡色系 */
+      color: #ffffff;      /* 白字 */
+      font-weight: 900;    /* 粗體 */
+      border: 2px solid #000000 !important; /* 黑框 */
       box-shadow: 0 6px 18px rgba(255,77,136,0.25);
       transform: translateY(-1px);
     }
@@ -452,15 +454,12 @@
       font-size: 1rem;
     }
 
-    /* 預約列表項目 */
+    /* 預約列表項目 - 優化排版：上方操作/下方資訊 */
     .reservation-item {
       padding: 16px;
       border-radius: 14px;
       background: #fafbfc;
       margin-bottom: 12px;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
       border: 1px solid #f3f3f3;
       transition: all 0.3s ease;
     }
@@ -472,16 +471,19 @@
     .reservation-item:last-child {
       margin-bottom: 0;
     }
-    .reserve-check {
-      margin-top: 4px;
-      transform: scale(1.2);
+
+    /* 操作區：上方固定排列 */
+    .reserve-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 10px;
     }
-    .reservation-info {
-      font-size: 0.9rem;
-      line-height: 1.6;
-      flex: 1;
-      color: #555;
-      font-weight: 500;
+    .reserve-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .reserve-num {
       font-size: 0.9rem;
@@ -489,18 +491,29 @@
       font-weight: 900;
       min-width: 28px;
       text-align: center;
-      margin-top: 2px;
     }
-    .admin-action {
+    .reserve-check {
+      transform: scale(1.2);
+    }
+    .reserve-btns {
       display: flex;
-      flex-direction: column;
       gap: 8px;
-      min-width: 75px;
     }
-    .admin-action button {
-      height: 40px;
+    .reserve-btns button {
+      height: 36px;
+      min-width: 60px;
       font-size: 0.85rem;
-      border-radius: 12px;
+      border-radius: 10px;
+    }
+
+    /* 資訊區：下方統一顯示 */
+    .reservation-info {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #555;
+      font-weight: 500;
+      padding-top: 10px;
+      border-top: 1px dashed #eee;
     }
 
     /* 時段管理項目 */
@@ -510,7 +523,7 @@
       justify-content: space-between;
       gap: 12px;
       padding: 14px 0;
-      border-bottom: 1px solid #f5f5f5;
+      border-bottom: 1px solid #f5f5f3;
     }
     .time-manage-item:last-child {
       border-bottom: none;
@@ -708,40 +721,30 @@
     }
   }
 
-  // ====================== 核心修改：僅當前使用者隱藏過期+3小時內時段 ======================
-  // 1. 判斷是否為「今天」
+  // ====================== 核心修正：當天時間+3小時內的時段「完全不顯示」 ======================
   function isToday(dateStr) {
     return dateStr === getTaipeiDateString();
   }
 
-  // 2. 判斷時段是否已過
-  function isTimePassed(timeStr) {
-    const now = getTaipeiNow();
-    const nowHour = now.getHours();
-    const nowMin = now.getMinutes();
-    const [h, m] = timeStr.split(':').map(Number);
-    return h < nowHour || (h === nowHour && m <= nowMin);
-  }
-
-  // 3. 判斷是否在 3 小時內
-  function isWithin3Hours(timeStr) {
+  // 判斷時段是否在 當前時間 + 3小時 內 → 完全隱藏
+  function isTimeInRestrictedZone(timeStr) {
     const now = getTaipeiNow();
     const target = new Date(now);
     const [h, m] = timeStr.split(':').map(Number);
     target.setHours(h, m, 0);
-
+    
+    // 計算與現在的時間差（分鐘）
     const diffMs = target - now;
     const diffMin = diffMs / (1000 * 60);
-    return diffMin > 0 && diffMin <= 180;
+    
+    // 小於0（已過） OR 0~180分鐘（3小時內）→ 隱藏
+    return diffMin <= 180;
   }
 
-  // 4. 最終：僅「當前登入使用者」需要隱藏
-  function shouldHideTimeForCurrentUser(dateStr, timeStr) {
-    if (!dateStr || !timeStr) return true;
+  // 最終判斷：今天才需要隱藏，非今天全部顯示
+  function shouldHideTime(dateStr, timeStr) {
     if (!isToday(dateStr)) return false;
-    
-    // 只有當前登入使用者才隱藏：已過時間 + 3小時內
-    return isTimePassed(timeStr) || isWithin3Hours(timeStr);
+    return isTimeInRestrictedZone(timeStr);
   }
 
   // 電話格式化
@@ -843,7 +846,7 @@
     }
   };
 
-  // ====================== 渲染時段：僅當前使用者過濾 ======================
+  // ====================== 渲染時段：3小時內完全不顯示 ======================
   function renderTimeList() {
     const date = document.getElementById('appointDate').value;
     const grid = document.getElementById('timeGrid');
@@ -860,10 +863,10 @@
 
     const list = timeDataMap[date] || [];
     
-    // 關鍵：只對當前登入使用者隱藏時段
+    // 過濾：隱藏3小時內的時段
     const availableTimes = list.filter(t => {
       const standardTime = t.value || t;
-      return !shouldHideTimeForCurrentUser(date, standardTime);
+      return !shouldHideTime(date, standardTime);
     });
 
     if (!availableTimes.length) {
@@ -953,21 +956,27 @@
     document.body.appendChild(script);
   }
 
+  // 修正：管理介面預約列表排版（上方操作/下方資訊）
   function renderReservationsList(list) {
     const container = document.getElementById('reservationsList');
     container.innerHTML = !list?.length ? `<div class="empty-state">暫無預約</div>` : 
       list.map((item, idx) => `
       <div class="reservation-item">
-        <span class="reserve-num">${idx + 1}</span>
-        <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
+        <div class="reserve-header">
+          <div class="reserve-left">
+            <span class="reserve-num">${idx + 1}</span>
+            <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
+          </div>
+          <div class="reserve-btns">
+            <button onclick='editReservation(${JSON.stringify(item)})'>修改</button>
+            <button onclick="deleteReservation('${item.submitTime}')">刪除</button>
+          </div>
+        </div>
         <div class="reservation-info">
           ${formatToStandardDateSafe(item.appointDate)} ${formatToStandardTimeSafe(item.appointTime)}<br>
           姓名：${item.name}｜服務：${item.serviceType}<br>
-          電話：${item.phone}<br>LINE：${item.lineName || '未取得'}｜備註：${item.remark || '無'}
-        </div>
-        <div class="admin-action">
-          <button onclick='editReservation(${JSON.stringify(item)})'>修改</button>
-          <button onclick="deleteReservation('${item.submitTime}')">刪除</button>
+          電話：${item.phone}｜LINE：${item.lineName || '未取得'}<br>
+          備註：${item.remark || '無'}
         </div>
       </div>`).join('');
   }
