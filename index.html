@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>莫凡韓式皮膚管理｜頂級預約系統</title>
+  <title> 莫凡韓式皮膚管理 </title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
@@ -675,7 +675,7 @@ button {
 
     <h2>
       <span class="main-title">莫凡韓式皮膚管理<br>線上預約系統</span>
-      <span class="sub-title">專業預約｜一對一服務</span>
+      <span class="sub-title">美甲、霧眉｜一對一服務</span>
     </h2>
 
     <form id="infoForm">
@@ -731,7 +731,7 @@ button {
 
   <!-- 管理員介面 -->
   <div id="adminPage" class="admin-section">
-    <div class="admin-title">📊 頂級預約管理後台</div>
+    <div class="admin-title">📊 預約管理後台</div>
     <p class="tip-text">自動清理一週前紀錄｜實時管理預約與時段<br>專屬美業高效管理系統</p>
     
     <div id="adminAccessDenied" class="access-denied" style="display:none;">
@@ -776,7 +776,7 @@ button {
           </div>
           <div class="collapse-body" id="timeCollapse">
             <input type="date" id="manageDate" placeholder="選擇日期">
-            <p style="margin:-10px 0 10px; font-size:12px; color:#888;">💡 可點選多個時段一起新增</p>
+            <p style="margin:-10px 0 10px; font-size:12px; color:#888;">💡 可點選多個時段一起『新增』</p>
             
             <div class="time-select-grid" id="timeSelectGrid">
             </div>
@@ -785,9 +785,15 @@ button {
               <span class="loader"></span>
               <span>新增所選時段</span>
             </button>
+            <button class="admin-btn batch-delete-btn" id="deleteSelectedTimeBtn">
+              <span class="loader"></span>
+              <span>刪除所選時段</span>
+            </button>
             <button class="admin-btn" id="loadTimeBtn">
               <span class="loader"></span>
               <span>載入當日時段</span>
+              <p style="margin:-10px 0 10px; font-size:12px; color:#888;">💡 可點選多個時段一起『刪除』</p>
+            
             </button>
             <div id="manageTimeList"></div>
           </div>
@@ -803,7 +809,7 @@ button {
     LIFF_ID: "2009598216-ZsS47DM8"
   };
 
-  const fixedHeader = ["日期", "時段1", "時段2", "時段3", "時段4", "時段5", "時段6", "時段7", "時段8", "時段9", "時段10", "時段11", "時段12"];
+  const fixedHeader = ["日期", "時段1", "時段2", "時段3", "時段4", "時段5", "時段6", "時段7", "時段8", "時段9", "時段10", "時段11", "時段12", "時段13", "時段14", "時段15", "時段16", "時段17", "時段18", "時段19", "時段20", "時段21", "時段22", "時段23", "時段24"];
 
   let submitBtn, btnText, infoForm;
   let isSubmitting = false;
@@ -818,7 +824,7 @@ button {
   let deleteCount = 0;
 
   let switchBtn, userPage, adminPage, adminContent, adminAccessDenied, switchContainer;
-  let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, manageDate;
+  let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, manageDate, deleteSelectedTimeBtn;
   let headerTimeEl;
 
   function toggleCollapse(id) {
@@ -951,7 +957,7 @@ button {
     try {
       isSubmitting = false;
       isAdminLoading = false;
-      [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn].forEach(btn=>{
+      [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn,deleteSelectedTimeBtn].forEach(btn=>{
         if(btn) {btn.classList.remove('loading'); btn.disabled=false;}
       });
       document.querySelectorAll('.reserve-btns button, .time-manage-item').forEach(btn=>{
@@ -1247,6 +1253,42 @@ button {
     document.body.appendChild(s);
   }
 
+  // ==============================
+  // 批次刪除所選時段（新增功能）
+  // ==============================
+  function deleteSelectedTimes() {
+    const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
+    const selected = Array.from(document.querySelectorAll('.time-select-item.active'))
+      .map(el => el.textContent.trim())
+      .filter(t => t);
+
+    if (!date) {
+      alert("請先選擇日期");
+      return;
+    }
+    if (selected.length === 0) {
+      alert("請至少選擇一個要刪除的時段");
+      return;
+    }
+    if (!confirm(`確定刪除所選 ${selected.length} 個時段？`)) {
+      return;
+    }
+
+    setAdminLoading(true, deleteSelectedTimeBtn);
+
+    const params = new URLSearchParams({
+      action: "adminBatchDeleteTime",
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      date: date,
+      times: JSON.stringify(selected)
+    });
+
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(s);
+  }
+
   function deleteTime(date, time) {
     if (!isAdmin || isAdminLoading || !confirm(`確定刪除 ${time} 時段？`)) return;
     
@@ -1300,6 +1342,7 @@ button {
     addTimeBtn = document.getElementById('addTimeBtn');
     loadTimeBtn = document.getElementById('loadTimeBtn');
     manageDate = document.getElementById('manageDate');
+    deleteSelectedTimeBtn = document.getElementById('deleteSelectedTimeBtn');
     
     switchBtn = document.getElementById('switchBtn');
     switchContainer = document.getElementById('switchContainer');
@@ -1316,6 +1359,7 @@ button {
     loadReservationsBtn.onclick = loadAllReservations;
     loadTimeBtn.onclick = loadManageTime;
     addTimeBtn.onclick = addSelectedTimes;
+    deleteSelectedTimeBtn.onclick = deleteSelectedTimes;
     batchDeleteBtn.onclick = batchDeleteReservations;
     manageDate.addEventListener('change', loadManageTime);
     
