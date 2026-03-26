@@ -43,6 +43,11 @@
       font-weight: 500;
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    .switch-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255,133,162,0.15);
     }
 
     main {
@@ -52,6 +57,20 @@
       width: 100%;
       max-width: 440px;
       padding: 45px 32px;
+      transition: all 0.3s ease;
+    }
+
+    /* 響應式：平板 & 電腦放大容器 */
+    @media (min-width: 768px) {
+      main {
+        max-width: 700px;
+        padding: 50px 40px;
+      }
+    }
+    @media (min-width: 1024px) {
+      main {
+        max-width: 800px;
+      }
     }
 
     h2 {
@@ -275,104 +294,189 @@
       background: #ff4d6d !important;
     }
 
-    /* 管理介面樣式 */
+    /* ====================== 管理介面 高質感樣式 + 全響應式 ====================== */
     .admin-section {
       display: none;
       margin-top: 20px;
+      animation: fadeIn 0.3s ease;
     }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .admin-title {
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: #ff4d88;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
+
+    .tip-text {
+      font-size: 0.85rem;
+      color: #999;
+      margin-bottom: 24px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* 管理卡片容器 - 電腦雙列排版 */
+    .admin-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    @media (min-width: 768px) {
+      .admin-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+    }
+
     .admin-card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+      border: 1px solid #f8f8f8;
+      transition: all 0.3s ease;
+    }
+    .admin-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.07);
     }
     .admin-card h3 {
-      font-size: 1rem;
-      margin-bottom: 15px;
+      font-size: 1.05rem;
+      font-weight: 600;
       color: #555;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f3f3f3;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
+
+    /* 管理按鈕 */
     .admin-btn {
-      height: 44px;
-      font-size: 0.9rem;
-      margin-bottom: 10px;
-    }
-
-    /* 按鈕顏色區分：新增=粉色 / 載入=紫色 */
-    #addTimeBtn {
-      background: linear-gradient(135deg, #ff8da1, #ff5c8d) !important;
-    }
-    #loadTimeBtn {
-      background: linear-gradient(135deg, #9c6aff, #7c5aff) !important;
-    }
-
-    .reservation-item {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .reservation-item:last-child {
-      border-bottom: none;
-    }
-    .reservation-info {
-      font-size: 0.85rem;
-      line-height: 1.4;
-      margin-bottom: 8px;
-      flex: 1;
-    }
-    .admin-action {
-      display: flex;
-      gap: 8px;
-    }
-    .admin-action button {
-      height: 36px;
-      font-size: 0.8rem;
-      flex: 1;
-    }
-    .time-manage-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-    }
-    .time-manage-item span {
-      flex: 1;
-      font-size: 0.9rem;
-    }
-    .tip-text {
-      font-size: 0.8rem;
-      color: #999;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    .access-denied {
-      text-align: center;
-      padding: 40px 20px;
-      color: #ff4d6d;
-      font-weight: 500;
+      height: 48px;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      border-radius: 14px;
     }
     .batch-delete-btn {
       background: #ff4d6d !important;
-      margin-top: 10px;
-      height: 44px;
-      font-size: 0.9rem;
+      margin-top: 12px;
+      height: 48px;
+      font-size: 0.95rem;
+      border-radius: 14px;
+    }
+
+    /* 管理輸入框 */
+    .admin-card input {
+      height: 48px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    /* 預約列表項目 */
+    .reservation-item {
+      padding: 14px;
+      border-radius: 12px;
+      background: #fafafa;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid #f3f3f3;
+      transition: all 0.2s ease;
+    }
+    .reservation-item:hover {
+      background: #fdf6f8;
+      border-color: #ffe0ea;
+    }
+    .reservation-item:last-child {
+      margin-bottom: 0;
+    }
+    .reserve-check {
+      margin-top: 4px;
+      transform: scale(1.1);
+    }
+    .reservation-info {
+      font-size: 0.85rem;
+      line-height: 1.5;
+      flex: 1;
+      color: #555;
     }
     .reserve-num {
-      font-size:0.8rem;
-      color:#ff4d88;
-      font-weight:bold;
-      min-width:24px;
+      font-size: 0.85rem;
+      color: #ff4d88;
+      font-weight: bold;
+      min-width: 26px;
+      text-align: center;
+      margin-top: 2px;
+    }
+    .admin-action {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 70px;
+    }
+    .admin-action button {
+      height: 38px;
+      font-size: 0.8rem;
+      border-radius: 10px;
+    }
+
+    /* 時段管理項目 */
+    .time-manage-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f3f3f3;
+    }
+    .time-manage-item:last-child {
+      border-bottom: none;
+    }
+    .time-manage-item span {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .time-manage-item button {
+      height: 36px;
+      font-size: 0.8rem;
+      min-width: 60px;
+      border-radius: 10px;
+    }
+
+    /* 無權限樣式 */
+    .access-denied {
+      text-align: center;
+      padding: 50px 20px;
+      color: #ff4d6d;
+      font-weight: 500;
+      font-size: 1rem;
+      line-height: 1.6;
+      background: #fff0f3;
+      border-radius: 16px;
+      margin: 10px 0;
+    }
+
+    /* 空狀態樣式 */
+    .empty-state {
+      text-align: center;
+      padding: 30px 10px;
+      color: #999;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -452,34 +556,37 @@
     </div>
 
     <div id="adminContent" style="display:none;">
-      <!-- 預約管理 -->
-      <div class="admin-card">
-        <h3>📋 預約記錄管理</h3>
-        <button class="admin-btn" id="loadReservationsBtn">
-          <span class="loader"></span>
-          <span>載入全部預約</span>
-        </button>
-        <div id="reservationsList"></div>
-        <button class="batch-delete-btn" id="batchDeleteBtn">
-          <span class="loader"></span>
-          <span>刪除選取預約</span>
-        </button>
-      </div>
+      <!-- 雙欄排版容器 -->
+      <div class="admin-container">
+        <!-- 預約管理 -->
+        <div class="admin-card">
+          <h3>📋 預約記錄管理</h3>
+          <button class="admin-btn" id="loadReservationsBtn">
+            <span class="loader"></span>
+            <span>載入全部預約</span>
+          </button>
+          <div id="reservationsList"></div>
+          <button class="batch-delete-btn" id="batchDeleteBtn">
+            <span class="loader"></span>
+            <span>刪除選取預約</span>
+          </button>
+        </div>
 
-      <!-- 日期時段管理 -->
-      <div class="admin-card">
-        <h3>⏰ 日期&時段設定</h3>
-        <input type="date" id="manageDate" placeholder="選擇日期">
-        <input type="text" id="manageTime" placeholder="輸入時段 例：10:00">
-        <button class="admin-btn" id="addTimeBtn">
-          <span class="loader"></span>
-          <span>新增此時段</span>
-        </button>
-        <button class="admin-btn" id="loadTimeBtn">
-          <span class="loader"></span>
-          <span>載入當日時段</span>
-        </button>
-        <div id="manageTimeList"></div>
+        <!-- 日期時段管理 -->
+        <div class="admin-card">
+          <h3>⏰ 日期&時段設定</h3>
+          <input type="date" id="manageDate" placeholder="選擇日期">
+          <input type="text" id="manageTime" placeholder="輸入時段 例：10:00">
+          <button class="admin-btn" id="addTimeBtn">
+            <span class="loader"></span>
+            <span>新增此時段</span>
+          </button>
+          <button class="admin-btn" id="loadTimeBtn">
+            <span class="loader"></span>
+            <span>載入當日時段</span>
+          </button>
+          <div id="manageTimeList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -514,7 +621,7 @@
     return twDateStr;
   }
 
-  // 取得星期幾(台北時區) - 純字串處理
+  // 取得星期幾(台北時區)
   function getWeekDayStr(dateStr) {
     if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return "星期幾";
     const week = ["日", "一", "二", "三", "四", "五", "六"];
@@ -526,7 +633,32 @@
     }
   }
 
-  // 判斷時段是否已過期(台北時區) - 安全無 NaN
+  // 判斷日期是否已過期
+  function isDateExpired(dateStr) {
+    const today = getTaipeiDateString();
+    return dateStr < today;
+  }
+
+  // 隱藏當天 3 小時內的時段
+  function isTimeWithin3Hours(timeStr) {
+    if (!/^\d{2}:\d{2}$/.test(timeStr)) return false;
+    const selectDate = document.getElementById('appointDate').value;
+    const today = getTaipeiDateString();
+    if (selectDate !== today) return false;
+
+    const now = new Date();
+    const twNow = new Date(now.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }));
+    const [h, m] = timeStr.split(':').map(Number);
+    const nowH = twNow.getHours();
+    const nowM = twNow.getMinutes();
+
+    const timeStamp = h * 60 + m;
+    const nowStamp = nowH * 60 + nowM;
+
+    return timeStamp - nowStamp <= 180;
+  }
+
+  // 舊版：判斷時段是否已過期
   function isTimeExpiredSafe(timeStr) {
     if (!/^\d{2}:\d{2}$/.test(timeStr)) return false;
     const selectDate = document.getElementById('appointDate').value;
@@ -555,7 +687,7 @@
     return clean.length === 10;
   }
 
-  // 安全日期格式化：只檢查格式，不解析 Date
+  // 安全日期格式化
   function formatToStandardDateSafe(dateVal) {
     if (!dateVal) return "";
     const str = String(dateVal).trim().replace(/\//g, "-");
@@ -563,7 +695,7 @@
     return "";
   }
 
-  // 安全時間格式化：只檢查格式，不解析 Date
+  // 安全時間格式化
   function formatToStandardTimeSafe(timeVal) {
     if (!timeVal) return "";
     const str = String(timeVal).trim();
@@ -625,7 +757,7 @@
     }
   };
 
-  // 全域回調 (對齊後端)
+  // 全域回調
   window.callback = function (response) {
     try {
       isSubmitting = false;
@@ -637,7 +769,14 @@
 
       if (response.status === "init") {
         timeDataMap = response.timeMap || {};
-        // 修正：強制刷新日期時段顯示
+        
+        // 自動清除過期日期設定
+        for (let date in timeDataMap) {
+          if (isDateExpired(date)) {
+            delete timeDataMap[date];
+          }
+        }
+        
         const date = document.getElementById('appointDate').value;
         if(date){
           renderTimeList();
@@ -675,7 +814,7 @@
     }
   };
 
-  // 渲染時段
+  // 渲染時段（隱藏 3 小時內）
   function renderTimeList() {
     const date = document.getElementById('appointDate').value;
     const grid = document.getElementById('timeGrid');
@@ -684,9 +823,14 @@
     document.getElementById('weekText').textContent = getWeekDayStr(date);
     const list = timeDataMap[date] || [];
     if (list.length===0) { grid.innerHTML=`<div style="grid-column:1/3;text-align:center;color:#999;">當日無可預約時段</div>`; return; }
+    
     list.forEach(t=>{
       const standardTime = formatToStandardTimeSafe(t.value);
       const expired = isTimeExpiredSafe(standardTime);
+      const hide3h = isTimeWithin3Hours(standardTime);
+      
+      if (hide3h) return;
+      
       const btn = document.createElement('div');
       btn.className="time-btn"+(expired?" expired":"");
       btn.textContent = standardTime;
@@ -737,13 +881,13 @@
   }
 
   // -------------------- 管理員 --------------------
-  // 載入全部預約
+  // 載入全部預約（自動清除一週前）
   function loadAllReservations() {
     if(!isAdmin||isAdminLoading)return;
     setAdminLoading(true,loadReservationsBtn);
     selectedReservations=[];
     const s=document.createElement('script');
-    s.src=`${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=美容預約系統&lineId=${LINE_USER_ID}&cleanOld=1&callback=callback&_=${Date.now()}`;
+    s.src=`${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=美容預約系統&lineId=${LINE_USER_ID}&cleanOld=7&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
@@ -787,7 +931,7 @@
   function renderReservationsList(list) {
     const container = document.getElementById('reservationsList');
     if (!list || list.length === 0) {
-      container.innerHTML = `<div style="text-align:center;color:#999;">暫無預約</div>`;
+      container.innerHTML = `<div class="empty-state">暫無預約</div>`;
       return;
     }
 
@@ -801,7 +945,8 @@
         <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
         <div class="reservation-info">
           ${stdDate} ${stdTime}<br>
-          姓名：${item.name}｜服務：${item.serviceType}｜電話：${item.phone}<br>
+          姓名：${item.name}｜服務：${item.serviceType}<br>
+          電話：${item.phone}<br>
           LINE：${item.lineName || '未取得'}｜備註：${item.remark || '無'}
         </div>
         <div class="admin-action">
@@ -857,7 +1002,7 @@
   function renderManageTimeList(date, times) {
     const container = document.getElementById('manageTimeList');
     if (!times || times.length === 0) {
-      container.innerHTML = `<div style="text-align:center;color:#999;">當日無時段</div>`;
+      container.innerHTML = `<div class="empty-state">當日無時段</div>`;
       return;
     }
     let html = "";
@@ -934,7 +1079,6 @@
       document.getElementById('lineId').value = LINE_USER_ID;
       document.getElementById('lineName').value = LINE_USER_NAME;
       checkAdminByBackend();
-      // 修正：強制加載日期數據
       loadTimeData();
     }
   }
@@ -970,7 +1114,6 @@
       e.target.value = formatPhoneNumber(e.target.value);
     });
 
-    // 設定最小日期：台北時區，永遠正確
     const todayStr = getTaipeiDateString();
     appointDate.min = todayStr;
     manageDate.min = todayStr;
