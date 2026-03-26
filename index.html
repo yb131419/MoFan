@@ -637,6 +637,11 @@
 
       if (response.status === "init") {
         timeDataMap = response.timeMap || {};
+        // 修正：強制刷新日期時段顯示
+        const date = document.getElementById('appointDate').value;
+        if(date){
+          renderTimeList();
+        }
         return;
       }
       if (response.status === "success") {
@@ -929,6 +934,8 @@
       document.getElementById('lineId').value = LINE_USER_ID;
       document.getElementById('lineName').value = LINE_USER_NAME;
       checkAdminByBackend();
+      // 修正：強制加載日期數據
+      loadTimeData();
     }
   }
 
@@ -969,7 +976,6 @@
     manageDate.min = todayStr;
     
     await initLiff();
-    loadTimeData();
     
     appointDate.addEventListener('change', renderTimeList);
 
