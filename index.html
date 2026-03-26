@@ -206,12 +206,21 @@
       padding: 18px 20px;
     }
 
+    /* 統一樣式：選中/聚焦 = 黑框 + 黑字 + 淡粉背景 */
     input:focus, select:focus, textarea:focus {
-      background: #fff;
-      border-color: #ff4d88;
-      outline: none;
-      box-shadow: 0 0 0 5px rgba(255,77,136,0.08);
+      background: #ffd6e7 !important;
+      border: 2px solid #000000 !important;
+      color: #000000 !important;
+      font-weight: 900 !important;
+      outline: none !important;
+      box-shadow: none !important;
       transform: translateY(-1px);
+    }
+    select:valid {
+      background: #ffd6e7;
+      border: 2px solid #000;
+      color: #000;
+      font-weight: 900;
     }
 
     select {
@@ -254,12 +263,12 @@
       box-shadow: 0 4px 12px rgba(255,133,162,0.1);
     }
 
-    /* 修正：點選時段樣式 - 純色淡粉背景+黑字粗體+黑框 */
+    /* 點選時段樣式 - 純色淡粉背景+黑字粗體+黑框 */
     .time-btn.active {
-      background: #ffd6e7; /* 純色淡粉色 */
-      color: #000000;      /* 黑色文字 */
-      font-weight: 900;    /* 粗體 */
-      border: 2px solid #000000 !important; /* 2px實心黑框 */
+      background: #ffd6e7;
+      color: #000000;
+      font-weight: 900;
+      border: 2px solid #000000 !important;
       box-shadow: 0 6px 18px rgba(255,77,136,0.25);
       transform: translateY(-1px);
     }
@@ -445,6 +454,29 @@
       letter-spacing: 0.5px;
     }
 
+    /* 管理介面輸入框聚焦：黑框黑字 + 區分顏色 */
+    .admin-card input:focus,
+    .admin-card select:focus {
+      background: #e6f7ff !important;
+      border: 2px solid #000 !important;
+      color: #000 !important;
+      font-weight: 900 !important;
+    }
+    .admin-card textarea:focus {
+      background: #fff0f6 !important;
+      border: 2px solid #000 !important;
+      color: #000 !important;
+      font-weight: 900 !important;
+    }
+
+    /* 搜尋框 */
+    .search-box {
+      height: 50px;
+      border-radius: 16px;
+      margin-bottom: 15px;
+      border: 1px solid #ffd6e7;
+    }
+
     /* 管理按鈕 */
     .admin-btn {
       height: 52px;
@@ -509,7 +541,11 @@
       text-align: center;
     }
     .reserve-check {
-      transform: scale(1.2);
+      transform: scale(1.6);
+      width: auto;
+      height: auto;
+      margin: 0;
+      align-self: center;
     }
     .reserve-btns {
       display: flex;
@@ -665,7 +701,17 @@
       <div class="admin-container">
         <!-- 預約管理 -->
         <div class="admin-card">
-          <h3>📋 預約記錄管理</h3>
+          <h3>📋 預約管理紀錄</h3>
+          
+          <!-- 搜尋框 -->
+          <input 
+            type="text" 
+            id="searchInput" 
+            class="search-box" 
+            placeholder="🔍 搜尋：姓名 / 電話 / 服務項目"
+            oninput="renderReservationsList(window.fullReservationList || [])"
+          >
+
           <button class="admin-btn" id="loadReservationsBtn">
             <span class="loader"></span>
             <span>載入全部預約</span>
@@ -870,7 +916,8 @@
           loadTimeData();
         }
       } else if (response.status === "adminList") {
-        renderReservationsList(response.data);
+        window.fullReservationList = response.data || [];
+        renderReservationsList(window.fullReservationList);
       } else if (response.status === "adminTimeList") {
         renderManageTimeList(response.date, response.times);
       } else if (response.status === "error") {
@@ -958,12 +1005,14 @@
     }
   }
 
+  // ✅ 修正：自動清理「預約日期超過一週」的記錄
   function loadAllReservations() {
     if(!isAdmin||isAdminLoading) return;
     setAdminLoading(true, loadReservationsBtn);
     selectedReservations = [];
+    const todayStr = getTaipeiDateString();
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=美容預約系統&lineId=${LINE_USER_ID}&cleanOld=7&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=美容預約系統&lineId=${LINE_USER_ID}&cleanByDate=7&today=${todayStr}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
@@ -989,14 +1038,27 @@
     document.body.appendChild(script);
   }
 
+  // 搜尋 + 渲染列表
   function renderReservationsList(list) {
+    const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+    let filtered = list || [];
+    
+    if (keyword) {
+      filtered = filtered.filter(item => {
+        const name = (item.name || '').toLowerCase();
+        const phone = (item.phone || '').toLowerCase();
+        const service = (item.serviceType || '').toLowerCase();
+        return name.includes(keyword) || phone.includes(keyword) || service.includes(keyword);
+      });
+    }
+
     const container = document.getElementById('reservationsList');
-    container.innerHTML = !list?.length ? `<div class="empty-state">暫無預約</div>` : 
-      list.map((item, idx) => `
+    container.innerHTML = !filtered?.length ? `<div class="empty-state">暫無預約</div>` : 
+      filtered.map((item, idx) => `
       <div class="reservation-item">
         <div class="reserve-header">
           <div class="reserve-left">
-            <span class="reserve-num">${idx + 1}</span>
+            <span class="reserve-num">編號 ${idx + 1}</span>
             <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
           </div>
           <div class="reserve-btns">
@@ -1006,8 +1068,8 @@
         </div>
         <div class="reservation-info">
           ${formatToStandardDateSafe(item.appointDate)} ${formatToStandardTimeSafe(item.appointTime)}<br>
-          姓名：${item.name}<br>服務：${item.serviceType}<br>
-          電話：${item.phone}<br>LINE：${item.lineName || '未取得'}<br>
+          姓名：${item.name}｜服務：${item.serviceType}<br>
+          電話：${item.phone}｜LINE：${item.lineName || '未取得'}<br>
           備註：${item.remark || '無'}
         </div>
       </div>`).join('');
