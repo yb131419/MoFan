@@ -446,7 +446,7 @@ button {
       color: #555;
       margin-bottom: 22px;
       padding-bottom: 12px;
-      border-bottom: 1px solid #f5f5f5;
+      border-bottom: 1px solid #f5f5f3;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -816,7 +816,6 @@ button {
     LIFF_ID: "2009598216-ZsS47DM8"
   };
 
-  // 後端固定表頭格式：日期 + 時段1~時段12
   const fixedHeader = ["日期", "時段1", "時段2", "時段3", "時段4", "時段5", "時段6", "時段7", "時段8", "時段9", "時段10", "時段11", "時段12"];
 
   let submitBtn, btnText, infoForm;
@@ -836,11 +835,9 @@ button {
   let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, batchDeleteTimeBtn, manageDate;
   let headerTimeEl;
 
-  // 折疊面板 - 修正：一次點擊完全展開
   function toggleCollapse(id) {
     const body = document.getElementById(id);
     const arrow = document.getElementById(id.replace('Collapse','Arrow'));
-    
     if (body.style.maxHeight && body.style.maxHeight !== '0px') {
       body.style.maxHeight = '0px';
       arrow.classList.remove('open');
@@ -850,7 +847,6 @@ button {
     }
   }
 
-  // 絕對穩定 台北時區時間（無NaN根源修復）
   function getTaipeiDate() {
     const now = new Date();
     const offset = 8 * 60;
@@ -858,7 +854,6 @@ button {
     return new Date(utc + 60000 * offset);
   }
 
-  // 取得 今日日期字串 YYYY-MM-DD
   function getTaipeiDateString() {
     const d = getTaipeiDate();
     const y = d.getFullYear();
@@ -867,7 +862,6 @@ button {
     return `${y}-${m}-${d_}`;
   }
 
-  // 頂級穩定時間格式化（永遠不會 NaN）
   function formatFullTime() {
     const d = getTaipeiDate();
     const y = d.getFullYear();
@@ -885,7 +879,6 @@ button {
     if (headerTimeEl) headerTimeEl.textContent = formatFullTime();
   }
 
-  // 星期計算（穩定版）
   function getWeekDayStr(dateStr) {
     if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return "星期幾";
     try {
@@ -897,7 +890,6 @@ button {
     }
   }
 
-  // 3小時限制
   function isToday(dateStr) {
     return dateStr === getTaipeiDateString();
   }
@@ -916,7 +908,6 @@ button {
     return isTimeInRestrictedZone(timeStr);
   }
 
-  // 電話
   function formatPhoneNumber(value) {
     const phone = value.replace(/\D/g, '');
     if (phone.length <= 4) return phone;
@@ -1028,6 +1019,7 @@ button {
           loadAllReservations();
           loadManageTime();
           loadTimeData();
+          document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
         }
       } else if (response.status === "adminList") {
         window.fullReservationList = response.data || [];
@@ -1119,7 +1111,6 @@ button {
     }
   }
 
-  // 自動清理一週前
   function loadAllReservations() {
     if(!isAdmin||isAdminLoading) return;
     setAdminLoading(true, loadReservationsBtn);
@@ -1162,7 +1153,6 @@ button {
     document.body.appendChild(script);
   }
 
-  // 搜尋 + 渲染列表
   function renderReservationsList(list) {
     const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
     let filtered = list || [];
@@ -1176,7 +1166,6 @@ button {
       });
     }
 
-    // 顯示預約總筆數
     document.getElementById('reserveCount').textContent = `(${filtered.length} 筆)`;
 
     const container = document.getElementById('reservationsList');
@@ -1211,7 +1200,6 @@ button {
     i > -1 ? selectedReservations.splice(i, 1) : selectedReservations.push(id);
   }
 
-  // 批次刪除預約
   function batchDeleteReservations() {
     if (!isAdmin || isAdminLoading || !selectedReservations.length || !confirm(`確定刪除 ${selectedReservations.length} 筆預約？`)) return;
     setAdminLoading(true, batchDeleteBtn);
@@ -1256,15 +1244,13 @@ button {
       }).join('');
   }
 
-  // 內建常用時段
-const DEFAULT_TIMES = [
-  "10:00","10:30","11:00","11:30","12:00","12:30",
-  "13:00","13:30","14:00","14:30","15:00","15:30",
-  "16:00","16:30","17:00","17:30","18:00","18:30",
-  "19:00","19:30","20:00"
-];
+  const DEFAULT_TIMES = [
+    "10:00","10:30","11:00","11:30","12:00","12:30",
+    "13:00","13:30","14:00","14:30","15:00","15:30",
+    "16:00","16:30","17:00","17:30","18:00","18:30",
+    "19:00","19:30","20:00"
+  ];
 
-  // 渲染多選時段面板
   function renderTimeSelectGrid() {
     const container = document.getElementById('timeSelectGrid');
     container.innerHTML = DEFAULT_TIMES.map(t => `
@@ -1287,7 +1273,7 @@ const DEFAULT_TIMES = [
   }
 
   // ==============================
-  // 【核心修正】批次新增時段（一次送出）
+  // 【已完整修正】批次新增時段（一次請求寫入工作表）
   // ==============================
   function addSelectedTimes() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
@@ -1306,7 +1292,6 @@ const DEFAULT_TIMES = [
 
     setAdminLoading(true, addTimeBtn);
 
-    // 一次送出所有時段 → 解決重複、錯亂
     const params = new URLSearchParams({
       action: "adminBatchAddTime",
       pageId: "美容預約系統",
@@ -1316,20 +1301,8 @@ const DEFAULT_TIMES = [
     });
 
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=addBatchCallback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
-
-    window.addBatchCallback = (res) => {
-      if (res?.status === "success") {
-        alert(`✅ 成功新增 ${selected.length} 個時段！`);
-        loadManageTime();
-        loadTimeData();
-        document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
-      } else {
-        alert("❌ 新增失敗：" + (res?.message || "系統異常"));
-      }
-      setAdminLoading(false, addTimeBtn);
-    };
   }
 
   function deleteTime(date, time) {
@@ -1383,7 +1356,6 @@ const DEFAULT_TIMES = [
     document.body.appendChild(s);
   }
 
-  // LIFF
   async function initLiff() {
     try {
       await liff.init({ liffId: CONFIG.LIFF_ID });
@@ -1423,7 +1395,6 @@ const DEFAULT_TIMES = [
     adminContent = document.getElementById('adminContent');
     adminAccessDenied = document.getElementById('adminAccessDenied');
     
-    // 時間初始化
     headerTimeEl = document.getElementById('headerTime');
     updateHeaderTime();
     setInterval(updateHeaderTime, 1000);
