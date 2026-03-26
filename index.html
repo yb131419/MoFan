@@ -845,7 +845,6 @@ button {
       body.style.maxHeight = '0px';
       arrow.classList.remove('open');
     } else {
-      // 強制給足夠大高度，一次展開全部內容
       body.style.maxHeight = '5000px';
       arrow.classList.add('open');
     }
@@ -1242,7 +1241,6 @@ button {
   function renderManageTimeList(date, times) {
     const c = document.getElementById('manageTimeList');
     const timeArray = times || [];
-    // 顯示時段總筆數
     document.getElementById('timeCount').textContent = `(${timeArray.length} 筆)`;
     
     c.innerHTML = !timeArray.length ? `<div class="empty-state">當日無時段</div>` :
@@ -1288,13 +1286,15 @@ const DEFAULT_TIMES = [
     }
   }
 
-  // 多筆新增時段 - 完全修復 + 對齊後端格式
+  // ==============================
+  // 【核心修正】批次新增時段（一次送出）
+  // ==============================
   function addSelectedTimes() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
     const selected = Array.from(document.querySelectorAll('.time-select-item.active'))
       .map(el => el.textContent.trim())
       .filter(t => t);
-    
+
     if (!date) {
       alert("請先選擇日期");
       return;
@@ -1303,35 +1303,32 @@ const DEFAULT_TIMES = [
       alert("請至少選擇一個時段");
       return;
     }
-    
+
     setAdminLoading(true, addTimeBtn);
-    
-    // 遍歷新增每個時段，確保100%成功
-    let successCount = 0;
-    selected.forEach(time => {
-      const params = new URLSearchParams({
-        action: "adminAddTime",
-        pageId: "美容預約系統",
-        lineId: LINE_USER_ID,
-        date: date,
-        time: time
-      });
-      const s = document.createElement('script');
-      s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=addSingleCallback&_=${Date.now()}`;
-      document.body.appendChild(s);
+
+    // 一次送出所有時段 → 解決重複、錯亂
+    const params = new URLSearchParams({
+      action: "adminBatchAddTime",
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      date: date,
+      times: JSON.stringify(selected)
     });
 
-    // 回呼計數
-    window.addSingleCallback = () => {
-      successCount++;
-      if (successCount === selected.length) {
-        alert(`✅ 成功新增 ${successCount} 個時段！`);
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=addBatchCallback&_=${Date.now()}`;
+    document.body.appendChild(s);
+
+    window.addBatchCallback = (res) => {
+      if (res?.status === "success") {
+        alert(`✅ 成功新增 ${selected.length} 個時段！`);
         loadManageTime();
         loadTimeData();
-        setAdminLoading(false, addTimeBtn);
         document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
-        successCount = 0;
+      } else {
+        alert("❌ 新增失敗：" + (res?.message || "系統異常"));
       }
+      setAdminLoading(false, addTimeBtn);
     };
   }
 
