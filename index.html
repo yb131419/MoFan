@@ -675,11 +675,11 @@ button {
 
     <h2>
       <span class="main-title">莫凡韓式皮膚管理<br>線上預約系統</span>
-      <span class="sub-title">美甲、霧眉｜一對一服務</span>
+      <span class="sub-title">韓式皮膚管理、美甲、霧眉<br>一對一專業服務</span>
     </h2>
 
     <form id="infoForm">
-      <input type="hidden" id="pageId" value="莫凡預約系統">
+      <input type="hidden" id="pageId" value="預約系統">
       <input type="hidden" id="lineId">
       <input type="hidden" id="lineName">
       <input type="hidden" id="appointTime" name="appointTime">
@@ -1073,14 +1073,14 @@ button {
 
   function loadTimeData() {
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=getDates&pageId=美容預約系統&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=getDates&pageId=預約系統&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
   function sendData() {
     try {
       const data = {
-        pageId: "美容預約系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
+        pageId: "預約系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
         serviceType: document.getElementById('serviceType').value,
         appointDate: formatToStandardDateSafe(document.getElementById('appointDate').value),
         appointTime: formatToStandardTimeSafe(document.getElementById('appointTime').value),
@@ -1104,7 +1104,7 @@ button {
     selectedReservations = [];
     const todayStr = getTaipeiDateString();
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=美容預約系統&lineId=${LINE_USER_ID}&cleanBeforeDays=7&today=${todayStr}&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=預約系統&lineId=${LINE_USER_ID}&cleanBeforeDays=7&today=${todayStr}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
@@ -1131,7 +1131,7 @@ button {
     setAdminLoading(true);
     
     const params = new URLSearchParams({
-      action: "adminUpdate", pageId: "美容預約系統", lineId: LINE_USER_ID, id: item.submitTime,
+      action: "adminUpdate", pageId: "預約系統", lineId: LINE_USER_ID, id: item.submitTime,
       serviceType: service, name: name, phone: phone,
       appointDate: formatToStandardDateSafe(date), appointTime: formatToStandardTimeSafe(time), remark: remark
     });
@@ -1192,7 +1192,7 @@ button {
     setAdminLoading(true, batchDeleteBtn);
     
     selectedReservations.forEach(id => {
-      const p = new URLSearchParams({action:"adminDelReserve",pageId:"美容預約系統",lineId:LINE_USER_ID,submitTime:id});
+      const p = new URLSearchParams({action:"adminDelReserve",pageId:"預約系統",lineId:LINE_USER_ID,submitTime:id});
       const s = document.createElement('script');
       s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(s);
@@ -1205,7 +1205,7 @@ button {
     if (!date) return;
     setAdminLoading(true, loadTimeBtn);
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=美容預約系統&lineId=${LINE_USER_ID}&date=${date}&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=預約系統&lineId=${LINE_USER_ID}&date=${date}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
@@ -1259,7 +1259,7 @@ button {
 
     const params = new URLSearchParams({
       action: "adminBatchAddTime",
-      pageId: "美容預約系統",
+      pageId: "預約系統",
       lineId: LINE_USER_ID,
       date: date,
       times: JSON.stringify(selected)
@@ -1299,7 +1299,7 @@ button {
     selected.forEach(time => {
       const p = new URLSearchParams({
         action: "adminDelTime",
-        pageId: "美容預約系統",
+        pageId: "預約系統",
         lineId: LINE_USER_ID,
         date: date,
         time: time
@@ -1316,7 +1316,7 @@ button {
     batchDeleteTimesCount = 0;
     isBatchDeletingTimes = false;
     setAdminLoading(true);
-    const p = new URLSearchParams({action:"adminDelTime",pageId:"美容預約系統",lineId:LINE_USER_ID,date:date,time:time});
+    const p = new URLSearchParams({action:"adminDelTime",pageId:"預約系統",lineId:LINE_USER_ID,date:date,time:time});
     const s = document.createElement('script');
     s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
@@ -1330,7 +1330,7 @@ button {
     
     isBatchDeletingTimes = false;
     setAdminLoading(true);
-    const p = new URLSearchParams({action:"adminDelReserve",pageId:"美容預約系統",lineId:LINE_USER_ID,submitTime:id});
+    const p = new URLSearchParams({action:"adminDelReserve",pageId:"預約系統",lineId:LINE_USER_ID,submitTime:id});
     const s = document.createElement('script');
     s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
