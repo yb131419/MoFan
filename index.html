@@ -537,7 +537,7 @@ button {
       color: #ff4d88;
       font-weight: 900;
       min-width: 28px;
-      text-align: center;
+      text-center: center;
     }
     .reserve-check {
       transform: scale(1.6);
@@ -655,6 +655,24 @@ button {
       border-color: #D894A7;
       color: #6D4C5D;
       font-weight: 700;
+    }
+
+    /* ====================== 手機日曆：過去日期反灰不可點擊 ====================== */
+    input[type="date"]:invalid {
+      background-color: #f5f5f5 !important;
+      color: #999 !important;
+      cursor: not-allowed !important;
+      opacity: 0.6 !important;
+    }
+    input[type="date"]::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: transparent;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -1382,8 +1400,24 @@ button {
     
     phoneInput.addEventListener('input', e => e.target.value = formatPhoneNumber(e.target.value));
     const today = getTaipeiDateString();
+    
+    // 強制鎖定最小日期 = 今日
     appointDate.min = today;
     manageDate.min = today;
+    
+    // 手機日曆修復：禁止點擊過去日期
+    appointDate.addEventListener('click', function(e) {
+      if (this.value && this.value < today) {
+        e.preventDefault();
+        this.value = today;
+      }
+    });
+    manageDate.addEventListener('click', function(e) {
+      if (this.value && this.value < today) {
+        e.preventDefault();
+        this.value = today;
+      }
+    });
     
     await initLiff();
     
