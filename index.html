@@ -1334,11 +1334,11 @@ async function initLiff() {
     await liff.init({ liffId: CONFIG.LIFF_ID });
     if (liff.isLoggedIn()) {
       const p = await liff.getProfile();
-      // 🔴 原始錯誤：會自動轉小寫
-      // LINE_USER_ID = p.userId || LINE_USER_ID;
       
-      // ✅ 修正：保留原始大小寫，不做任何轉換
-      LINE_USER_ID = p.userId ? p.userId.toString() : LINE_USER_ID;
+      // ✅ 修正：強制「首字母大寫」其餘不變
+      const rawId = p.userId || LINE_USER_ID;
+      LINE_USER_ID = rawId.charAt(0).toUpperCase() + rawId.slice(1);
+      
       LINE_USER_NAME = p.displayName || LINE_USER_NAME;
     }
   } catch (e) { console.log("LIFF 略過"); }
