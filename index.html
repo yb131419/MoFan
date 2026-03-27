@@ -272,6 +272,9 @@ select:valid {
   box-shadow: 0 6px 18px rgba(216,148,167,0.2);
   transform: translateY(-1px);
 }
+.time-btn:active {
+  transform: scale(0.97);
+}
     /* 過期時段：直接灰化不可點擊 */
     .time-btn.expired {
       opacity: 0.4;
@@ -830,6 +833,11 @@ button {
   function toggleCollapse(id) {
     const body = document.getElementById(id);
     const arrow = document.getElementById(id.replace('Collapse','Arrow'));
+    if (!body.style.maxHeight) {
+      body.style.maxHeight = '0px';
+      arrow.classList.remove('open');
+      return;
+    }
     if (body.style.maxHeight && body.style.maxHeight !== '0px') {
       body.style.maxHeight = '0px';
       arrow.classList.remove('open');
@@ -854,7 +862,6 @@ button {
     return `${y}-${m}-${d_}`;
   }
 
-  // 修正：標準時間格式 yyyy-MM-dd HH:mm
   function formatFullTime() {
     const d = getTaipeiDate();
     const y = d.getFullYear();
@@ -868,7 +875,6 @@ button {
     return `${y}/${m}/${d_} ${hh}:${mm}:${ss} 星期${w}`;
   }
 
-  // 修正：提交時間使用標準格式，確保後端可匹配刪除
   function getStandardSubmitTime() {
     const d = getTaipeiDate();
     const y = d.getFullYear();
@@ -904,7 +910,7 @@ button {
     const target = new Date(now);
     target.setHours(h, m, 0);
     const diffMin = (target - now) / 60000;
-    return diffMin <= 180;
+    return diffMin <= 0;
   }
 
   function shouldHideTime(dateStr, timeStr) {
@@ -931,10 +937,15 @@ button {
 
   function formatToStandardTimeSafe(timeVal) {
     if (!timeVal) return "";
-    const match = String(timeVal).trim().match(/^(\d{1,2}):(\d{1,2})/);
+    const timeStr = String(timeVal).trim();
+    const match = timeStr.match(/^(\d{1,2}):(\d{1,2})/);
     if (!match) return "";
-    const h = parseInt(match[1]), m = parseInt(match[2]);
-    return (h >= 0 && h <= 23 && m >= 0 && m <= 59) ? `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}` : "";
+    const h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+    return "";
   }
 
   function setAdminLoading(loading, btn = null) {
@@ -989,6 +1000,7 @@ button {
           submitBtn.classList.add('success','permanent-disabled');
           submitBtn.disabled = true;
           btnText.textContent = '預約成功 ✅';
+          window.scrollTo(0,0);
           alert("✅ 預約成功！\n專人將透過LINE與您聯繫");
           infoForm.reset();
           document.getElementById('weekText').textContent="星期幾";
@@ -1072,6 +1084,7 @@ button {
   }
 
   function loadTimeData() {
+    timeDataMap = {};
     const s = document.createElement('script');
     s.src = `${CONFIG.SCRIPT_URL}?action=getDates&pageId=預約系統&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
@@ -1295,19 +1308,18 @@ button {
     isBatchDeletingTimes = true;
     batchDeleteTimesCount = selected.length;
     setAdminLoading(true, deleteSelectedTimeBtn);
-    
-    selected.forEach(time => {
-      const p = new URLSearchParams({
-        action: "adminDelTime",
-        pageId: "預約系統",
-        lineId: LINE_USER_ID,
-        date: date,
-        time: time
-      });
-      const s = document.createElement('script');
-      s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
-      document.body.appendChild(s);
+
+    const params = new URLSearchParams({
+      action: "adminBatchDelTime",
+      pageId: "預約系統",
+      lineId: LINE_USER_ID,
+      date: date,
+      times: JSON.stringify(selected)
     });
+
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(s);
   }
 
   function deleteTime(date, time) {
@@ -1388,9 +1400,16 @@ button {
     manageDate.addEventListener('change', loadManageTime);
     
     phoneInput.addEventListener('input', e => e.target.value = formatPhoneNumber(e.target.value));
+    phoneInput.addEventListener('paste', e => {
+      setTimeout(() => {
+        e.target.value = formatPhoneNumber(e.target.value);
+      }, 0);
+    });
     const today = getTaipeiDateString();
     appointDate.min = today;
     manageDate.min = today;
+    appointDate.value = today;
+    manageDate.value = today;
     
     await initLiff();
     
