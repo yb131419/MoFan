@@ -913,7 +913,7 @@ button.permanent-disabled {
   const fixedHeader = ["日期", "時段1", "時段2", "時段3", "時段4", "時段5", "時段6", "時段7", "時段8", "時段9", "時段10", "時段11", "時段12", "時段13", "時段14", "時段15", "時段16", "時段17", "時段18", "時段19", "時段20", "時段21", "時段22", "時段23", "時段24"];
 
   // 預設最大預約人數，可由管理頁面修改
-  let MAX_BOOKING_COUNT = 2;
+  let MAX_BOOKING_COUNT = 1;
 
   let submitBtn, btnText, infoForm;
   let isSubmitting = false;
@@ -1431,10 +1431,10 @@ function renderTimeList() {
             <input type="checkbox" class="reserve-check" value="${item.submitTime}" onchange="toggleSelect('${item.submitTime}')">
           </div>
           <div class="reserve-btns">
-            <button onclick='editReservation(${JSON.stringify(item)})'>
+            <button class="admin-btn" onclick='editReservation(${JSON.stringify(item)})'>
               <span class="loader"></span>修改
             </button>
-            <button onclick="deleteReservation('${item.submitTime}')">
+            <button class="admin-btn batch-delete-btn" onclick="deleteReservation('${item.submitTime}')">
               <span class="loader"></span>刪除
             </button>
           </div>
