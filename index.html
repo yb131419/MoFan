@@ -1248,7 +1248,7 @@ function renderTimeList() {
 
   const list = timeDataMap[date] || [];
 
-  // ==================== 萬用去重：所有重複時段都只留一個 ====================
+  // 去重：所有重複時段只留一個
   const uniqueMap = {};
   const uniqueList = [];
   for (const item of list) {
@@ -1258,7 +1258,6 @@ function renderTimeList() {
       uniqueList.push(item);
     }
   }
-  // ======================================================================
 
   // 過濾：未過期 + 未滿員
   const availableTimes = uniqueList.filter(t => {
@@ -1289,21 +1288,6 @@ function renderTimeList() {
   });
 }
     
-    availableTimes.forEach(t => {
-      const standardTime = t.value || t;
-      const btn = document.createElement('div');
-      btn.className = "time-btn";
-      btn.textContent = standardTime;
-      
-      btn.onclick = () => {
-        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        timeInput.value = standardTime;
-      };
-      
-      grid.appendChild(btn);
-    });
-  }
 
   function resetButtonState() {
     if(isSubmittedSuccess) return;
