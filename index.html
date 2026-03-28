@@ -1232,34 +1232,55 @@ button.permanent-disabled {
     }
   };
 
-  function renderTimeList() {
-    const date = document.getElementById('appointDate').value;
-    const grid = document.getElementById('timeGrid');
-    const timeInput = document.getElementById('appointTime');
+function renderTimeList() {
+  const date = document.getElementById('appointDate').value;
+  const grid = document.getElementById('timeGrid');
+  const timeInput = document.getElementById('appointTime');
+  
+  grid.innerHTML = "";
+  timeInput.value = "";
+  document.getElementById('weekText').textContent = getWeekDayStr(date);
+
+  if (!date) {
+    grid.innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
+    return;
+  }
+
+  // 關鍵修改：自動去重，只保留唯一時段
+  const allTimes = timeDataMap[date] || [];
+  const uniqueTimeSet = new Set();
+  allTimes.forEach(t => {
+    const standardTime = t.value || t;
+    uniqueTimeSet.add(standardTime);
+  });
+  const uniqueTimes = Array.from(uniqueTimeSet);
+
+  // 過濾：未過期 + 未滿員
+  const availableTimes = uniqueTimes.filter(standardTime => {
+    if (shouldHideTime(date, standardTime)) return false;
+    const count = reservationCountMap[`${date}_${standardTime}`] || 0;
+    return count < MAX_BOOKING_COUNT;
+  });
+
+  if (!availableTimes.length) {
+    grid.innerHTML = `<div style="grid-column:1/3;text-align:center;color:#999;">當日無可預約時段</div>`;
+    return;
+  }
+  
+  availableTimes.forEach(standardTime => {
+    const btn = document.createElement('div');
+    btn.className = "time-btn";
+    btn.textContent = standardTime;
     
-    grid.innerHTML = "";
-    timeInput.value = "";
-    document.getElementById('weekText').textContent = getWeekDayStr(date);
-
-    if (!date) {
-      grid.innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
-      return;
-    }
-
-    const list = timeDataMap[date] || [];
-    // 過濾：未過期 + 未滿員（超過上限直接隱藏）
-    const availableTimes = list.filter(t => {
-      const standardTime = t.value || t;
-      if (shouldHideTime(date, standardTime)) return false;
-      // 判斷預約人數是否超過上限，超過直接隱藏
-      const count = reservationCountMap[`${date}_${standardTime}`] || 0;
-      return count < MAX_BOOKING_COUNT;
-    });
-
-    if (!availableTimes.length) {
-      grid.innerHTML = `<div style="grid-column:1/3;text-align:center;color:#999;">當日無可預約時段</div>`;
-      return;
-    }
+    btn.onclick = () => {
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      timeInput.value = standardTime;
+    };
+    
+    grid.appendChild(btn);
+  });
+}
     
     availableTimes.forEach(t => {
       const standardTime = t.value || t;
