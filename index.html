@@ -624,6 +624,7 @@ button.permanent-disabled {
       border-radius: 20px;
       margin: 15px 0;
       border: 1px solid rgba(255,51,102,0.1);
+      display: none; /* 預設隱藏 */
     }
 
     /* 空狀態樣式 */
@@ -640,7 +641,6 @@ button.permanent-disabled {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      cursor: pointer;
       user-select: none;
     }
     .collapse-arrow {
@@ -812,11 +812,11 @@ button.permanent-disabled {
   </div>
 
   <!-- 管理員介面 -->
-  <div id="adminPage" class="admin-section">
+  <div id="adminPage" class="admin-section" style="display:none;">
     <div class="admin-title">📊 預約管理後台</div>
     <p class="tip-text">自動清理一週前紀錄｜實時管理預約與時段<br>專屬美業高效管理系統</p>
     
-    <div id="adminAccessDenied" class="access-denied" style="display:none;">
+    <div id="adminAccessDenied" class="access-denied">
       ❌ 您無管理員權限<br>請聯繫店家開通高級管理權限
     </div>
 
@@ -875,6 +875,14 @@ button.permanent-disabled {
             <div class="time-select-body" id="timeSelectBody">
               <div class="time-select-grid" id="timeSelectGrid"></div>
             </div>
+
+            <!-- 新增：時段預約人數上限設定 -->
+            <label style="margin-top:15px;">時段預約人數上限</label>
+            <input type="number" id="maxBookingLimit" min="1" max="10" placeholder="請輸入每個時段最多可預約人數">
+            <button class="admin-btn" id="saveMaxBookingBtn">
+              <span class="loader"></span>
+              <span>儲存人數上限設定</span>
+            </button>
             
             <button class="admin-btn" id="addTimeBtn">
               <span class="loader"></span>
@@ -904,8 +912,8 @@ button.permanent-disabled {
 
   const fixedHeader = ["日期", "時段1", "時段2", "時段3", "時段4", "時段5", "時段6", "時段7", "時段8", "時段9", "時段10", "時段11", "時段12", "時段13", "時段14", "時段15", "時段16", "時段17", "時段18", "時段19", "時段20", "時段21", "時段22", "時段23", "時段24"];
 
-  // ====================== 自訂最大預約人數 (可自行修改數字) ======================
-  const MAX_BOOKING_COUNT = 2;
+  // 預設最大預約人數，可由管理頁面修改
+  let MAX_BOOKING_COUNT = 2;
 
   let submitBtn, btnText, infoForm;
   let isSubmitting = false;
@@ -931,6 +939,7 @@ button.permanent-disabled {
   let prevManageDateBtn, nextManageDateBtn;
   let headerTimeEl;
   let prevDateBtn, nextDateBtn, appointDate;
+  let maxBookingInput, saveMaxBookingBtn;
 
   // 折疊
   function toggleCollapse(id) {
@@ -1104,6 +1113,51 @@ button.permanent-disabled {
     document.body.appendChild(s);
   }
 
+  // 載入預約人數上限設定
+  function loadMaxBookingLimit() {
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?action=getMaxBooking&pageId=美容預約系統&callback=callbackMaxBooking&_=${Date.now()}`;
+    document.body.appendChild(s);
+  }
+
+  // 儲存預約人數上限
+  function saveMaxBookingLimit() {
+    const value = parseInt(maxBookingInput.value);
+    if (!value || value < 1 || value > 10) {
+      alert("請輸入1-10之間的數字");
+      return;
+    }
+    setAdminLoading(true, saveMaxBookingBtn);
+    const params = new URLSearchParams({
+      action: "setMaxBooking",
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      maxCount: value
+    });
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callbackSaveMax&_=${Date.now()}`;
+    document.body.appendChild(s);
+  }
+
+  window.callbackMaxBooking = function(res) {
+    if (res.status === "success" && res.maxCount) {
+      MAX_BOOKING_COUNT = parseInt(res.maxCount);
+      if (maxBookingInput) maxBookingInput.value = MAX_BOOKING_COUNT;
+      renderTimeList();
+    }
+  };
+
+  window.callbackSaveMax = function(res) {
+    setAdminLoading(false, saveMaxBookingBtn);
+    if (res.status === "success") {
+      MAX_BOOKING_COUNT = parseInt(maxBookingInput.value);
+      alert("✅ 預約人數上限儲存成功");
+      renderTimeList();
+    } else {
+      alert("❌ 儲存失敗：" + (res.message || "系統異常"));
+    }
+  };
+
   window.onAdminCheck = function(res) {
     isAdmin = res?.isAdmin === true;
     switchContainer.style.display = isAdmin ? "block" : "none";
@@ -1115,7 +1169,7 @@ button.permanent-disabled {
     try {
       isSubmitting = false;
       isAdminLoading = false;
-      [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn,deleteSelectedTimeBtn].forEach(btn=>{
+      [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn,deleteSelectedTimeBtn,saveMaxBookingBtn].forEach(btn=>{
         if(btn) {btn.classList.remove('loading'); btn.disabled=false;}
       });
       document.querySelectorAll('.reserve-btns button, .time-manage-item').forEach(btn=>{
@@ -1193,11 +1247,11 @@ button.permanent-disabled {
     }
 
     const list = timeDataMap[date] || [];
-    // 過濾：未過期 + 未滿員
+    // 過濾：未過期 + 未滿員（超過上限直接隱藏）
     const availableTimes = list.filter(t => {
       const standardTime = t.value || t;
       if (shouldHideTime(date, standardTime)) return false;
-      // 判斷預約人數是否超過上限
+      // 判斷預約人數是否超過上限，超過直接隱藏
       const count = reservationCountMap[`${date}_${standardTime}`] || 0;
       return count < MAX_BOOKING_COUNT;
     });
@@ -1290,9 +1344,16 @@ button.permanent-disabled {
     setAdminLoading(true);
     
     const params = new URLSearchParams({
-      action: "adminUpdate", pageId: "美容預約系統", lineId: LINE_USER_ID, id: item.submitTime,
-      serviceType: service, name: name, phone: phone,
-      appointDate: formatToStandardDateSafe(date), appointTime: formatToStandardTimeSafe(time), remark: remark
+      action: "adminUpdate",
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      id: item.submitTime,
+      serviceType: service,
+      name: name,
+      phone: phone,
+      appointDate: formatToStandardDateSafe(date),
+      appointTime: formatToStandardTimeSafe(time),
+      remark: remark
     });
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
@@ -1541,6 +1602,7 @@ async function initLiff() {
     checkAdminByBackend();
     loadTimeData();
     loadReservationCount(); // 載入預約數量
+    loadMaxBookingLimit(); // 載入人數上限
     renderTimeSelectGrid();
   }
 }
@@ -1567,6 +1629,10 @@ async function initLiff() {
     manageDate = document.getElementById('manageDate');
     deleteSelectedTimeBtn = document.getElementById('deleteSelectedTimeBtn');
     
+    // 新增：人數上限相關元素
+    maxBookingInput = document.getElementById('maxBookingLimit');
+    saveMaxBookingBtn = document.getElementById('saveMaxBookingBtn');
+    
     switchBtn = document.getElementById('switchBtn');
     switchContainer = document.getElementById('switchContainer');
     userPage = document.getElementById('userPage');
@@ -1592,6 +1658,7 @@ async function initLiff() {
     addTimeBtn.onclick = addSelectedTimes;
     batchDeleteBtn.onclick = batchDeleteReservations;
     deleteSelectedTimeBtn.onclick = deleteSelectedTimes;
+    saveMaxBookingBtn.onclick = saveMaxBookingLimit;
     manageDate.addEventListener('change', loadManageTime);
     
     phoneInput.addEventListener('input', e => e.target.value = formatPhoneNumber(e.target.value));
