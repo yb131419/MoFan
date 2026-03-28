@@ -1246,8 +1246,8 @@ button.permanent-disabled {
         }
       } else if (response.status === "adminList") {
         window.fullReservationList = response.data || [];
-        // 最新預約排在最上面
-        window.fullReservationList.sort((a, b) => (b.submitTime || 0) - (a.submitTime || 0));
+        // 最新預約排在最下面，最舊排在第1筆
+        window.fullReservationList.sort((a, b) => (a.submitTime || 0) - (b.submitTime || 0));
         currentReservationPage = 1;
         renderReservationsList(window.fullReservationList);
       } else if (response.status === "adminTimeList") {
@@ -1292,6 +1292,9 @@ function renderTimeList() {
   // 排序
   uniqueList.sort((a, b) => a.value.localeCompare(b.value));
 
+  // 當日時段數量 = 每個時段預約上限
+  const dayMaxLimit = uniqueList.length;
+
   // 過濾：未過期 + 未滿員
   const availableTimes = uniqueList.filter(t => {
     const standardTime = t.value || t;
@@ -1299,7 +1302,7 @@ function renderTimeList() {
     
     // ✅ 關鍵：判斷是否已滿員
     const count = reservationCountMap[`${date}_${standardTime}`] || 0;
-    return count < MAX_BOOKING_COUNT;
+    return count < dayMaxLimit;
   });
 
   if (!availableTimes.length) {
@@ -1310,7 +1313,7 @@ function renderTimeList() {
   availableTimes.forEach(t => {
     const standardTime = t.value || t;
     const count = reservationCountMap[`${date}_${standardTime}`] || 0;
-    const isFull = count >= MAX_BOOKING_COUNT;
+    const isFull = count >= dayMaxLimit;
 
     const btn = document.createElement('div');
     btn.className = "time-btn";
@@ -1321,7 +1324,7 @@ function renderTimeList() {
       btn.textContent = `${standardTime} (已滿)`;
     } else {
       // 上限=1只顯示時段，≥2才顯示數量
-      if (MAX_BOOKING_COUNT === 1) {
+      if (dayMaxLimit === 1) {
         btn.textContent = standardTime;
       } else {
         btn.textContent = `${standardTime} (${count})`;
@@ -1357,8 +1360,19 @@ function renderTimeList() {
       // ✅ 提交前再次驗證時段是否滿員，防止重複提交
       const date = document.getElementById('appointDate').value;
       const time = document.getElementById('appointTime').value;
+      const list = timeDataMap[date] || [];
+      const uniqueMap = {};
+      const uniqueList = [];
+      for (const item of list) {
+        const timeVal = item.value;
+        if (!uniqueMap[timeVal]) {
+          uniqueMap[timeVal] = true;
+          uniqueList.push(item);
+        }
+      }
+      const dayMaxLimit = uniqueList.length;
       const count = reservationCountMap[`${date}_${time}`] || 0;
-      if(count >= MAX_BOOKING_COUNT){
+      if(count >= dayMaxLimit){
         alert("❌ 該時段已滿，請重新選擇時段");
         resetButtonState();
         return;
