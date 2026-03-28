@@ -1246,17 +1246,23 @@ function renderTimeList() {
     return;
   }
 
-  // 關鍵修改：自動去重，只保留唯一時段
-  const allTimes = timeDataMap[date] || [];
-  const uniqueTimeSet = new Set();
-  allTimes.forEach(t => {
-    const standardTime = t.value || t;
-    uniqueTimeSet.add(standardTime);
-  });
-  const uniqueTimes = Array.from(uniqueTimeSet);
+  const list = timeDataMap[date] || [];
+
+  // ==================== 萬用去重：所有重複時段都只留一個 ====================
+  const uniqueMap = {};
+  const uniqueList = [];
+  for (const item of list) {
+    const time = item.value;
+    if (!uniqueMap[time]) {
+      uniqueMap[time] = true;
+      uniqueList.push(item);
+    }
+  }
+  // ======================================================================
 
   // 過濾：未過期 + 未滿員
-  const availableTimes = uniqueTimes.filter(standardTime => {
+  const availableTimes = uniqueList.filter(t => {
+    const standardTime = t.value || t;
     if (shouldHideTime(date, standardTime)) return false;
     const count = reservationCountMap[`${date}_${standardTime}`] || 0;
     return count < MAX_BOOKING_COUNT;
@@ -1267,7 +1273,8 @@ function renderTimeList() {
     return;
   }
   
-  availableTimes.forEach(standardTime => {
+  availableTimes.forEach(t => {
+    const standardTime = t.value || t;
     const btn = document.createElement('div');
     btn.className = "time-btn";
     btn.textContent = standardTime;
