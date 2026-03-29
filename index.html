@@ -1277,64 +1277,41 @@ function renderTimeList() {
   }
 
   const list = timeDataMap[date] || [];
-
-  // 去重：所有重複時段只留一個
-  const uniqueMap = {};
-  const uniqueList = [];
-  for (const item of list) {
-    const time = item.value;
-    if (!uniqueMap[time]) {
-      uniqueMap[time] = true;
-      uniqueList.push(item);
-    }
-  }
-
-  // 排序
-  uniqueList.sort((a, b) => a.value.localeCompare(b.value));
-
-  // 當日時段數量 = 每個時段預約上限
-  const dayMaxLimit = uniqueList.length;
-
-  // 過濾：未過期 + 未滿員
-  const availableTimes = uniqueList.filter(t => {
-    const standardTime = t.value || t;
-    if (shouldHideTime(date, standardTime)) return false;
-    
-    // ✅ 關鍵：判斷是否已滿員
-    const count = reservationCountMap[`${date}_${standardTime}`] || 0;
-    return count < dayMaxLimit;
-  });
-
-  if (!availableTimes.length) {
+  if (!list.length) {
     grid.innerHTML = `<div style="grid-column:1/3;text-align:center;color:#999;">當日無可預約時段</div>`;
     return;
   }
-  
-  availableTimes.forEach(t => {
-    const standardTime = t.value || t;
-    const count = reservationCountMap[`${date}_${standardTime}`] || 0;
-    const isFull = count >= dayMaxLimit;
 
+  // 排序
+  list.sort((a, b) => (a.value || a).localeCompare(b.value || b));
+
+  // 過濾：未過期 + 未預約滿
+  const availableList = list.filter(item => {
+    const time = item.value || item;
+    if (shouldHideTime(date, time)) return false;
+    
+    // 關鍵：有預約就不顯示
+    const bookedCount = reservationCountMap[`${date}_${time}`] || 0;
+    return bookedCount < 1;
+  });
+
+  if (!availableList.length) {
+    grid.innerHTML = `<div style="grid-column:1/3;text-align:center;color:#999;">當日無可預約時段</div>`;
+    return;
+  }
+
+  // 渲染剩餘可預約時段
+  availableList.forEach(item => {
+    const time = item.value || item;
     const btn = document.createElement('div');
     btn.className = "time-btn";
+    btn.textContent = time;
     
-    // ✅ 已滿員直接灰掉 + 不可點
-    if (isFull) {
-      btn.classList.add('expired');
-      btn.textContent = `${standardTime} (已滿)`;
-    } else {
-      // 上限=1只顯示時段，≥2才顯示數量
-      if (dayMaxLimit === 1) {
-        btn.textContent = standardTime;
-      } else {
-        btn.textContent = `${standardTime} (${count})`;
-      }
-      btn.onclick = () => {
-        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        timeInput.value = standardTime;
-      };
-    }
+    btn.onclick = () => {
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      timeInput.value = time;
+    };
     
     grid.appendChild(btn);
   });
@@ -1360,19 +1337,8 @@ function renderTimeList() {
       // ✅ 提交前再次驗證時段是否滿員，防止重複提交
       const date = document.getElementById('appointDate').value;
       const time = document.getElementById('appointTime').value;
-      const list = timeDataMap[date] || [];
-      const uniqueMap = {};
-      const uniqueList = [];
-      for (const item of list) {
-        const timeVal = item.value;
-        if (!uniqueMap[timeVal]) {
-          uniqueMap[timeVal] = true;
-          uniqueList.push(item);
-        }
-      }
-      const dayMaxLimit = uniqueList.length;
       const count = reservationCountMap[`${date}_${time}`] || 0;
-      if(count >= dayMaxLimit){
+      if(count >= 1){
         alert("❌ 該時段已滿，請重新選擇時段");
         resetButtonState();
         return;
