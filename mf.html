@@ -47,15 +47,6 @@
         box-shadow:0 5px 15px rgba(0,0,0,0.05);
         display:block;
     }
-    .admin-input{
-        width:100%;
-        padding:11px 15px;
-        border:1px solid #EAEAEA;
-        border-radius:16px;
-        font-size:15px;
-        outline:none;
-        margin-bottom:12px;
-    }
     .btn{
         padding:11px 16px;
         border-radius:16px;
@@ -71,10 +62,6 @@
     }
     .btn-success{
         background:#a89699;
-        color:#fff;
-    }
-    .btn-danger{
-        background:#e49d9d;
         color:#fff;
     }
     .btn:disabled{
@@ -178,13 +165,10 @@
         height:32px;
         font-size:16px;
         cursor:pointer;
-        display:none;
-        z-index:10;
-    }
-    .admin-mode .delete-btn{
         display:flex;
         align-items:center;
         justify-content:center;
+        z-index:10;
     }
     .info{
         padding:14px 10px;
@@ -220,9 +204,6 @@
     }
 
     [contenteditable]{
-        pointer-events:none;
-    }
-    .admin-mode [contenteditable]{
         pointer-events:auto;
         border-bottom:1px dashed #ccc;
         padding:2px 4px;
@@ -246,11 +227,8 @@
 
 <div class="container">
     <div class="admin-panel" id="adminPanel">
-        <input type="password" class="admin-input" id="adminPwd" placeholder="請輸入管理密碼">
         <div class="admin-row">
-            <button class="btn btn-primary" onclick="adminLogin()">登入管理</button>
-            <button class="btn btn-success" id="saveBtn" onclick="saveAllData()" disabled>💾 儲存修改</button>
-            <button class="btn btn-danger" onclick="adminLogout()">登出</button>
+            <button class="btn btn-success" id="saveBtn" onclick="saveAllData()">💾 儲存修改</button>
         </div>
         <div class="admin-row">
             <button class="btn btn-primary" onclick="showUpload('photo')">📸 新增圖片</button>
@@ -259,7 +237,7 @@
         <div class="file-upload" id="fileUpload">
             <input type="file" id="fileInput" accept="image/*,video/*">
         </div>
-        <div class="admin-status" id="adminStatus">請輸入密碼登入</div>
+        <div class="admin-status" id="adminStatus">歡迎使用管理功能</div>
     </div>
 
     <div class="tab-bar">
@@ -289,60 +267,16 @@
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-let isAdmin = false;
 let currentUploadType = '';
 
 window.onload = async () => {
   await loadAllData();
-  checkAdminStatus();
-};
-
-function checkAdminStatus() {
-  if (localStorage.getItem('adminToken') === 'logged') {
-    enableAdminMode();
-  }
-}
-
-async function adminLogin() {
-  const pwd = document.getElementById('adminPwd').value.trim();
-  if (!pwd) return alert('請輸入密碼');
-  setStatus('🔑 驗證中...');
-  disableBtn(true);
-  try {
-    const res = await fetch(GAS_URL + '?action=login&pwd=' + encodeURIComponent(pwd));
-    const data = await res.json();
-    if (data.success) {
-      localStorage.setItem('adminToken', 'logged');
-      localStorage.setItem('adminPwd', pwd);
-      enableAdminMode();
-      setStatus('✅ 登入成功');
-    } else {
-      alert('❌ 密碼錯誤');
-      setStatus('❌ 登入失敗');
-    }
-  } catch (e) {
-    alert('❌ 連線失敗');
-  } finally {
-    disableBtn(false);
-  }
-}
-
-function enableAdminMode() {
-  isAdmin = true;
+  // 自動開啟全部功能
   document.body.classList.add('admin-mode');
   document.getElementById('saveBtn').disabled = false;
-}
-
-function adminLogout() {
-  localStorage.clear();
-  isAdmin = false;
-  document.body.classList.remove('admin-mode');
-  document.getElementById('saveBtn').disabled = true;
-  setStatus('👋 已登出');
-}
+};
 
 function showUpload(type) {
-  if (!isAdmin) return alert('請先登入');
   currentUploadType = type;
   document.getElementById('fileUpload').classList.add('show');
 }
@@ -350,8 +284,6 @@ function showUpload(type) {
 document.getElementById('fileInput').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  const pwd = localStorage.getItem('adminPwd');
-  if (!pwd) return alert('請先登入');
 
   setStatus('⬆️ 上傳中...');
   disableBtn(true);
@@ -365,7 +297,6 @@ document.getElementById('fileInput').addEventListener('change', async (e) => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           action: 'uploadBase64',
-          pwd: pwd,
           type: currentUploadType,
           fileData: base64
         })
@@ -404,15 +335,12 @@ function addNewItem(type, url) {
 
 async function deleteItem(id, type) {
   if (!confirm('確定刪除？')) return;
-  const pwd = localStorage.getItem('adminPwd');
-  await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}&pwd=${pwd}`);
+  await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}`);
   document.querySelector(`.card[data-id="${id}"]`).remove();
   setStatus('🗑 已刪除');
 }
 
 async function saveAllData() {
-  if (!isAdmin) return;
-  const pwd = localStorage.getItem('adminPwd');
   setStatus('💾 儲存中...');
   disableBtn(true);
   try {
@@ -422,7 +350,7 @@ async function saveAllData() {
       const val = el.innerText.trim();
       await fetch(GAS_URL, {
         method: 'POST',
-        body: new URLSearchParams({ action: 'save', key, val, pwd })
+        body: new URLSearchParams({ action: 'save', key, val })
       });
     }
     alert('✅ 儲存完成');
