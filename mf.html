@@ -1,161 +1,145 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>莫凡美甲</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif}
-  body{background:#F9F5F5;padding-bottom:50px}
-  header{background:linear-gradient(135deg,#E3DCD2,#CCBCBC);padding:40px 20px;text-align:center;border-radius:0 0 30px 30px;margin-bottom:20px}
-  .admin-panel{background:#fff;border-radius:20px;padding:20px;margin:20px auto;max-width:450px}
-  .btn{padding:10px 14px;border-radius:14px;border:none;background:#CCBCBC;color:#fff;margin:4px;cursor:pointer}
-  .btn:disabled{opacity:.5}
-  .status{text-align:center;margin:10px 0;color:#666}
-  .file-upload{display:none;text-align:center;margin:10px 0}
-  .show{display:block !important}
-  .tab-bar{display:flex;justify-content:center;gap:10px;margin:20px 0}
-  .tab{padding:10px 16px;background:#fff;border-radius:16px;cursor:pointer}
-  .tab.active{background:#CCBCBC;color:#fff}
-  .container{max-width:450px;margin:0 auto;padding:0 20px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .card{background:#fff;border-radius:18px;overflow:hidden;position:relative}
-  .card img,.card video{width:100%;height:140px;object-fit:cover}
-  .delete-btn{position:absolute;top:6px;right:6px;background:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer}
-  .info{padding:8px}
-  .title{font-size:14px}
-  .desc{font-size:12px;color:#888}
-  .tab-content{display:none}
-  .tab-content.active{display:block}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作品集網站</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#A67C72',
+            secondary: '#E8D4CE',
+            sub: '#D1B8AF',
+            bg: '#F7F3F1',
+            card: '#ffffff',
+            textMain: '#4A423F',
+            textLight: '#948884',
+            border: '#EAE2DF'
+          },
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto { content-visibility: auto; }
+      .glassmorphism { @apply bg-white/80 backdrop-blur-md border border-white/50 shadow-sm; }
+      .btn-active { @apply bg-primary text-white shadow-md; }
+      .btn-default { @apply bg-white text-textMain hover:bg-secondary transition-all duration-300; }
+    }
+    body { background: #F7F3F1; color: #4A423F; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+  </style>
 </head>
 
-<body>
+<body class="flex h-screen overflow-hidden">
+  <!-- 左側選單 -->
+  <aside class="w-[70px] h-full bg-white border-r border-border flex flex-col items-center py-6 gap-6">
+    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+      <i class="fa fa-heart"></i>
+    </div>
+    <nav class="flex flex-col gap-5 items-center">
+      <a class="w-10 h-10 rounded-lg btn-active flex items-center justify-center"><i class="fa fa-home"></i></a>
+      <a class="w-10 h-10 rounded-lg btn-default flex items-center justify-center"><i class="fa fa-images"></i></a>
+      <a class="w-10 h-10 rounded-lg btn-default flex items-center justify-center"><i class="fa fa-calendar"></i></a>
+      <a class="w-10 h-10 rounded-lg btn-default flex items-center justify-center"><i class="fa fa-user"></i></a>
+    </nav>
+  </aside>
 
-<header>
-  <h1>莫凡美甲作品集</h1>
-</header>
+  <!-- 中間分類 -->
+  <aside class="w-[220px] h-full bg-white border-r border-border px-5 py-6 flex flex-col gap-5 overflow-y-auto scrollbar-hide">
+    <div class="flex gap-2">
+      <button id="grid" class="w-[100px] h-11 rounded-lg btn-default"><i class="fa fa-th-large"></i></button>
+      <button id="list" class="w-[100px] h-11 rounded-lg btn-active"><i class="fa fa-list"></i></button>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h3 class="text-sm text-textLight px-1 mb-1">作品分類</h3>
+      <button class="h-10 rounded-lg btn-active px-4 text-left">全部</button>
+      <button class="h-10 rounded-lg btn-default px-4 text-left">設計類</button>
+      <button class="h-10 rounded-lg btn-default px-4 text-left">攝影類</button>
+      <button class="h-10 rounded-lg btn-default px-4 text-left">手作類</button>
+    </div>
+  </aside>
 
-<div class="container">
-  <div class="admin-panel">
-    <button class="btn" onclick="saveAllData()">💾 儲存</button>
-    <button class="btn" onclick="showUpload('photo')">📸 上傳照片</button>
-    <button class="btn" onclick="showUpload('video')">🎞 上傳影片</button>
-
-    <div class="file-upload" id="fileUpload">
-      <input type="file" id="fileInput"><br>
-      <button class="btn" onclick="upload()">✅ 確認上傳</button>
+  <!-- 右側內容 -->
+  <main class="flex-1 h-full overflow-y-auto px-8 py-6">
+    <div class="flex flex-wrap gap-3 mb-6">
+      <button class="px-5 py-2 rounded-full btn-active">全部作品</button>
+      <button class="px-5 py-2 rounded-full btn-default">最新上架</button>
+      <button class="px-5 py-2 rounded-full btn-default">精選案例</button>
     </div>
 
-    <div class="status" id="status">載入中...</div>
-  </div>
-
-  <div class="tab-bar">
-    <div class="tab active" onclick="switchTab('photo')">照片</div>
-    <div class="tab" onclick="switchTab('video')">影片</div>
-  </div>
-
-  <div id="photoContent" class="tab-content active">
-    <div class="grid" id="photoGrid"></div>
-  </div>
-  <div id="videoContent" class="tab-content">
-    <div class="grid" id="videoGrid"></div>
-  </div>
-</div>
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="grid grid-cols-[160px_1fr_160px_180px] px-6 py-4 bg-bg border-b border-border">
+        <div class="text-textLight">作品圖</div>
+        <div class="text-textLight">標題 / 標籤</div>
+        <div class="text-textLight">尺寸</div>
+        <div class="text-textLight">建立時間</div>
+      </div>
+      <div id="listArea" class="divide-y divide-border"></div>
+    </div>
+  </main>
 
 <script>
-// ========= 請把你的 GAS 網址貼這裡 =========
-const GAS_URL = "貼上你的 GAS 網址";
+document.addEventListener('DOMContentLoaded', async function(){
+  const listArea = document.getElementById('listArea');
+  const gridBtn = document.getElementById('grid');
+  const listBtn = document.getElementById('list');
 
-let currentType = "";
+  // ==========================
+  // 請填入你的 GAS Web App 網址
+  // ==========================
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
 
-window.onload = loadAllData;
-
-function showUpload(type) {
-  currentType = type;
-  document.getElementById("fileUpload").classList.add("show");
-}
-
-async function upload() {
-  const file = document.getElementById("fileInput").files[0];
-  if (!file) { alert("請選擇檔案"); return; }
-
-  setStatus("上傳中...");
-  disableAll(true);
-
-  const formData = new FormData();
-  formData.append("action", "upload");
-  formData.append("type", currentType);
-  formData.append("fileData", file);
-
-  try {
-    const res = await fetch(GAS_URL, { method: "POST", body: formData });
-    const data = await res.json();
-    if (data.url) {
-      setStatus("✅ 上傳成功");
-      loadAllData();
-    } else {
-      alert("失敗：" + data.error);
+  // 讀取作品
+  async function load() {
+    try {
+      let res = await fetch(GAS_URL);
+      let json = await res.json();
+      render(json.list);
+    } catch(e) {
+      listArea.innerHTML = `<div class="p-5 text-red-500">載入失敗</div>`;
     }
-  } catch (e) {
-    alert("✅ 上傳成功 (強制刷新)");
-    loadAllData();
   }
 
-  disableAll(false);
-  document.getElementById("fileUpload").classList.remove("show");
-}
-
-async function deleteItem(id, type) {
-  if (!confirm("確定刪除？")) return;
-  await fetch(GAS_URL + "?action=delete&id=" + id + "&type=" + type);
-  loadAllData();
-}
-
-async function saveAllData() {
-  setStatus("儲存中...");
-  const items = document.querySelectorAll("[data-key]");
-  for (const el of items) {
-    await fetch(GAS_URL, {
-      method: "POST",
-      body: new FormData()
+  // 渲染列表
+  function render(list) {
+    listArea.innerHTML = '';
+    list.forEach(item => {
+      let dom = document.createElement('div');
+      dom.className = 'grid grid-cols-[160px_1fr_160px_180px] px-6 py-4 items-center hover:bg-bg/50';
+      dom.innerHTML = `
+        <div class="w-[120px] h-[80px] rounded overflow-hidden border">
+          <img src="${item.url}" class="w-full h-full object-cover">
+        </div>
+        <div>${item.name}</div>
+        <div class="text-textLight">${item.size}</div>
+        <div class="text-textLight">${item.time}</div>
+      `;
+      listArea.appendChild(dom);
     });
   }
-  setStatus("✅ 儲存完成");
-}
 
-async function loadAllData() {
-  setStatus("載入中...");
-  const data = await fetch(GAS_URL + "?action=load").then(r => r.json());
-  render("photo", data.photos);
-  render("video", data.videos);
-  setStatus("✅ 已載入");
-}
+  // 切換模式
+  gridBtn.onclick = () => {
+    gridBtn.classList.add('btn-active');
+    listBtn.classList.remove('btn-active');
+    listArea.classList.add('grid','grid-cols-3','gap-4','p-4');
+    listArea.classList.remove('divide-y');
+  }
+  listBtn.onclick = () => {
+    listBtn.classList.add('btn-active');
+    gridBtn.classList.remove('btn-active');
+    listArea.classList.remove('grid','grid-cols-3','gap-4');
+    listArea.classList.add('divide-y');
+  }
 
-function render(type, json) {
-  const list = json ? JSON.parse(json) : [];
-  const dom = document.getElementById(type + "Grid");
-  dom.innerHTML = list.map(i => `
-    <div class="card">
-      <button class="delete-btn" onclick="deleteItem('${i.id}','${type}')">🗑</button>
-      ${type === "photo" ? `<img src="${i.url}">` : `<video src="${i.url}" controls></video>`}
-      <div class="info">
-        <div class="title" contenteditable data-key="${type}-${i.id}-title">${i.title}</div>
-      </div>
-    </div>
-  `).join("");
-}
-
-function switchTab(t) {
-  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
-  document.querySelectorAll(".tab-content").forEach(x => x.classList.remove("active"));
-  event.currentTarget.classList.add("active");
-  document.getElementById(t + "Content").classList.add("active");
-}
-
-function setStatus(t) { document.getElementById("status").innerText = t; }
-function disableAll(d) { document.querySelectorAll(".btn").forEach(b => b.disabled = d); }
+  load();
+})
 </script>
-
 </body>
 </html>
