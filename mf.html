@@ -45,10 +45,10 @@
         max-width:450px;
         margin:0 auto 25px;
         box-shadow:0 5px 15px rgba(0,0,0,0.05);
-        display:none;
+        display:block; /* 預設顯示 */
     }
-    .admin-panel.show{
-        display:block;
+    .admin-panel.hide{
+        display:none;
     }
     .admin-input{
         width:100%;
@@ -287,7 +287,7 @@
         </section>
     </div>
 
-    <div id="videoContent" class="tab-content active">
+    <div id="videoContent" class="tab-content">
         <section class="section">
             <h2>🎞 操作流程影片</h2>
             <div class="grid" id="videoGrid"></div>
@@ -351,7 +351,6 @@
     function enableAdminMode() {
         isAdmin = true;
         document.body.classList.add('admin-mode');
-        document.getElementById('adminPanel').classList.add('show');
         document.getElementById('saveBtn').disabled = false;
     }
 
