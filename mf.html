@@ -1,515 +1,250 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>莫凡美甲作品集</title>
 <style>
-    *{
-        margin:0;
-        padding:0;
-        box-sizing:border-box;
-        font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Heiti TC", sans-serif;
-    }
-    body{
-        background:#F9F5F5;
-        color:#444;
-        padding-bottom:80px;
-        line-height:1.5;
-    }
-    header{
-        background:linear-gradient(135deg,#E3DCD2,#CCBCBC);
-        padding:55px 20px 45px;
-        text-align:center;
-        border-radius:0 0 50px 50px;
-        box-shadow:0 10px 30px rgba(0,0,0,0.06);
-        margin-bottom:25px;
-    }
-    header h1{
-        font-size:28px;
-        font-weight:700;
-        color:#222;
-        letter-spacing:1px;
-    }
-    header p{
-        font-size:16px;
-        color:#555;
-        margin-top:10px;
-        opacity:0.9;
-    }
-
-    .admin-panel{
-        background:#fff;
-        border-radius:22px;
-        padding:18px 20px;
-        max-width:450px;
-        margin:0 auto 25px;
-        box-shadow:0 5px 15px rgba(0,0,0,0.05);
-        display:block;
-    }
-    .btn{
-        padding:11px 16px;
-        border-radius:16px;
-        border:none;
-        font-weight:500;
-        cursor:pointer;
-        font-size:15px;
-        transition:0.2s;
-    }
-    .btn-primary{
-        background:#CCBCBC;
-        color:#fff;
-    }
-    .btn-success{
-        background:#a89699;
-        color:#fff;
-    }
-    .btn-warning{
-        background:#d4b2b2;
-        color:#fff;
-    }
-    .btn:disabled{
-        opacity:0.5;
-        cursor:not-allowed;
-    }
-    .admin-row{
-        display:flex;
-        gap:8px;
-        margin-bottom:10px;
-        flex-wrap:wrap;
-        justify-content: center;
-    }
-    .admin-status{
-        font-size:13px;
-        color:#777;
-        margin-top:8px;
-        text-align:center;
-        min-height:16px;
-    }
-
-    .file-upload{
-        display:none;
-        margin:12px 0;
-        text-align:center;
-    }
-    .file-upload.show{
-        display:block;
-    }
-    .file-name{
-        font-size:12px;
-        color:#666;
-        margin-top:6px;
-        word-break:break-all;
-    }
-    .preview-img{
-        max-width:100px;
-        max-height:100px;
-        border-radius:12px;
-        margin-top:8px;
-        object-fit:cover;
-        display:none;
-    }
-
-    .progress-container{
-        width:100%;
-        height:6px;
-        background:#eee;
-        border-radius:3px;
-        margin:10px 0;
-        overflow:hidden;
-        display:none;
-    }
-    .progress-bar{
-        height:100%;
-        width:0%;
-        background:#CCBCBC;
-        transition: width 0.3s;
-    }
-
-    .tab-bar{
-        display:flex;
-        gap:12px;
-        justify-content:center;
-        margin-bottom:28px;
-        padding:0 15px;
-    }
-    .tab{
-        padding:12px 26px;
-        background:#fff;
-        border-radius:18px;
-        cursor:pointer;
-        box-shadow:0 4px 10px rgba(0,0,0,0.04);
-        font-weight:500;
-        font-size:15px;
-        transition:0.2s;
-    }
-    .tab.active{
-        background:#CCBCBC;
-        color:#fff;
-    }
-
-    .container{
-        max-width:1000px;
-        margin:0 auto;
-        padding:0 20px;
-    }
-    .section{
-        margin-bottom:45px;
-    }
-    .section h2{
-        font-size:21px;
-        color:#222;
-        margin-bottom:22px;
-        padding-left:16px;
-        border-left:5px solid #CCBCBC;
-        font-weight:600;
-    }
-
-    .grid{
-        display:grid;
-        grid-template-columns: repeat(2,1fr);
-        gap:16px;
-    }
-    @media (min-width:600px){
-        .grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
-    }
-
-    .card{
-        background:#fff;
-        border-radius:22px;
-        overflow:hidden;
-        box-shadow:0 8px 20px rgba(0,0,0,0.05);
-        transition:0.25s;
-        position:relative;
-    }
-    .card:hover{
-        transform:translateY(-5px);
-        box-shadow:0 12px 25px rgba(0,0,0,0.08);
-    }
-    .card img,.card video{
-        width:100%;
-        height:210px;
-        object-fit:cover;
-    }
-    .card .delete-btn{
-        position:absolute;
-        top:10px;
-        right:10px;
-        background:rgba(255,255,255,0.9);
-        border:none;
-        border-radius:50%;
-        width:32px;
-        height:32px;
-        font-size:16px;
-        cursor:pointer;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        z-index:10;
-    }
-    .info{
-        padding:14px 10px;
-        text-align:center;
-    }
-    .title{
-        font-size:15px;
-        color:#333;
-        font-weight:500;
-        margin-bottom:5px;
-    }
-    .desc{
-        font-size:13px;
-        color:#888;
-    }
-
-    .contact{
-        background:#fff;
-        padding:40px 30px;
-        border-radius:28px;
-        text-align:center;
-        box-shadow:0 10px 25px rgba(0,0,0,0.06);
-    }
-    .contact h3{
-        font-size:20px;
-        margin-bottom:15px;
-        color:#222;
-    }
-    .contact p{
-        font-size:15px;
-        color:#555;
-        line-height:1.7;
-    }
-
-    [contenteditable]{
-        pointer-events:auto;
-        border-bottom:1px dashed #ccc;
-        padding:2px 4px;
-        border-radius:4px;
-    }
-
-    .tab-content{
-        display:none;
-    }
-    .tab-content.active{
-        display:block;
-    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif}
+    body{background:#F9F5F5;color:#333;padding-bottom:60px}
+    header{background:linear-gradient(135deg,#E3DCD2,#CCBCBC);padding:40px 20px;text-align:center;border-radius:0 0 30px 30px;margin-bottom:24px}
+    header h1{font-size:26px;margin-bottom:8px}
+    .admin-panel{background:#fff;border-radius:20px;padding:16px;margin:0 auto 20px;max-width:420px}
+    .btn{padding:10px 14px;border-radius:14px;border:none;background:#CCBCBC;color:#fff;cursor:pointer}
+    .btn-success{background:#a89699}
+    .btn-warning{background:#d4b2b2}
+    .btn:disabled{opacity:.5}
+    .admin-row{display:flex;gap:8px;justify-content:center;margin-bottom:10px;flex-wrap:wrap}
+    .admin-status{text-align:center;font-size:14px;margin-top:8px;color:#666}
+    .file-upload{display:none;text-align:center;margin:12px 0}
+    .file-upload.show{display:block}
+    .file-name{font-size:12px;margin:6px 0;color:#666}
+    .preview-img{max-width:80px;max-height:80px;border-radius:10px;margin:6px auto;object-fit:cover;display:none}
+    .progress-container{width:100%;height:5px;background:#eee;border-radius:3px;margin:10px 0;display:none}
+    .progress-bar{height:100%;width:0%;background:#CCBCBC;transition:.2s}
+    .tab-bar{display:flex;gap:10px;justify-content:center;margin-bottom:20px}
+    .tab{padding:10px 16px;background:#fff;border-radius:16px;cursor:pointer}
+    .tab.active{background:#CCBCBC;color:#fff}
+    .container{max-width:420px;margin:0 auto;padding:0 16px}
+    .section{margin-bottom:30px}
+    .section h2{font-size:18px;margin-bottom:12px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .card{background:#fff;border-radius:18px;overflow:hidden;position:relative}
+    .card img,.card video{width:100%;height:140px;object-fit:cover}
+    .delete-btn{position:absolute;top:6px;right:6px;background:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer}
+    .info{padding:8px}
+    .title{font-size:14px;margin-bottom:4px}
+    .desc{font-size:12px;color:#888}
+    .contact{background:#fff;border-radius:20px;padding:16px;margin-top:20px}
+    [contenteditable]{border-bottom:1px dashed #ccc;padding:2px 4px;border-radius:4px}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
 </style>
 </head>
 <body>
 
 <header>
-    <h1>莫凡美甲作品集</h1>
-    <p>美甲・美睫・紋繡・霧眉｜專業精緻質感服務</p>
+  <h1>莫凡美甲作品集</h1>
+  <p>專業美甲・美睫・紋繡</p>
 </header>
 
 <div class="container">
-    <div class="admin-panel" id="adminPanel">
-        <div class="admin-row">
-            <button class="btn btn-success" id="saveBtn" onclick="saveAllData()">💾 儲存修改</button>
-        </div>
-        <div class="admin-row">
-            <button class="btn btn-primary" onclick="showUpload('photo')">📸 新增圖片</button>
-            <button class="btn btn-primary" onclick="showUpload('video')">🎞 新增影片</button>
-        </div>
-
-        <div class="file-upload" id="fileUpload">
-            <input type="file" id="fileInput" accept="image/*,video/*">
-            <img class="preview-img" id="previewImg">
-            <div class="file-name" id="fileName"></div>
-
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-
-            <div style="margin-top:10px;">
-                <button class="btn btn-warning" onclick="confirmUpload()">✅ 確認上傳</button>
-            </div>
-        </div>
-
-        <div class="admin-status" id="adminStatus">歡迎使用管理功能</div>
+  <div class="admin-panel">
+    <div class="admin-row">
+      <button class="btn btn-success" onclick="saveAllData()">💾 儲存修改</button>
+    </div>
+    <div class="admin-row">
+      <button class="btn" onclick="showUpload('photo')">📸 新增圖片</button>
+      <button class="btn" onclick="showUpload('video')">🎞 新增影片</button>
     </div>
 
-    <div class="tab-bar">
-        <div class="tab active" onclick="switchTab('photo')">圖片作品</div>
-        <div class="tab" onclick="switchTab('video')">影片展示</div>
+    <div class="file-upload" id="fileUpload">
+      <input type="file" id="fileInput" accept="image/*,video/*">
+      <img class="preview-img" id="previewImg">
+      <div class="file-name" id="fileName"></div>
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <button class="btn btn-warning" onclick="startUpload()">✅ 確認上傳</button>
     </div>
 
-    <div id="photoContent" class="tab-content active">
-        <section class="section">
-            <h2>📸 精選美甲作品</h2>
-            <div class="grid" id="photoGrid"></div>
-        </section>
-    </div>
+    <div class="admin-status" id="status">載入中...</div>
+  </div>
 
-    <div id="videoContent" class="tab-content">
-        <section class="section">
-            <h2>🎞 操作流程影片</h2>
-            <div class="grid" id="videoGrid"></div>
-        </section>
-    </div>
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('photo')">圖片作品</div>
+    <div class="tab" onclick="switchTab('video')">影片展示</div>
+  </div>
 
-    <section class="contact">
-        <h3 contenteditable data-key="contact-title">預約諮詢</h3>
-        <p contenteditable data-key="contact-info">LINE：mofun-nail<br>營業時間：10:00-20:00<br>服務項目：美甲、美睫、紋繡、霧眉</p>
+  <div id="photoContent" class="tab-content active">
+    <section class="section">
+      <h2>📸 精選美甲作品</h2>
+      <div class="grid" id="photoGrid"></div>
     </section>
+  </div>
+
+  <div id="videoContent" class="tab-content">
+    <section class="section">
+      <h2>🎞 操作流程影片</h2>
+      <div class="grid" id="videoGrid"></div>
+    </section>
+  </div>
+
+  <div class="contact">
+    <h3 contenteditable data-key="contact-title">預約諮詢</h3>
+    <p contenteditable data-key="contact-info">LINE：mofan123</p>
+  </div>
 </div>
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-let currentUploadType = '';
+const AUTH_TOKEN = "mofan123";
+
+let currentType = "";
 let selectedFile = null;
 
-window.onload = async () => {
-  await loadAllData();
-  document.getElementById('saveBtn').disabled = false;
-  setStatus("✅ 載入完成");
-};
+window.onload = loadAllData;
 
 function showUpload(type) {
-  currentUploadType = type;
+  currentType = type;
   selectedFile = null;
-  document.getElementById('fileUpload').classList.add('show');
-  document.getElementById('fileInput').value = '';
-  document.getElementById('previewImg').style.display = 'none';
-  document.getElementById('fileName').innerText = '';
-  document.getElementById('progressContainer').style.display = 'none';
-  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById("fileUpload").classList.add("show");
+  document.getElementById("fileInput").value = "";
+  document.getElementById("previewImg").style.display = "none";
+  document.getElementById("fileName").innerText = "";
 }
 
-document.getElementById('fileInput').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  selectedFile = file;
-  document.getElementById('fileName').innerText = "已選取：" + file.name;
-  const preview = document.getElementById('previewImg');
-  if (file.type.startsWith('image/')) {
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = 'block';
+document.getElementById("fileInput").addEventListener("change", (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  selectedFile = f;
+  document.getElementById("fileName").innerText = "已選取：" + f.name;
+  if (f.type.startsWith("image/")) {
+    document.getElementById("previewImg").src = URL.createObjectURL(f);
+    document.getElementById("previewImg").style.display = "block";
   } else {
-    preview.style.display = 'none';
+    document.getElementById("previewImg").style.display = "none";
   }
 });
 
-// 穩定上傳（使用 base64 相容你的後端）
-async function confirmUpload() {
-  if (!selectedFile) {
-    alert("請選擇檔案");
-    return;
-  }
+// 上傳流程（Presigned，超穩）
+async function startUpload() {
+  if (!selectedFile) { alert("請選擇檔案"); return; }
+  setStatus("⬆️ 取得上傳憑證...");
+  disableAll(true);
 
-  setStatus("⬆️ 上傳中，請稍後...");
-  disableBtn(true);
-  
-  const progressBar = document.getElementById('progressBar');
-  const progressContainer = document.getElementById('progressContainer');
-  progressContainer.style.display = 'block';
-  progressBar.style.width = '30%';
+  const ext = selectedFile.name.split(".").pop();
+  const contentType = selectedFile.type;
 
-  const reader = new FileReader();
-  reader.readAsDataURL(selectedFile);
-
-  reader.onload = async function (e) {
-    try {
-      progressBar.style.width = '60%';
-      const base64Data = e.target.result.split(',')[1];
-
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          action: 'uploadBase64',
-          type: currentUploadType,
-          fileData: base64Data
-        })
-      });
-
-      progressBar.style.width = '100%';
-      const data = await res.json();
-
-      if (data.url) {
-        addNewItem(currentUploadType, data.url, selectedFile.name);
-        setStatus("✅ 上傳成功：" + selectedFile.name);
-      } else {
-        alert("❌ 上傳失敗：" + (data.error || "未知錯誤"));
-        setStatus("❌ 上傳失敗");
-      }
-    } catch (err) {
-      alert("❌ 上傳異常：" + err.message);
-      setStatus("❌ 上傳異常");
-    } finally {
-      setTimeout(() => {
-        disableBtn(false);
-        document.getElementById('fileUpload').classList.remove('show');
-      }, 500);
-    }
-  };
-}
-
-function addNewItem(type, url, fileName) {
-  const grid = document.getElementById(type + 'Grid');
-  const id = Date.now().toString();
-  const media = type === 'photo' 
-    ? `<img src="${url}" alt="${fileName}">` 
-    : `<video controls src="${url}"></video>`;
-
-  grid.innerHTML += `
-  <div class="card" data-id="${id}" data-type="${type}">
-    <button class="delete-btn" onclick="deleteItem('${id}','${type}')">🗑</button>
-    ${media}
-    <div class="info">
-      <div class="title" contenteditable data-key="${type}-${id}-title">新作品</div>
-      <div class="desc" contenteditable data-key="${type}-${id}-desc">${fileName}</div>
-    </div>
-  </div>`;
-}
-
-async function deleteItem(id, type) {
-  if (!confirm('確定刪除？')) return;
   try {
-    await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}`);
-    document.querySelector(`.card[data-id="${id}"]`).remove();
-    setStatus('🗑 刪除成功');
-  } catch (e) {
-    alert('❌ 刪除失敗');
+    // 1. 取得上傳網址
+    const u = await fetch(GAS_URL, {
+      method: "POST",
+      body: new URLSearchParams({
+        token: AUTH_TOKEN,
+        action: "getUploadUrl",
+        ext, type: contentType
+      })
+    }).then(r => r.json());
+
+    // 2. 直接上傳到 R2
+    setStatus("⬆️ 上傳中，請稍後...");
+    document.getElementById("progressContainer").style.display = "block";
+
+    await fetch(u.uploadUrl.split("?")[0], {
+      method: "PUT",
+      body: selectedFile,
+      headers: { "Content-Type": contentType }
+    });
+
+    // 3. 通知完成
+    await fetch(GAS_URL, {
+      method: "POST",
+      body: new URLSearchParams({
+        token: AUTH_TOKEN,
+        action: "uploadDone",
+        type: currentType,
+        publicUrl: u.publicUrl,
+        fileKey: u.fileKey,
+        fileName: selectedFile.name
+      })
+    });
+
+    setStatus("✅ 上傳成功");
+    loadAllData();
+  } catch (err) {
+    alert("❌ 上傳失敗：" + err.message);
+    setStatus("❌ 上傳失敗");
+  } finally {
+    disableAll(false);
+    document.getElementById("fileUpload").classList.remove("show");
   }
+}
+
+// 其餘功能
+async function deleteItem(id, type) {
+  if (!confirm("確定刪除？")) return;
+  await fetch(GAS_URL, {
+    method: "POST",
+    body: new URLSearchParams({ token: AUTH_TOKEN, action: "delete", id, type })
+  });
+  loadAllData();
 }
 
 async function saveAllData() {
-  setStatus('💾 儲存中...');
-  disableBtn(true);
-  try {
-    const items = document.querySelectorAll('[data-key]');
-    for (const el of items) {
-      await fetch(GAS_URL, {
-        method: 'POST',
-        body: new URLSearchParams({
-          action: 'save',
-          key: el.dataset.key,
-          val: el.innerText.trim()
-        })
-      });
-    }
-    alert('✅ 儲存完成');
-    setStatus('✅ 全部儲存成功');
-  } catch (e) {
-    alert('❌ 儲存失敗');
-  } finally {
-    disableBtn(false);
+  setStatus("💾 儲存中...");
+  const items = document.querySelectorAll("[data-key]");
+  for (const el of items) {
+    await fetch(GAS_URL, {
+      method: "POST",
+      body: new URLSearchParams({
+        token: AUTH_TOKEN,
+        action: "save",
+        key: el.dataset.key,
+        val: el.innerText.trim()
+      })
+    });
   }
+  setStatus("✅ 儲存完成");
 }
 
 async function loadAllData() {
-  setStatus('🔄 載入資料中...');
-  try {
-    const res = await fetch(GAS_URL + '?action=load');
-    const data = await res.json();
-    for (const key in data) {
-      const el = document.querySelector(`[data-key="${key}"]`);
-      if (el) el.innerText = data[key];
-    }
-    if (data.photos) {
-      const g = document.getElementById('photoGrid');
-      JSON.parse(data.photos).forEach(p => {
-        g.innerHTML += `<div class="card" data-id="${p.id}" data-type="photo">
-          <button class="delete-btn" onclick="deleteItem('${p.id}','photo')">🗑</button>
-          <img src="${p.url}" alt="${p.desc}">
-          <div class="info">
-            <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title}</div>
-            <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc}</div>
-          </div></div>`;
-      });
-    }
-    if (data.videos) {
-      const g = document.getElementById('videoGrid');
-      JSON.parse(data.videos).forEach(v => {
-        g.innerHTML += `<div class="card" data-id="${v.id}" data-type="video">
-          <button class="delete-btn" onclick="deleteItem('${v.id}','video')">🗑</button>
-          <video controls src="${v.url}"></video>
-          <div class="info">
-            <div class="title" contenteditable data-key="video-${v.id}-title">${v.title}</div>
-            <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc}</div>
-          </div></div>`;
-      });
-    }
-    setStatus('✅ 載入完成');
-  } catch (e) {
-    setStatus('❌ 載入失敗');
-  }
+  setStatus("🔄 載入中...");
+  const data = await fetch(GAS_URL + "?action=load").then(r => r.json());
+
+  document.querySelectorAll("[data-key]").forEach(el => {
+    if (data[el.dataset.key]) el.innerText = data[el.dataset.key];
+  });
+
+  renderList("photo", data.photos);
+  renderList("video", data.videos);
+  setStatus("✅ 已載入");
 }
 
-function switchTab(type) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  document.getElementById(type + 'Content').classList.add('active');
+function renderList(type, json) {
+  const list = json ? JSON.parse(json) : [];
+  const dom = document.getElementById(type + "Grid");
+  dom.innerHTML = list.map(i => `
+    <div class="card">
+      <button class="delete-btn" onclick="deleteItem('${i.id}','${type}')">🗑</button>
+      ${type === "photo" ? `<img src="${i.url}">` : `<video src="${i.url}" controls></video>`}
+      <div class="info">
+        <div class="title" contenteditable data-key="${type}-${i.id}-title">${i.title}</div>
+        <div class="desc">${i.desc}</div>
+      </div>
+    </div>
+  `).join("");
 }
 
-function setStatus(t) {
-  document.getElementById('adminStatus').innerText = t;
+function switchTab(t) {
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(x => x.classList.remove("active"));
+  event.currentTarget.classList.add("active");
+  document.getElementById(t + "Content").classList.add("active");
 }
-function disableBtn(d) {
-  document.querySelectorAll('.btn').forEach(b => b.disabled = d);
-}
+
+function setStatus(t) { document.getElementById("status").innerText = t; }
+function disableAll(d) { document.querySelectorAll(".btn").forEach(b => b.disabled = d); }
 </script>
 </body>
 </html>
