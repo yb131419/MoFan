@@ -89,6 +89,7 @@
         gap:8px;
         margin-bottom:10px;
         flex-wrap:wrap;
+        justify-content: center;
     }
     .admin-status{
         font-size:13px;
@@ -255,9 +256,8 @@
 <div class="container">
 
     <div class="admin-panel" id="adminPanel">
-        <input type="password" class="admin-input" id="adminPwd" placeholder="請輸入管理員密碼">
         <div class="admin-row">
-            <button class="btn btn-primary" onclick="adminLogin()">登入管理</button>
+            <button class="btn btn-primary" onclick="adminLogin()">管理者登入</button>
             <button class="btn btn-success" id="saveBtn" onclick="saveAllData()" disabled>💾 儲存修改</button>
             <button class="btn btn-danger" onclick="adminLogout()">登出</button>
         </div>
@@ -271,7 +271,7 @@
             <input type="file" id="fileInput" accept="image/*,video/*">
         </div>
 
-        <div class="admin-status" id="adminStatus">請輸入密碼登入</div>
+        <div class="admin-status" id="adminStatus">點擊「管理者登入」驗證權限</div>
     </div>
 
     <div class="tab-bar">
@@ -319,28 +319,26 @@
         }
     }
 
-    // 管理員登入
+    // 管理員登入（驗證 User ID）
     async function adminLogin() {
-        const pwd = document.getElementById('adminPwd').value.trim();
-        if (!pwd) return alert('請輸入密碼');
-
-        setStatus('🔑 驗證中...');
+        setStatus('🔍 驗證管理者權限中...');
         disableBtn(true);
 
         try {
-            const res = await fetch(GAS_URL + '?action=login&pwd=' + encodeURIComponent(pwd));
+            const res = await fetch(GAS_URL + '?action=login');
             const data = await res.json();
 
             if (data.success) {
                 localStorage.setItem('adminToken', 'logged');
                 enableAdminMode();
-                setStatus('✅ 管理員已登入');
+                setStatus('✅ 管理者驗證成功');
             } else {
-                alert('❌ 密碼錯誤');
-                setStatus('❌ 登入失敗');
+                alert('❌ 您不在管理者清單內');
+                setStatus('❌ 權限驗證失敗');
             }
         } catch (e) {
-            alert('❌ 連線失敗');
+            alert('❌ 連線失敗，請稍後再試');
+            setStatus('❌ 連線異常');
         } finally {
             disableBtn(false);
         }
@@ -360,7 +358,7 @@
         isAdmin = false;
         document.body.classList.remove('admin-mode');
         document.getElementById('saveBtn').disabled = true;
-        setStatus('👋 已登出');
+        setStatus('👋 已登出管理者模式');
     }
 
     // 顯示上傳
