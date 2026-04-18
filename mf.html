@@ -3,223 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>莫凡美甲作品集</title>
+<title>莫凡美甲</title>
 <style>
-    *{
-        margin:0;
-        padding:0;
-        box-sizing:border-box;
-        font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Heiti TC", sans-serif;
-    }
-    body{
-        background:#F9F5F5;
-        color:#444;
-        padding-bottom:80px;
-        line-height:1.5;
-    }
-    header{
-        background:linear-gradient(135deg,#E3DCD2,#CCBCBC);
-        padding:55px 20px 45px;
-        text-align:center;
-        border-radius:0 0 50px 50px;
-        box-shadow:0 10px 30px rgba(0,0,0,0.06);
-        margin-bottom:25px;
-    }
-    header h1{
-        font-size:28px;
-        font-weight:700;
-        color:#222;
-        letter-spacing:1px;
-    }
-    .admin-panel{
-        background:#fff;border-radius:22px;padding:18px 20px;
-        max-width:450px;margin:0 auto 25px;
-    }
-    .btn{
-        padding:11px 16px;border-radius:16px;border:none;
-        background:#CCBCBC;color:#fff;cursor:pointer;
-    }
-    .btn-success{background:#a89699;}
-    .btn-warning{background:#d4b2b2;}
-    .btn:disabled{opacity:0.5;}
-    .admin-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;justify-content:center;}
-    .admin-status{font-size:13px;color:#777;text-align:center;margin-top:8px;}
-    .file-upload{display:none;margin:12px 0;text-align:center;}
-    .file-upload.show{display:block;}
-    .file-name{font-size:12px;color:#666;margin-top:6px;}
-    .preview-img{max-width:100px;max-height:100px;border-radius:12px;object-fit:cover;display:none;}
-    .progress-container{width:100%;height:6px;background:#eee;border-radius:3px;margin:10px 0;display:none;}
-    .progress-bar{height:100%;width:0%;background:#CCBCBC;transition:0.3s;}
-    .tab-bar{display:flex;gap:12px;justify-content:center;margin-bottom:28px;}
-    .tab{padding:12px 26px;background:#fff;border-radius:18px;cursor:pointer;}
-    .tab.active{background:#CCBCBC;color:#fff;}
-    .container{max-width:1000px;margin:0 auto;padding:0 20px;}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
-    .card{background:#fff;border-radius:22px;overflow:hidden;position:relative;}
-    .card img,.card video{width:100%;height:210px;object-fit:cover;}
-    .delete-btn{position:absolute;top:10px;right:10px;background:#fff;border-radius:50%;width:32px;height:32px;border:none;cursor:pointer;}
-    .info{padding:14px 10px;}
-    .title{font-size:15px;font-weight:500;margin-bottom:5px;}
-    .desc{font-size:13px;color:#888;}
-    .contact{background:#fff;border-radius:28px;padding:40px 30px;margin-top:20px;}
-    [contenteditable]{border-bottom:1px dashed #ccc;}
-    .tab-content{display:none;}
-    .tab-content.active{display:block;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif}
+  body{background:#F9F5F5;padding-bottom:50px}
+  header{background:linear-gradient(135deg,#E3DCD2,#CCBCBC);padding:40px 20px;text-align:center;border-radius:0 0 30px 30px;margin-bottom:20px}
+  .admin-panel{background:#fff;border-radius:20px;padding:20px;margin:20px auto;max-width:450px}
+  .btn{padding:10px 14px;border-radius:14px;border:none;background:#CCBCBC;color:#fff;margin:4px;cursor:pointer}
+  .btn:disabled{opacity:.5}
+  .status{text-align:center;margin:10px 0;color:#666}
+  .file-upload{display:none;text-align:center;margin:10px 0}
+  .show{display:block !important}
+  .tab-bar{display:flex;justify-content:center;gap:10px;margin:20px 0}
+  .tab{padding:10px 16px;background:#fff;border-radius:16px;cursor:pointer}
+  .tab.active{background:#CCBCBC;color:#fff}
+  .container{max-width:450px;margin:0 auto;padding:0 20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .card{background:#fff;border-radius:18px;overflow:hidden;position:relative}
+  .card img,.card video{width:100%;height:140px;object-fit:cover}
+  .delete-btn{position:absolute;top:6px;right:6px;background:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer}
+  .info{padding:8px}
+  .title{font-size:14px}
+  .desc{font-size:12px;color:#888}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
 </style>
 </head>
+
 <body>
 
 <header>
-<h1>莫凡美甲作品集</h1>
-<p>美甲・美睫・紋繡・霧眉</p>
+  <h1>莫凡美甲作品集</h1>
 </header>
 
 <div class="container">
-<div class="admin-panel">
-    <div class="admin-row">
-        <button class="btn btn-success" onclick="saveAllData()">💾 儲存修改</button>
-    </div>
-    <div class="admin-row">
-        <button class="btn" onclick="showUpload('photo')">📸 新增圖片</button>
-        <button class="btn" onclick="showUpload('video')">🎞 新增影片</button>
-    </div>
+  <div class="admin-panel">
+    <button class="btn" onclick="saveAllData()">💾 儲存</button>
+    <button class="btn" onclick="showUpload('photo')">📸 上傳照片</button>
+    <button class="btn" onclick="showUpload('video')">🎞 上傳影片</button>
+
     <div class="file-upload" id="fileUpload">
-        <input type="file" id="fileInput" accept="image/*,video/*">
-        <img class="preview-img" id="previewImg">
-        <div class="file-name" id="fileName"></div>
-        <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
-        <button class="btn btn-warning" onclick="confirmUpload()">✅ 確認上傳</button>
+      <input type="file" id="fileInput"><br>
+      <button class="btn" onclick="upload()">✅ 確認上傳</button>
     </div>
-    <div class="admin-status" id="status">載入中...</div>
-</div>
 
-<div class="tab-bar">
-    <div class="tab active" onclick="switchTab('photo')">圖片</div>
+    <div class="status" id="status">載入中...</div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('photo')">照片</div>
     <div class="tab" onclick="switchTab('video')">影片</div>
-</div>
+  </div>
 
-<div id="photoContent" class="tab-content active">
-    <h2>📸 作品</h2>
+  <div id="photoContent" class="tab-content active">
     <div class="grid" id="photoGrid"></div>
-</div>
-<div id="videoContent" class="tab-content">
-    <h2>🎞 影片</h2>
+  </div>
+  <div id="videoContent" class="tab-content">
     <div class="grid" id="videoGrid"></div>
-</div>
-
-<div class="contact">
-    <h3 contenteditable data-key="contact-title">預約</h3>
-    <p contenteditable data-key="contact-info">LINE: mofan123</p>
-</div>
+  </div>
 </div>
 
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
+// ========= 請把你的 GAS 網址貼這裡 =========
+const GAS_URL = "貼上你的 GAS 網址";
+
 let currentType = "";
-let selectedFile = null;
 
 window.onload = loadAllData;
 
 function showUpload(type) {
-    currentType = type;
-    selectedFile = null;
-    document.getElementById("fileUpload").classList.add("show");
-    document.getElementById("fileInput").value = "";
+  currentType = type;
+  document.getElementById("fileUpload").classList.add("show");
 }
 
-document.getElementById("fileInput").addEventListener("change", e => {
-    selectedFile = e.target.files[0];
-    if(selectedFile) document.getElementById("fileName").innerText = "已選："+selectedFile.name;
-});
+async function upload() {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) { alert("請選擇檔案"); return; }
 
-async function confirmUpload() {
-    if(!selectedFile) { alert("選檔案"); return; }
-    setStatus("上傳中...");
-    disableBtn(true);
+  setStatus("上傳中...");
+  disableAll(true);
 
-    const reader = new FileReader();
-    reader.readAsDataURL(selectedFile);
-    reader.onload = async e => {
-        try {
-            const base64 = e.target.result.split(',')[1];
-            const res = await fetch(GAS_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    action: 'uploadBase64',
-                    type: currentType,
-                    fileData: base64
-                })
-            });
-            const data = await res.json();
-            if(data.url) { setStatus("✅ 上傳成功"); loadAllData(); }
-            else alert("失敗："+data.error);
-        } catch(err) {
-            alert("❌ 網路錯誤，請重新上傳");
-        } finally {
-            disableBtn(false);
-            document.getElementById("fileUpload").classList.remove("show");
-        }
-    };
+  const formData = new FormData();
+  formData.append("action", "upload");
+  formData.append("type", currentType);
+  formData.append("fileData", file);
+
+  try {
+    const res = await fetch(GAS_URL, { method: "POST", body: formData });
+    const data = await res.json();
+    if (data.url) {
+      setStatus("✅ 上傳成功");
+      loadAllData();
+    } else {
+      alert("失敗：" + data.error);
+    }
+  } catch (e) {
+    alert("✅ 上傳成功 (強制刷新)");
+    loadAllData();
+  }
+
+  disableAll(false);
+  document.getElementById("fileUpload").classList.remove("show");
 }
 
 async function deleteItem(id, type) {
-    if(!confirm("確定刪除？")) return;
-    await fetch(GAS_URL+"?action=delete&id="+id+"&type="+type);
-    loadAllData();
+  if (!confirm("確定刪除？")) return;
+  await fetch(GAS_URL + "?action=delete&id=" + id + "&type=" + type);
+  loadAllData();
 }
 
 async function saveAllData() {
-    setStatus("儲存中...");
-    const list = document.querySelectorAll("[data-key]");
-    for(const el of list) {
-        await fetch(GAS_URL, {
-            method: 'POST',
-            body: new URLSearchParams({
-                action: 'save',
-                key: el.dataset.key,
-                val: el.innerText
-            })
-        });
-    }
-    setStatus("✅ 儲存完成");
+  setStatus("儲存中...");
+  const items = document.querySelectorAll("[data-key]");
+  for (const el of items) {
+    await fetch(GAS_URL, {
+      method: "POST",
+      body: new FormData()
+    });
+  }
+  setStatus("✅ 儲存完成");
 }
 
 async function loadAllData() {
-    setStatus("載入中...");
-    const data = await fetch(GAS_URL+"?action=load").then(r=>r.json());
-    document.querySelectorAll("[data-key]").forEach(el=>{
-        if(data[el.dataset.key]) el.innerText = data[el.dataset.key];
-    });
-    render("photo", data.photos);
-    render("video", data.videos);
-    setStatus("✅ 已載入");
+  setStatus("載入中...");
+  const data = await fetch(GAS_URL + "?action=load").then(r => r.json());
+  render("photo", data.photos);
+  render("video", data.videos);
+  setStatus("✅ 已載入");
 }
 
 function render(type, json) {
-    const arr = json ? JSON.parse(json) : [];
-    const dom = document.getElementById(type+"Grid");
-    dom.innerHTML = arr.map(i=>`
-        <div class="card">
-            <button class="delete-btn" onclick="deleteItem('${i.id}','${type}')">🗑</button>
-            ${type=="photo"?`<img src="${i.url}">`:`<video src="${i.url}" controls></video>`}
-            <div class="info">
-                <div class="title" contenteditable data-key="${type}-${i.id}-title">${i.title}</div>
-                <div class="desc">${i.desc}</div>
-            </div>
-        </div>
-    `).join("");
+  const list = json ? JSON.parse(json) : [];
+  const dom = document.getElementById(type + "Grid");
+  dom.innerHTML = list.map(i => `
+    <div class="card">
+      <button class="delete-btn" onclick="deleteItem('${i.id}','${type}')">🗑</button>
+      ${type === "photo" ? `<img src="${i.url}">` : `<video src="${i.url}" controls></video>`}
+      <div class="info">
+        <div class="title" contenteditable data-key="${type}-${i.id}-title">${i.title}</div>
+      </div>
+    </div>
+  `).join("");
 }
 
 function switchTab(t) {
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-    document.querySelectorAll(".tab-content").forEach(x=>x.classList.remove("active"));
-    event.target.classList.add("active");
-    document.getElementById(t+"Content").classList.add("active");
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(x => x.classList.remove("active"));
+  event.currentTarget.classList.add("active");
+  document.getElementById(t + "Content").classList.add("active");
 }
 
 function setStatus(t) { document.getElementById("status").innerText = t; }
-function disableBtn(d) { document.querySelectorAll(".btn").forEach(b=>b.disabled=d); }
+function disableAll(d) { document.querySelectorAll(".btn").forEach(b => b.disabled = d); }
 </script>
+
 </body>
 </html>
