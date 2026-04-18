@@ -3,165 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>莫凡美業 - 作品集管理</title>
+  <title>莫凡美業 - 作品集</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#d98880',
-            pink: '#fef2f2',
-            dark: '#555'
-          }
-        }
-      }
+      theme: { extend: { colors: { primary: '#d98880' } } }
     }
   </script>
   <style>
-    * { box-sizing: border-box; }
-    .progress { transition: width 0.3s ease; }
-    .card { transition: transform 0.2s; }
-    .card:hover { transform: scale(1.02); }
+    .progress { transition: width 0.3s; }
   </style>
 </head>
-<body class="bg-pink">
+<body class="bg-gray-50">
 
-<!-- 進度條 -->
-<div class="fixed top-0 left-0 w-full h-1 bg-primary z-50" id="progress"></div>
+<div class="progress h-1 bg-primary w-0 fixed top-0 left-0 z-50" id="progress"></div>
 
-<!-- 標題 -->
-<div class="pt-14 pb-6 text-center">
-  <h1 class="text-2xl font-bold text-dark">莫凡美業 作品集管理</h1>
-  <p class="text-gray-500 mt-1">美甲 / 美容 / 美睫 作品管理</p>
+<div class="p-4 text-center">
+  <h1 class="text-xl font-bold text-gray-700">莫凡美業 作品集</h1>
 </div>
 
-<!-- 分類標籤 -->
-<div class="flex justify-center gap-3 px-4 mb-6">
-  <button onclick="loadItems('all')" class="tag-btn bg-primary text-white px-4 py-2 rounded-full text-sm">全部</button>
-  <button onclick="loadItems('美甲')" class="tag-btn bg-white px-4 py-2 rounded-full text-sm">美甲</button>
-  <button onclick="loadItems('美容')" class="tag-btn bg-white px-4 py-2 rounded-full text-sm">美容</button>
-  <button onclick="loadItems('美睫')" class="tag-btn bg-white px-4 py-2 rounded-full text-sm">美睫</button>
+<div class="flex gap-2 justify-center mb-4 px-3">
+  <button onclick="show('all')" class="px-3 py-1 rounded-full bg-primary text-white text-sm">全部</button>
+  <button onclick="show('美甲')" class="px-3 py-1 rounded-full bg-white text-sm">美甲</button>
+  <button onclick="show('美容')" class="px-3 py-1 rounded-full bg-white text-sm">美容</button>
+  <button onclick="show('美睫')" class="px-3 py-1 rounded-full bg-white text-sm">美睫</button>
 </div>
 
-<!-- 上傳區域 -->
-<div class="px-5 mb-8">
-  <div class="bg-white rounded-2xl p-5 shadow-sm">
-    <h3 class="font-bold mb-3 text-dark"><i class="fa fa-upload mr-1"></i> 上傳新作品</h3>
-    <select id="type" class="w-full border rounded-lg p-3 mb-2">
-      <option value="美甲">💅 美甲</option>
-      <option value="美容">💆 美容</option>
-      <option value="美睫">👁️ 美睫</option>
-    </select>
-    <button onclick="document.getElementById('file').click()" class="w-full bg-primary text-white py-3 rounded-lg">
-      <i class="fa fa-image mr-1"></i> 選擇照片/影片
-    </button>
-    <input type="file" id="file" accept="image/*,video/*" hidden>
-  </div>
+<div class="px-4 mb-6">
+  <select id="tag" class="w-full p-3 border rounded-lg mb-2">
+    <option value="美甲">美甲</option>
+    <option value="美容">美容</option>
+    <option value="美睫">美睫</option>
+  </select>
+  <button onclick="pickFile()" class="w-full bg-primary text-white p-3 rounded-lg">
+    <i class="fa fa-upload"></i> 上傳作品
+  </button>
+  <input type="file" id="file" accept="image/*,video/*" hidden>
 </div>
 
-<!-- 作品列表 -->
-<div id="list" class="px-5 grid grid-cols-2 gap-3 pb-20"></div>
+<div id="list" class="px-4 grid grid-cols-2 gap-3 pb-20"></div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-const fileInput = document.getElementById('file');
-let currentTag = 'all';
 let items = [];
+let currentTag = "all";
+const fileInput = document.getElementById("file");
+const progress = document.getElementById("progress");
 
-// 進度條
-function setProgress(w) {
-  document.getElementById('progress').style.width = w + '%';
+function pickFile() {
+  fileInput.click();
 }
 
-// 讀取作品
-async function loadItems(tag) {
-  currentTag = tag;
-  document.getElementById('list').innerHTML = '<div class="col-span-2 text-center py-10">載入中...</div>';
-  
+fileInput.onchange = async (e) => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const tag = document.getElementById("tag").value;
+  const newName = tag + "_" + file.name;
+  progress.style.width = "20%";
+
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = async () => {
+    try {
+      const base64 = reader.result.split(",")[1];
+      await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "data=" + encodeURIComponent(base64) + 
+              "&filename=" + encodeURIComponent(newName) + 
+              "&mime=" + file.type
+      });
+    } catch (e) {}
+
+    progress.style.width = "100%";
+    alert("✅ 上傳成功");
+    load();
+    setTimeout(() => progress.style.width = 0, 500);
+  };
+};
+
+async function load() {
   const res = await fetch(API);
   const data = await res.json();
   items = data.list || [];
-  
   render();
 }
 
-// 畫面渲染
 function render() {
-  const list = document.getElementById('list');
-  const filtered = currentTag === 'all' ? items : items.filter(i => i.tag === currentTag);
-  
+  const list = document.getElementById("list");
+  const filtered = currentTag === "all" 
+    ? items 
+    : items.filter(i => i.tag === currentTag);
+
   if (filtered.length === 0) {
     list.innerHTML = '<div class="col-span-2 text-center py-10 text-gray-400">暫無作品</div>';
     return;
   }
-  
-  list.innerHTML = filtered.map(item => `
-    <div class="card bg-white rounded-xl shadow-sm overflow-hidden">
-      ${item.type === 'image' 
-        ? `<img src="${item.url}" class="w-full aspect-square object-cover">`
-        : `<video src="${item.url}" class="w-full aspect-square object-cover" muted></video>`
+
+  list.innerHTML = filtered.map(i => `
+    <div class="bg-white rounded-lg overflow-hidden shadow">
+      ${i.type === "image" 
+        ? `<img src="${i.url}" class="w-full aspect-square object-cover">`
+        : `<video src="${i.url}" class="w-full aspect-square object-cover"></video>`
       }
-      <div class="p-2 text-center text-sm font-medium">${item.tag}</div>
+      <div class="p-2 text-center text-sm">${i.tag}</div>
       <div class="flex justify-center gap-2 pb-2">
-        <button onclick="preview('${item.url}','${item.type}')" class="text-xs bg-gray-100 px-2 py-1 rounded">預覽</button>
-        <button onclick="del('${item.id}')" class="text-xs bg-red-500 text-white px-2 py-1 rounded">刪除</button>
+        <button onclick="preview('${i.url}','${i.type}')" class="text-xs px-2 py-1 bg-gray-100 rounded">預覽</button>
+        <button onclick="del('${i.id}')" class="text-xs px-2 py-1 bg-red-500 text-white rounded">刪除</button>
       </div>
     </div>
-  `).join('');
+  `).join("");
 }
 
-// 預覽
 function preview(url, type) {
-  const html = type === 'image' 
-    ? `<img src="${url}" class="w-full">`
-    : `<video src="${url}" controls class="w-full"></video>`;
-  
-  const div = document.createElement('div');
-  div.className = 'fixed inset-0 bg-black z-50 flex items-center justify-center';
-  div.innerHTML = `
-    <div class="relative w-full max-w-lg">
-      <button onclick="this.parentElement.remove()" class="absolute -top-10 right-2 text-white text-2xl">&times;</button>
-      ${html}
+  const el = document.createElement("div");
+  el.className = "fixed inset-0 bg-black z-50 flex items-center justify-center";
+  el.innerHTML = `
+    <div class="w-full max-w-md relative">
+      <button onclick="this.parentElement.remove()" class="absolute -top-10 right-4 text-white text-3xl">&times;</button>
+      ${type === "image" 
+        ? `<img src="${url}" class="w-full">`
+        : `<video src="${url}" controls class="w-full"></video>`
+      }
     </div>
   `;
-  document.body.appendChild(div);
+  document.body.appendChild(el);
 }
 
-// 刪除
 async function del(id) {
-  if (!confirm('確定刪除？')) return;
-  await fetch(API + "?action=delete&id=" + id);
-  loadItems(currentTag);
+  if (!confirm("確定刪除？")) return;
+  await fetch(API + "?id=" + id, { method: "DELETE" });
+  load();
 }
 
-// 上傳
-fileInput.onchange = async () => {
-  const file = fileInput.files[0];
-  if (!file) return;
-  
-  const tag = document.getElementById('type').value;
-  const newName = tag + "_" + file.name;
-  const renamedFile = new File([file], newName, { type: file.type });
-  
-  setProgress(20);
-  const fd = new FormData();
-  fd.append('file', renamedFile);
-  
-  try {
-    await fetch(API, { method: 'POST', body: fd, mode: 'no-cors' });
-  } catch(e) {}
-  
-  setProgress(100);
-  alert('✅ 上傳完成');
-  fileInput.value = '';
-  loadItems(currentTag);
-  setTimeout(() => setProgress(0), 500);
-};
+function show(tag) {
+  currentTag = tag;
+  render();
+}
 
-// 初始化
-loadItems('all');
+load();
 </script>
 </body>
 </html>
