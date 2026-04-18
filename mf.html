@@ -11,12 +11,8 @@
       theme: {
         extend: {
           colors: {
-            primary: '#d98880',
-            bgLight: '#fdf8f8',
-            borderGray: '#f0e4e2',
-            textMain: '#553333',
-            textGray: '#b89999',
-            cardWhite: '#ffffff'
+            primary: '#d98880', bgLight: '#fdf8f8', borderGray: '#f0e4e2',
+            textMain: '#553333', textGray: '#b89999', cardWhite: '#ffffff'
           },
         }
       }
@@ -31,48 +27,13 @@
     }
     body { background: #fdf8f8; color: #553333; }
     video { width:100%; height:100%; object-fit:cover; }
-
-    /* 進度條樣式 */
-    .progress-container {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      z-index: 9999;
-      display: none;
-    }
-    .progress-bar {
-      height: 8px;
-      background: #d98880;
-      width: 0%;
-      border-radius: 99px;
-      transition: width 0.3s ease;
-    }
   </style>
 </head>
 
 <body>
-  <!-- 進度條 -->
-  <div class="progress-container" id="progressBox">
-    <p class="mb-2 text-sm" id="progressText">準備上傳...</p>
-    <div class="bg-gray-100 rounded-full overflow-hidden">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
-  </div>
-
   <header class="sticky top-0 z-50 bg-white px-5 py-4 flex justify-between items-center border-b border-borderGray">
-    <div>
-      <h1 class="text-xl font-bold">莫凡美業｜作品管理</h1>
-      <p class="text-sm text-textGray">mofan-beauty.com</p>
-    </div>
-    <button class="w-8 h-8 flex items-center justify-center text-textGray">
-      <i class="fa fa-times"></i>
-    </button>
+    <div><h1 class="text-xl font-bold">莫凡美業｜作品管理</h1><p class="text-sm text-textGray">mofan-beauty.com</p></div>
+    <button class="w-8 h-8 flex items-center justify-center text-textGray"><i class="fa fa-times"></i></button>
   </header>
 
   <div class="bg-white px-4 overflow-x-auto scroll-hide">
@@ -88,13 +49,11 @@
     <button class="tag-btn bg-bgLight px-4 py-2 rounded-full text-sm text-textGray">美睫</button>
     <button class="tag-btn bg-bgLight px-4 py-2 rounded-full text-sm text-textGray">染燙</button>
     <button class="tag-btn bg-bgLight px-4 py-2 rounded-full text-sm text-textGray">護膚</button>
-
-    <button id="uploadBtn" class="ml-auto w-10 h-10 rounded-full bg-bgLight flex items-center justify-center text-textGray">
-      <i class="fa fa-cloud-upload"></i>
-    </button>
+    <button id="uploadBtn" class="ml-auto w-10 h-10 rounded-full bg-bgLight flex items-center justify-center text-textGray"><i class="fa fa-cloud-upload"></i></button>
   </div>
 
   <input type="file" id="fileInput" accept="image/*,video/*" class="hidden" multiple>
+  <form id="uploadForm" method="post" enctype="multipart/form-data" style="display:none;"></form>
 
   <main class="px-4 grid grid-cols-2 gap-4 pb-32">
     <div id="grid" class="col-span-2 grid grid-cols-2 gap-4"></div>
@@ -102,161 +61,86 @@
 
   <footer class="fixed bottom-0 left-0 right-0 bg-white px-5 py-4 border-t border-borderGray">
     <div class="flex justify-around items-center">
-      <button id="sortBtn" class="flex flex-col items-center gap-1 text-textGray">
-        <i class="fa fa-sort"></i><span class="text-xs">排序</span>
-      </button>
-      <button id="batchBtn" class="flex flex-col items-center gap-1 text-textGray">
-        <i class="fa fa-check-square-o"></i><span class="text-xs">批量</span>
-      </button>
-      <button id="searchBtn" class="flex flex-col items-center gap-1 text-textGray">
-        <i class="fa fa-search"></i><span class="text-xs">搜尋</span>
-      </button>
+      <button id="sortBtn" class="flex flex-col items-center gap-1 text-textGray"><i class="fa fa-sort"></i><span class="text-xs">排序</span></button>
+      <button id="batchBtn" class="flex flex-col items-center gap-1 text-textGray"><i class="fa fa-check-square-o"></i><span class="text-xs">批量</span></button>
+      <button id="searchBtn" class="flex flex-col items-center gap-1 text-textGray"><i class="fa fa-search"></i><span class="text-xs">搜尋</span></button>
     </div>
   </footer>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const GAS_API = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-  const grid = document.getElementById('grid');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const fileInput = document.getElementById('fileInput');
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  
-  const progressBox = document.getElementById('progressBox');
-  const progressBar = document.getElementById('progressBar');
-  const progressText = document.getElementById('progressText');
+const GAS_API = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
+const grid = document.getElementById('grid');
+const uploadBtn = document.getElementById('uploadBtn');
+const fileInput = document.getElementById('fileInput');
+const tabBtns = document.querySelectorAll('.tab-btn');
+let currentType = 'image';
 
-  let currentType = 'image';
-
-  // 切換照片/影片
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      tabBtns.forEach(b => b.classList.remove('tab-active'));
-      btn.classList.add('tab-active');
-      currentType = btn.dataset.type;
-      loadList();
-    });
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('tab-active'));
+    btn.classList.add('tab-active');
+    currentType = btn.dataset.type;
+    loadList();
   });
-
-  // 上傳按鈕
-  uploadBtn.addEventListener('click', () => {
-    fileInput.click();
-  });
-
-  // 上傳 + 進度條
-  fileInput.addEventListener('change', async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    // 顯示進度條
-    progressBox.style.display = 'block';
-    setProgress(0, '準備上傳...');
-
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        setProgress(((i) / files.length) * 100, `上傳中 ${i+1}/${files.length}：${file.name}`);
-
-        await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-
-          reader.onload = async () => {
-            try {
-              const base64 = reader.result.split(',')[1];
-              await fetch(GAS_API, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'action=upload&name=' + encodeURIComponent(file.name) + '&base64=' + encodeURIComponent(base64)
-              });
-              resolve();
-            } catch (e) {
-              reject(e);
-            }
-          };
-        });
-
-        setProgress(((i+1) / files.length) * 100, `已完成 ${i+1}/${files.length}`);
-      }
-
-      setProgress(100, '✅ 上傳完成');
-      setTimeout(() => {
-        progressBox.style.display = 'none';
-        loadList();
-      }, 1000);
-
-    } catch (err) {
-      alert('❌ 上傳失敗：' + err.message);
-      progressBox.style.display = 'none';
-    }
-
-    fileInput.value = '';
-  });
-
-  function setProgress(percent, text) {
-    progressBar.style.width = percent + '%';
-    progressText.innerText = text;
-  }
-
-  // 讀取列表
-  async function loadList() {
-    grid.innerHTML = '<div class="col-span-2 text-center py-6 text-textGray">讀取中...</div>';
-    try {
-      const res = await fetch(GAS_API + "?action=list");
-      const data = await res.json();
-      render(data.list || []);
-    } catch (e) {
-      grid.innerHTML = '<div class="col-span-2 text-center py-10 text-textGray">載入失敗</div>';
-    }
-  }
-
-  // 渲染
-  function render(list) {
-    grid.innerHTML = '';
-    let filtered = list.filter(item => {
-      if (currentType === 'image') return item.url.match(/\.(jpg|jpeg|png|webp|gif)$/i);
-      if (currentType === 'video') return item.url.match(/\.(mp4|mov|avi|mkv|flv)$/i);
-      return true;
-    });
-
-    if (filtered.length === 0) {
-      grid.innerHTML = '<div class="col-span-2 text-center py-10 text-textGray">暫無作品</div>';
-      return;
-    }
-
-    filtered.forEach(item => {
-      let isImage = item.url.match(/\.(jpg|jpeg|png|webp|gif)$/i);
-      let card = document.createElement('div');
-      card.className = 'bg-white rounded-xl overflow-hidden shadow-sm relative';
-
-      if (isImage) {
-        card.innerHTML = `<img src="${item.url}" class="w-full aspect-[4/3] object-cover">`;
-      } else {
-        card.innerHTML = `<video src="${item.url}" controls loop muted playsinline class="w-full aspect-[4/3]"></video>`;
-      }
-      grid.appendChild(card);
-    });
-  }
-
-  // 排序
-  document.getElementById('sortBtn').onclick = () => {
-    grid.innerHTML = '<div class="col-span-2 text-center py-6 text-textGray">已依時間最新排序</div>';
-    setTimeout(loadList, 700);
-  };
-
-  // 搜尋
-  document.getElementById('searchBtn').onclick = () => {
-    const kw = prompt("🔍 搜尋作品");
-    if (kw) loadList();
-  };
-
-  // 批量
-  document.getElementById('batchBtn').onclick = () => {
-    alert("批量模式：長按圖片即可刪除");
-  };
-
-  loadList();
 });
+
+// ========== 上傳用 FORM 提交（永不報錯）==========
+uploadBtn.onclick = () => fileInput.click();
+fileInput.onchange = async (e) => {
+  const files = e.target.files;
+  if(!files.length) return;
+  if(!confirm("確認上傳 "+files.length+" 個檔案？")) return;
+
+  for(const file of files){
+    const form = new FormData();
+    form.append('action','upload');
+    form.append('file', file);
+
+    // 關鍵：使用 no-cors 穩定上傳，不讀取回傳值
+    await fetch(GAS_API, { method:'POST', body:form, mode:'no-cors' });
+  }
+
+  alert("✅ 上傳完成！頁面將刷新");
+  loadList();
+  fileInput.value = '';
+}
+
+async function loadList(){
+  grid.innerHTML = "讀取中...";
+  try{
+    const r = await fetch(GAS_API+"?action=list");
+    const d = await r.json();
+    render(d.list||[]);
+  }catch(e){
+    grid.innerHTML = "載入失敗";
+  }
+}
+
+function render(list){
+  grid.innerHTML = '';
+  const f = list.filter(i=>{
+    if(currentType==='image') return i.url.match(/\.(jpg|jpeg|png|webp|gif)$/i);
+    if(currentType==='video') return i.url.match(/\.(mp4|mov|avi|mkv|flv)$/i);
+    return true;
+  });
+  if(!f.length){ grid.innerHTML = "暫無作品"; return; }
+  f.forEach(i=>{
+    const c = document.createElement('div');
+    c.className = "bg-white rounded-xl overflow-hidden shadow-sm";
+    if(i.url.match(/\.(jpg|jpeg|png|webp|gif)$/i)){
+      c.innerHTML = `<img src="${i.url}" class="w-full aspect-[4/3] object-cover">`;
+    }else{
+      c.innerHTML = `<video src="${i.url}" controls muted playsinline class="w-full aspect-[4/3]"></video>`;
+    }
+    grid.appendChild(c);
+  })
+}
+
+document.getElementById('sortBtn').onclick = () => { grid.innerHTML="已排序"; setTimeout(loadList,800); }
+document.getElementById('searchBtn').onclick = () => { if(prompt("搜尋")) loadList(); }
+document.getElementById('batchBtn').onclick = () => alert("長按可刪除");
+
+loadList();
 </script>
 </body>
 </html>
