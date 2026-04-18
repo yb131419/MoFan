@@ -87,7 +87,6 @@
         min-height:16px;
     }
 
-    /* 上傳區域 */
     .file-upload{
         display:none;
         margin:12px 0;
@@ -111,7 +110,6 @@
         display:none;
     }
 
-    /* 進度條 */
     .progress-container{
         width:100%;
         height:6px;
@@ -125,7 +123,7 @@
         height:100%;
         width:0%;
         background:#CCBCBC;
-        transition:width 0.2s;
+        transition: width 0.3s;
     }
 
     .tab-bar{
@@ -197,7 +195,7 @@
         position:absolute;
         top:10px;
         right:10px;
-        background:rgba(255,255,250,0.9);
+        background:rgba(255,255,255,0.9);
         border:none;
         border-radius:50%;
         width:32px;
@@ -274,20 +272,17 @@
             <button class="btn btn-primary" onclick="showUpload('video')">🎞 新增影片</button>
         </div>
 
-        <!-- 上傳區 -->
         <div class="file-upload" id="fileUpload">
             <input type="file" id="fileInput" accept="image/*,video/*">
             <img class="preview-img" id="previewImg">
             <div class="file-name" id="fileName"></div>
 
-            <!-- 進度條 -->
             <div class="progress-container" id="progressContainer">
                 <div class="progress-bar" id="progressBar"></div>
             </div>
 
-            <!-- 確認上傳按鈕 -->
             <div style="margin-top:10px;">
-                <button class="btn btn-warning" id="confirmUploadBtn" onclick="startUpload()">✅ 確認上傳</button>
+                <button class="btn btn-warning" onclick="confirmUpload()">✅ 確認上傳</button>
             </div>
         </div>
 
@@ -296,7 +291,7 @@
 
     <div class="tab-bar">
         <div class="tab active" onclick="switchTab('photo')">圖片作品</div>
-        <div class="tab active" onclick="switchTab('video')">影片展示</div>
+        <div class="tab" onclick="switchTab('video')">影片展示</div>
     </div>
 
     <div id="photoContent" class="tab-content active">
@@ -330,7 +325,6 @@ window.onload = async () => {
   setStatus("✅ 載入完成");
 };
 
-// 選擇上傳類型（圖片/影片）
 function showUpload(type) {
   currentUploadType = type;
   selectedFile = null;
@@ -339,16 +333,14 @@ function showUpload(type) {
   document.getElementById('previewImg').style.display = 'none';
   document.getElementById('fileName').innerText = '';
   document.getElementById('progressContainer').style.display = 'none';
-  document.getElementById('confirmUploadBtn').style.display = 'inline-block';
+  document.getElementById('progressBar').style.width = '0%';
 }
 
-// 選取檔案（只預覽，不自動上傳）
 document.getElementById('fileInput').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   selectedFile = file;
 
-  // 顯示檔名 & 預覽
   document.getElementById('fileName').innerText = "已選取：" + file.name;
   const preview = document.getElementById('previewImg');
   
@@ -360,69 +352,63 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   }
 });
 
-// 手動點擊「確認上傳」才開始上傳
-function startUpload() {
+// 確認上傳（修復版）
+async function confirmUpload() {
   if (!selectedFile) {
-    alert("請先選擇檔案");
+    alert("請選擇檔案");
     return;
   }
-  uploadFile(selectedFile);
-}
 
-// 真正上傳
-async function uploadFile(file) {
-  setStatus('⬆️ 上傳中，請稍後...');
+  setStatus("⬆️ 上傳中，請稍後...");
   disableBtn(true);
-
-  // 顯示進度條
+  
   const progressContainer = document.getElementById('progressContainer');
   const progressBar = document.getElementById('progressBar');
   progressContainer.style.display = 'block';
-  progressBar.style.width = '30%';
+  progressBar.style.width = '40%';
 
   try {
     const reader = new FileReader();
-    reader.readAsDataURL(file);
-    
-    reader.onload = async () => {
-      progressBar.style.width = '60%';
-      const base64 = reader.result.split(',')[1];
-      
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    reader.readAsDataURL(selectedFile);
+
+    reader.onload = async function (event) {
+      progressBar.style.width = '70%';
+      const base64 = event.target.result.split(',')[1];
+
+      const response = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          action: 'uploadBase64',
+          action: "uploadBase64",
           type: currentUploadType,
           fileData: base64
         })
       });
-      
+
       progressBar.style.width = '100%';
-      const data = await res.json();
-      
+      const data = await response.json();
+
       if (data.url) {
-        addNewItem(currentUploadType, data.url, file.name);
-        setStatus('✅ 上傳成功：' + file.name);
+        addNewItem(currentUploadType, data.url, selectedFile.name);
+        setStatus("✅ 上傳成功：" + selectedFile.name);
       } else {
-        alert('❌ 上傳失敗：' + (data.error || '未知錯誤'));
-        setStatus('❌ 上傳失敗');
+        alert("❌ 上傳失敗：" + (data.error || "未知錯誤"));
+        setStatus("❌ 上傳失敗");
       }
     };
+
   } catch (err) {
     console.error(err);
-    alert('❌ 上傳異常：' + err.message);
-    setStatus('❌ 上傳異常');
+    alert("❌ 上傳異常：" + err.message);
+    setStatus("❌ 上傳異常");
   } finally {
     setTimeout(() => {
       disableBtn(false);
       document.getElementById('fileUpload').classList.remove('show');
-      progressBar.style.width = '0%';
-    }, 800);
+    }, 700);
   }
 }
 
-// 新增作品
 function addNewItem(type, url, fileName) {
   const grid = document.getElementById(type + 'Grid');
   const id = Date.now().toString();
@@ -441,7 +427,6 @@ function addNewItem(type, url, fileName) {
   </div>`;
 }
 
-// 刪除
 async function deleteItem(id, type) {
   if (!confirm('確定刪除？')) return;
   try {
@@ -453,7 +438,6 @@ async function deleteItem(id, type) {
   }
 }
 
-// 儲存所有文字
 async function saveAllData() {
   setStatus('💾 儲存中...');
   disableBtn(true);
@@ -477,7 +461,6 @@ async function saveAllData() {
   }
 }
 
-// 讀取資料
 async function loadAllData() {
   setStatus('🔄 載入資料中...');
   try {
@@ -521,7 +504,6 @@ async function loadAllData() {
   }
 }
 
-// 切換分頁
 function switchTab(type) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
