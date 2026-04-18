@@ -45,10 +45,7 @@
         max-width:450px;
         margin:0 auto 25px;
         box-shadow:0 5px 15px rgba(0,0,0,0.05);
-        display:block; /* 預設顯示 */
-    }
-    .admin-panel.hide{
-        display:none;
+        display:block;
     }
     .admin-input{
         width:100%;
@@ -238,12 +235,6 @@
     .tab-content.active{
         display:block;
     }
-
-    .loading{
-        text-align:center;
-        padding:20px;
-        color:#777;
-    }
 </style>
 </head>
 <body>
@@ -254,24 +245,20 @@
 </header>
 
 <div class="container">
-
     <div class="admin-panel" id="adminPanel">
-        <input type="password" class="admin-input" id="adminPwd" placeholder="請輸入管理密碼（手機號碼）">
+        <input type="password" class="admin-input" id="adminPwd" placeholder="請輸入管理密碼">
         <div class="admin-row">
             <button class="btn btn-primary" onclick="adminLogin()">登入管理</button>
             <button class="btn btn-success" id="saveBtn" onclick="saveAllData()" disabled>💾 儲存修改</button>
             <button class="btn btn-danger" onclick="adminLogout()">登出</button>
         </div>
-
         <div class="admin-row">
             <button class="btn btn-primary" onclick="showUpload('photo')">📸 新增圖片</button>
             <button class="btn btn-primary" onclick="showUpload('video')">🎞 新增影片</button>
         </div>
-
         <div class="file-upload" id="fileUpload">
             <input type="file" id="fileInput" accept="image/*,video/*">
         </div>
-
         <div class="admin-status" id="adminStatus">請輸入密碼登入</div>
     </div>
 
@@ -301,41 +288,35 @@
 </div>
 
 <script>
-    // === 請把這裡換成你自己的 GAS 網址 ===
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-
     let isAdmin = false;
     let currentUploadType = '';
 
-    // 頁面載入
     window.onload = async () => {
         await loadAllData();
         checkAdminStatus();
     };
 
-    // 檢查本機登入狀態
     function checkAdminStatus() {
         if (localStorage.getItem('adminToken') === 'logged') {
             enableAdminMode();
         }
     }
 
-    // 管理員登入（密碼驗證）
     async function adminLogin() {
         const pwd = document.getElementById('adminPwd').value.trim();
         if (!pwd) return alert('請輸入密碼');
 
         setStatus('🔑 驗證中...');
         disableBtn(true);
-
         try {
             const res = await fetch(GAS_URL + '?action=login&pwd=' + encodeURIComponent(pwd));
             const data = await res.json();
-
             if (data.success) {
                 localStorage.setItem('adminToken', 'logged');
+                localStorage.setItem('adminPwd', pwd);
                 enableAdminMode();
-                setStatus('✅ 管理員已登入');
+                setStatus('✅ 登入成功');
             } else {
                 alert('❌ 密碼錯誤');
                 setStatus('❌ 登入失敗');
@@ -347,54 +328,48 @@
         }
     }
 
-    // 啟用管理模式
     function enableAdminMode() {
         isAdmin = true;
         document.body.classList.add('admin-mode');
         document.getElementById('saveBtn').disabled = false;
     }
 
-    // 登出
     function adminLogout() {
-        localStorage.removeItem('adminToken');
+        localStorage.clear();
         isAdmin = false;
         document.body.classList.remove('admin-mode');
         document.getElementById('saveBtn').disabled = true;
         setStatus('👋 已登出');
     }
 
-    // 顯示上傳
     function showUpload(type) {
+        if (!isAdmin) return alert('請先登入');
         currentUploadType = type;
-        const uploader = document.getElementById('fileUpload');
-        uploader.classList.add('show');
+        document.getElementById('fileUpload').classList.add('show');
         document.getElementById('fileInput').accept = type === 'photo' ? 'image/*' : 'video/*';
     }
 
-    // 上傳檔案 + 新增作品
     document.getElementById('fileInput').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        const pwd = localStorage.getItem('adminPwd');
+        if (!pwd) return alert('請先登入');
 
         setStatus('⬆️ 上傳中...');
         disableBtn(true);
-
         try {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('type', currentUploadType);
+            formData.append('pwd', pwd);
 
-            const res = await fetch(GAS_URL, {
-                method: 'POST',
-                body: formData
-            });
-
+            const res = await fetch(GAS_URL, { method: 'POST', body: formData });
             const data = await res.json();
             if (data.url) {
-                await addNewItem(currentUploadType, data.url);
-                setStatus('✅ 上傳完成');
+                addNewItem(currentUploadType, data.url);
+                setStatus('✅ 上傳成功');
             } else {
-                alert('❌ 上傳失敗');
+                alert('❌ 上傳失敗：' + (data.error || ''));
             }
         } catch (err) {
             alert('❌ 上傳異常');
@@ -405,64 +380,46 @@
         }
     });
 
-    // 新增作品到畫面
-    async function addNewItem(type, url) {
+    function addNewItem(type, url) {
         const grid = document.getElementById(type + 'Grid');
         const id = Date.now().toString();
-
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.id = id;
-        card.dataset.type = type;
-
-        const media = type === 'photo'
-            ? `<img src="${url}" alt="作品">`
-            : `<video controls src="${url}"></video>`;
-
-        card.innerHTML = `
+        const media = type === 'photo' ? `<img src="${url}">` : `<video controls src="${url}"></video>`;
+        grid.innerHTML += `
+        <div class="card" data-id="${id}" data-type="${type}">
             <button class="delete-btn" onclick="deleteItem('${id}','${type}')">🗑</button>
             ${media}
             <div class="info">
                 <div class="title" contenteditable data-key="${type}-${id}-title">新作品</div>
                 <div class="desc" contenteditable data-key="${type}-${id}-desc">請輸入描述</div>
             </div>
-        `;
-        grid.appendChild(card);
+        </div>`;
     }
 
-    // 刪除作品
     async function deleteItem(id, type) {
-        if (!confirm('確定要刪除嗎？')) return;
-        try {
-            await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}`);
-            document.querySelector(`.card[data-id="${id}"]`).remove();
-            setStatus('🗑 已刪除');
-        } catch (e) {
-            alert('刪除失敗');
-        }
+        if (!confirm('確定刪除？')) return;
+        const pwd = localStorage.getItem('adminPwd');
+        await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}&pwd=${pwd}`);
+        document.querySelector(`.card[data-id="${id}"]`).remove();
+        setStatus('🗑 已刪除');
     }
 
-    // 儲存所有資料
     async function saveAllData() {
         if (!isAdmin) return;
+        const pwd = localStorage.getItem('adminPwd');
         setStatus('💾 儲存中...');
         disableBtn(true);
-
         try {
             const items = document.querySelectorAll('[data-key]');
-            let count = 0;
-
             for (const el of items) {
                 const key = el.dataset.key;
                 const val = el.innerText.trim();
                 await fetch(GAS_URL, {
                     method: 'POST',
-                    body: new URLSearchParams({ action: 'save', key, val })
+                    body: new URLSearchParams({ action: 'save', key, val, pwd })
                 });
-                count++;
             }
-            alert(`✅ 儲存完成！\n共儲存 ${count} 筆`);
-            setStatus('✅ 全部儲存完成');
+            alert('✅ 儲存完成');
+            setStatus('✅ 全部儲存成功');
         } catch (e) {
             alert('❌ 儲存失敗');
         } finally {
@@ -470,57 +427,39 @@
         }
     }
 
-    // 讀取所有資料
     async function loadAllData() {
-        try {
-            const res = await fetch(GAS_URL + '?action=load');
-            const data = await res.json();
-
-            // 文字資料
-            for (const key in data) {
-                const el = document.querySelector(`[data-key="${key}"]`);
-                if (el) el.innerText = data[key];
-            }
-
-            // 圖片
-            if (data.photos) {
-                const photoGrid = document.getElementById('photoGrid');
-                photoGrid.innerHTML = '';
-                JSON.parse(data.photos).forEach(p => {
-                    photoGrid.innerHTML += `
-                    <div class="card" data-id="${p.id}" data-type="photo">
-                        <button class="delete-btn">🗑</button>
-                        <img src="${p.url}" alt="作品">
-                        <div class="info">
-                            <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title || '美甲'}</div>
-                            <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc || '質感設計'}</div>
-                        </div>
-                    </div>`;
-                });
-            }
-
-            // 影片
-            if (data.videos) {
-                const videoGrid = document.getElementById('videoGrid');
-                videoGrid.innerHTML = '';
-                JSON.parse(data.videos).forEach(v => {
-                    videoGrid.innerHTML += `
-                    <div class="card" data-id="${v.id}" data-type="video">
-                        <button class="delete-btn">🗑</button>
-                        <video controls src="${v.url}"></video>
-                        <div class="info">
-                            <div class="title" contenteditable data-key="video-${v.id}-title">${v.title || '操作影片'}</div>
-                            <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc || '專業流程'}</div>
-                        </div>
-                    </div>`;
-                });
-            }
-        } catch (e) {
-            console.error('讀取失敗', e);
+        const res = await fetch(GAS_URL + '?action=load');
+        const data = await res.json();
+        for (const key in data) {
+            const el = document.querySelector(`[data-key="${key}"]`);
+            if (el) el.innerText = data[key];
+        }
+        if (data.photos) {
+            const g = document.getElementById('photoGrid');
+            JSON.parse(data.photos).forEach(p => {
+                g.innerHTML += `<div class="card" data-id="${p.id}" data-type="photo">
+                    <button class="delete-btn">🗑</button>
+                    <img src="${p.url}">
+                    <div class="info">
+                        <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title}</div>
+                        <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc}</div>
+                    </div></div>`;
+            });
+        }
+        if (data.videos) {
+            const g = document.getElementById('videoGrid');
+            JSON.parse(data.videos).forEach(v => {
+                g.innerHTML += `<div class="card" data-id="${v.id}" data-type="video">
+                    <button class="delete-btn">🗑</button>
+                    <video controls src="${v.url}"></video>
+                    <div class="info">
+                        <div class="title" contenteditable data-key="video-${v.id}-title">${v.title}</div>
+                        <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc}</div>
+                    </div></div>`;
+            });
         }
     }
 
-    // 切換分頁
     function switchTab(type) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -528,13 +467,8 @@
         document.getElementById(type + 'Content').classList.add('active');
     }
 
-    // 工具
-    function setStatus(text) {
-        document.getElementById('adminStatus').innerText = text;
-    }
-    function disableBtn(disabled) {
-        document.querySelectorAll('button').forEach(btn => btn.disabled = disabled);
-    }
+    function setStatus(t) { document.getElementById('adminStatus').innerText = t; }
+    function disableBtn(d) { document.querySelectorAll('button').forEach(b => b.disabled = d); }
 </script>
 </body>
 </html>
