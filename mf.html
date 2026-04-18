@@ -9,102 +9,117 @@
         margin:0;
         padding:0;
         box-sizing:border-box;
-        font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Heiti TC", sans-serif;
     }
     body{
-        background:#F8F6F6;
+        background:#F9F5F5;
         color:#444;
-        padding-bottom:100px;
+        padding-bottom:80px;
+        line-height:1.5;
     }
     header{
         background:linear-gradient(135deg,#E3DCD2,#CCBCBC);
-        padding: 50px 20px;
+        padding:55px 20px 45px;
         text-align:center;
         border-radius:0 0 50px 50px;
-        box-shadow:0 10px 30px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.06);
+        margin-bottom:25px;
     }
     header h1{
-        font-size:26px;
-        font-weight:600;
+        font-size:28px;
+        font-weight:700;
         color:#222;
+        letter-spacing:1px;
     }
     header p{
         font-size:16px;
-        color:#666;
-        margin-top:8px;
+        color:#555;
+        margin-top:10px;
+        opacity:0.9;
     }
 
-    .admin-bar{
+    .admin-panel{
         background:#fff;
-        padding:12px 20px;
-        text-align:center;
-        box-shadow:0 2px 10px rgba(0,0,0,0.05);
-        margin-bottom:30px;
-        border-radius:20px;
-        max-width:400px;
-        margin-left:auto;
-        margin-right:auto;
+        border-radius:22px;
+        padding:18px 20px;
+        max-width:450px;
+        margin:0 auto 25px;
+        box-shadow:0 5px 15px rgba(0,0,0,0.05);
         display:none;
     }
-    .admin-bar.show{
+    .admin-panel.show{
         display:block;
     }
-    .admin-bar input{
-        padding:8px 12px;
-        border:1px solid #ddd;
-        border-radius:12px;
-        width:180px;
+    .admin-input{
+        width:100%;
+        padding:11px 15px;
+        border:1px solid #EAEAEA;
+        border-radius:16px;
+        font-size:15px;
         outline:none;
+        margin-bottom:12px;
     }
-    .admin-bar button{
-        padding:8px 14px;
+    .btn{
+        padding:11px 16px;
+        border-radius:16px;
+        border:none;
+        font-weight:500;
+        cursor:pointer;
+        font-size:15px;
+        transition:0.2s;
+    }
+    .btn-primary{
         background:#CCBCBC;
         color:#fff;
-        border:none;
-        border-radius:12px;
-        margin-left:6px;
-        cursor:pointer;
     }
-    .admin-bar button:disabled{
+    .btn-success{
+        background:#a89696;
+        color:#fff;
+    }
+    .btn-danger{
+        background:#e49d9d;
+        color:#fff;
+    }
+    .btn:disabled{
         opacity:0.5;
         cursor:not-allowed;
     }
-    .save-btn{
-        background:#a08c8c !important;
-        margin-top:8px;
-        display:none;
-    }
-    .save-btn.show{
-        display:inline-block;
-    }
-    .add-btn{
-        background:#9b8888 !important;
-        margin-top:8px;
-        display:none;
-    }
-    .add-btn.show{
-        display:inline-block;
+    .admin-row{
+        display:flex;
+        gap:8px;
+        margin-bottom:10px;
+        flex-wrap:wrap;
     }
     .admin-status{
-        margin-top:8px;
         font-size:13px;
-        color:#888;
+        color:#777;
+        margin-top:8px;
+        text-align:center;
+    }
+    .file-upload{
+        display:none;
+        margin:10px 0;
+    }
+    .file-upload.show{
+        display:block;
     }
 
     .tab-bar{
         display:flex;
-        gap:10px;
-        margin-bottom:20px;
+        gap:12px;
         justify-content:center;
+        margin-bottom:28px;
+        padding:0 15px;
     }
     .tab{
-        padding:10px 22px;
+        padding:12px 26px;
         background:#fff;
-        border-radius:16px;
+        border-radius:18px;
         cursor:pointer;
         box-shadow:0 4px 10px rgba(0,0,0,0.04);
         font-weight:500;
+        font-size:15px;
+        transition:0.2s;
     }
     .tab.active{
         background:#CCBCBC;
@@ -117,80 +132,103 @@
         padding:0 20px;
     }
     .section{
-        margin-bottom: 50px;
+        margin-bottom:45px;
     }
     .section h2{
-        font-size:20px;
+        font-size:21px;
         color:#222;
-        margin-bottom:20px;
-        padding-left:15px;
-        border-left:4px solid #CCBCBC;
+        margin-bottom:22px;
+        padding-left:16px;
+        border-left:5px solid #CCBCBC;
+        font-weight:600;
     }
 
     .grid{
         display:grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
+        grid-template-columns: repeat(2,1fr);
+        gap:16px;
     }
-    @media (min-width: 600px) {
-        .grid{ grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+    @media (min-width:600px){
+        .grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
     }
 
     .card{
         background:#fff;
-        border-radius: 20px;
+        border-radius:22px;
         overflow:hidden;
-        box-shadow:0 8px 20px rgba(0,0,0,0.04);
-        transition:0.3s;
+        box-shadow:0 8px 20px rgba(0,0,0,0.05);
+        transition:0.25s;
+        position:relative;
     }
     .card:hover{
-        transform:translateY(-4px);
+        transform:translateY(-5px);
+        box-shadow:0 12px 25px rgba(0,0,0,0.08);
     }
     .card img,.card video{
         width:100%;
-        height: 190px;
+        height:210px;
         object-fit:cover;
     }
-    .info{
-        padding: 12px 10px;
-        text-align:center;
+    .card .delete-btn{
+        position:absolute;
+        top:10px;
+        right:10px;
+        background:rgba(255,255,255,0.9);
+        border:none;
+        border-radius:50%;
+        width:32px;
+        height:32px;
+        font-size:16px;
+        cursor:pointer;
+        display:none;
+        z-index:10;
     }
-    .title,.desc{
-        outline:none;
+    .admin-mode .delete-btn{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+    .info{
+        padding:14px 10px;
+        text-align:center;
     }
     .title{
-        font-size:14px;
+        font-size:15px;
         color:#333;
         font-weight:500;
-        margin-bottom: 4px;
+        margin-bottom:5px;
     }
     .desc{
-        font-size:12px;
+        font-size:13px;
         color:#888;
     }
+
     .contact{
         background:#fff;
-        padding:35px 25px;
-        border-radius:25px;
+        padding:40px 30px;
+        border-radius:28px;
         text-align:center;
-        box-shadow:0 10px 25px rgba(0,0,0,0.05);
+        box-shadow:0 10px 25px rgba(0,0,0,0.06);
     }
-    .contact h3,.contact p{
-        outline:none;
+    .contact h3{
+        font-size:20px;
+        margin-bottom:15px;
+        color:#222;
     }
-
-    .card:has(img[src=""]),
-    .card:has(video[src=""]) {
-        display: none !important;
+    .contact p{
+        font-size:15px;
+        color:#555;
+        line-height:1.7;
     }
 
     [contenteditable]{
         pointer-events:none;
     }
-    [contenteditable].editable{
+    .admin-mode [contenteditable]{
         pointer-events:auto;
         border-bottom:1px dashed #ccc;
-        padding:2px;
+        padding:2px 4px;
+        border-radius:4px;
     }
 
     .tab-content{
@@ -199,233 +237,304 @@
     .tab-content.active{
         display:block;
     }
+
+    .loading{
+        text-align:center;
+        padding:20px;
+        color:#777;
+    }
 </style>
 </head>
-
 <body>
 
 <header>
     <h1>莫凡美甲作品集</h1>
-    <p>美甲・美睫・紋繡・霧眉｜專業精緻質感</p>
+    <p>美甲・美睫・紋繡・霧眉｜專業精緻質感服務</p>
 </header>
 
 <div class="container">
 
-    <div class="admin-bar" id="adminBar">
-        <input type="password" id="adminPwd" placeholder="請輸入管理員密碼">
-        <button onclick="checkAdmin()">驗證登入</button>
-        <button class="save-btn" id="saveBtn" onclick="saveAllData()">💾 儲存所有修改</button>
-        <button class="add-btn" id="addPhotoBtn" onclick="addNewPhoto()">➕ 新增圖片</button>
-        <button class="add-btn" id="addVideoBtn" onclick="addNewVideo()">➕ 新增影片</button>
-        <div class="admin-status" id="adminStatus">未登入管理員</div>
+    <div class="admin-panel" id="adminPanel">
+        <input type="password" class="admin-input" id="adminPwd" placeholder="請輸入管理員密碼">
+        <div class="admin-row">
+            <button class="btn btn-primary" onclick="adminLogin()">登入管理</button>
+            <button class="btn btn-success" id="saveBtn" onclick="saveAllData()" disabled>💾 儲存修改</button>
+            <button class="btn btn-danger" onclick="adminLogout()">登出</button>
+        </div>
+
+        <div class="admin-row">
+            <button class="btn btn-primary" onclick="showUpload('photo')">📸 新增圖片</button>
+            <button class="btn btn-primary" onclick="showUpload('video')">🎞 新增影片</button>
+        </div>
+
+        <div class="file-upload" id="fileUpload">
+            <input type="file" id="fileInput" accept="image/*,video/*">
+        </div>
+
+        <div class="admin-status" id="adminStatus">請輸入密碼登入</div>
     </div>
 
     <div class="tab-bar">
-        <div class="tab active" onclick="switchTab('photo')">圖片</div>
-        <div class="tab" onclick="switchTab('video')">影片</div>
+        <div class="tab active" onclick="switchTab('photo')">圖片作品</div>
+        <div class="tab" onclick="switchTab('video')">影片展示</div>
     </div>
 
     <div id="photoContent" class="tab-content active">
         <section class="section">
-            <h2>📸 質感作品</h2>
-            <div class="grid" id="photoGrid">
-
-                <div class="card">
-                    <img src="nail01.jpg" alt="">
-                    <div class="info">
-                        <div class="title" contenteditable data-key="nail1-title">美甲</div>
-                        <div class="desc" contenteditable data-key="nail1-desc">質感設計</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <img src="nail02.jpg" alt="">
-                    <div class="info">
-                        <div class="title" contenteditable data-key="nail2-title">美睫</div>
-                        <div class="desc" contenteditable data-key="nail2-desc">自然精緻</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <img src="nail03.jpg" alt="">
-                    <div class="info">
-                        <div class="title" contenteditable data-key="nail3-title">霧眉</div>
-                        <div class="desc" contenteditable data-key="nail3-desc">高級霧感</div>
-                    </div>
-                </div>
-
-            </div>
+            <h2>📸 精選美甲作品</h2>
+            <div class="grid" id="photoGrid"></div>
         </section>
     </div>
 
     <div id="videoContent" class="tab-content">
         <section class="section">
-            <h2>🎞 操作展示</h2>
-            <div class="grid" id="videoGrid">
-
-                <div class="card">
-                    <video controls src="video01.mp4"></video>
-                    <div class="info">
-                        <div class="title" contenteditable data-key="vid1-title">美甲操作</div>
-                        <div class="desc" contenteditable data-key="vid1-desc">專業流程</div>
-                    </div>
-                </div>
-
-            </div>
+            <h2>🎞 操作流程影片</h2>
+            <div class="grid" id="videoGrid"></div>
         </section>
     </div>
 
     <section class="contact">
         <h3 contenteditable data-key="contact-title">預約諮詢</h3>
-        <p contenteditable data-key="contact-info">LINE：你的ID<br>營業時間：10:00-20:00<br>服務：美甲・美睫・紋繡・霧眉</p>
+        <p contenteditable data-key="contact-info">LINE：mofun-nail<br>營業時間：10:00-20:00<br>服務項目：美甲、美睫、紋繡、霧眉</p>
     </section>
-
 </div>
 
 <script>
-    const gasUrl = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-    const adminBar = document.getElementById("adminBar");
-    const saveBtn = document.getElementById("saveBtn");
-    const addPhotoBtn = document.getElementById("addPhotoBtn");
-    const addVideoBtn = document.getElementById("addVideoBtn");
-    const adminStatus = document.getElementById("adminStatus");
+    // === 請把這裡換成你自己的 GAS 網址 ===
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
 
-    let photoIndex = 4;
-    let videoIndex = 2;
+    let isAdmin = false;
+    let currentUploadType = '';
 
-    // 檢查是否為管理員
-    async function checkIsAdmin(){
-        try{
-            const res = await fetch(gasUrl+"?action=checkAdminStatus");
-            const data = await res.json();
-            if(data.isAdmin){
-                adminBar.classList.add("show");
-            }
-        }catch(e){}
+    // 頁面載入
+    window.onload = async () => {
+        await loadAllData();
+        checkAdminStatus();
+    };
+
+    // 檢查本機登入狀態
+    function checkAdminStatus() {
+        if (localStorage.getItem('adminToken') === 'logged') {
+            enableAdminMode();
+        }
     }
 
     // 管理員登入
-    async function checkAdmin(){
-        const pwd = document.getElementById("adminPwd").value;
-        const res = await fetch(gasUrl+"?action=checkAdmin&pwd="+pwd);
-        const data = await res.json();
-        
-        if(data.success){
-            localStorage.isAdmin = "ok";
-            enableEdit();
-            saveBtn.classList.add("show");
-            addPhotoBtn.classList.add("show");
-            addVideoBtn.classList.add("show");
-            adminStatus.textContent = "✅ 管理員已登入，可編輯";
-            loadAllData();
-        }else{
-            alert("❌ 驗證失敗");
+    async function adminLogin() {
+        const pwd = document.getElementById('adminPwd').value.trim();
+        if (!pwd) return alert('請輸入密碼');
+
+        setStatus('🔑 驗證中...');
+        disableBtn(true);
+
+        try {
+            const res = await fetch(GAS_URL + '?action=login&pwd=' + encodeURIComponent(pwd));
+            const data = await res.json();
+
+            if (data.success) {
+                localStorage.setItem('adminToken', 'logged');
+                enableAdminMode();
+                setStatus('✅ 管理員已登入');
+            } else {
+                alert('❌ 密碼錯誤');
+                setStatus('❌ 登入失敗');
+            }
+        } catch (e) {
+            alert('❌ 連線失敗');
+        } finally {
+            disableBtn(false);
         }
     }
 
-    function enableEdit(){
-        document.querySelectorAll("[contenteditable]").forEach(el=>{
-            el.classList.add("editable");
-        });
+    // 啟用管理模式
+    function enableAdminMode() {
+        isAdmin = true;
+        document.body.classList.add('admin-mode');
+        document.getElementById('adminPanel').classList.add('show');
+        document.getElementById('saveBtn').disabled = false;
     }
 
-    // 防呆 + 鎖定按鈕
-    async function saveAllData(){
-        if(localStorage.isAdmin !== "ok") return;
+    // 登出
+    function adminLogout() {
+        localStorage.removeItem('adminToken');
+        isAdmin = false;
+        document.body.classList.remove('admin-mode');
+        document.getElementById('saveBtn').disabled = true;
+        setStatus('👋 已登出');
+    }
 
-        // 鎖定所有按鈕
-        const buttons = document.querySelectorAll("button");
-        buttons.forEach(btn => btn.disabled = true);
-        adminStatus.textContent = "⏳ 儲存中，請勿操作...";
+    // 顯示上傳
+    function showUpload(type) {
+        currentUploadType = type;
+        const uploader = document.getElementById('fileUpload');
+        uploader.classList.add('show');
+        document.getElementById('fileInput').accept = type === 'photo' ? 'image/*' : 'video/*';
+    }
 
-        try{
-            const items = document.querySelectorAll("[data-key]");
+    // 上傳檔案 + 新增作品
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setStatus('⬆️ 上傳中...');
+        disableBtn(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', currentUploadType);
+
+            const res = await fetch(GAS_URL, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            if (data.url) {
+                await addNewItem(currentUploadType, data.url);
+                setStatus('✅ 上傳完成');
+            } else {
+                alert('❌ 上傳失敗');
+            }
+        } catch (err) {
+            alert('❌ 上傳異常');
+        } finally {
+            disableBtn(false);
+            document.getElementById('fileUpload').classList.remove('show');
+            document.getElementById('fileInput').value = '';
+        }
+    });
+
+    // 新增作品到畫面
+    async function addNewItem(type, url) {
+        const grid = document.getElementById(type + 'Grid');
+        const id = Date.now().toString();
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.id = id;
+        card.dataset.type = type;
+
+        const media = type === 'photo'
+            ? `<img src="${url}" alt="作品">`
+            : `<video controls src="${url}"></video>`;
+
+        card.innerHTML = `
+            <button class="delete-btn" onclick="deleteItem('${id}','${type}')">🗑</button>
+            ${media}
+            <div class="info">
+                <div class="title" contenteditable data-key="${type}-${id}-title">新作品</div>
+                <div class="desc" contenteditable data-key="${type}-${id}-desc">請輸入描述</div>
+            </div>
+        `;
+        grid.appendChild(card);
+    }
+
+    // 刪除作品
+    async function deleteItem(id, type) {
+        if (!confirm('確定要刪除嗎？')) return;
+        try {
+            await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}`);
+            document.querySelector(`.card[data-id="${id}"]`).remove();
+            setStatus('🗑 已刪除');
+        } catch (e) {
+            alert('刪除失敗');
+        }
+    }
+
+    // 儲存所有資料
+    async function saveAllData() {
+        if (!isAdmin) return;
+        setStatus('💾 儲存中...');
+        disableBtn(true);
+
+        try {
+            const items = document.querySelectorAll('[data-key]');
             let count = 0;
 
-            for (let el of items) {
+            for (const el of items) {
                 const key = el.dataset.key;
                 const val = el.innerText.trim();
-                if (!key) continue;
-
-                await fetch(gasUrl, {
-                    method: "POST",
-                    body: new URLSearchParams({ action: "save", key, val })
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: new URLSearchParams({ action: 'save', key, val })
                 });
                 count++;
             }
-            alert(`✅ 儲存完成！\n已儲存 ${count} 筆資料`);
-            adminStatus.textContent = "✅ 儲存完成";
-        }catch(e){
-            alert("❌ 儲存失敗，請稍後再試");
-            adminStatus.textContent = "❌ 儲存失敗";
-        }finally{
-            // 解鎖
-            buttons.forEach(btn => btn.disabled = false);
+            alert(`✅ 儲存完成！\n共儲存 ${count} 筆`);
+            setStatus('✅ 全部儲存完成');
+        } catch (e) {
+            alert('❌ 儲存失敗');
+        } finally {
+            disableBtn(false);
         }
     }
 
-    // 新增圖片
-    function addNewPhoto(){
-        const grid = document.getElementById("photoGrid");
-        const key = `nail${photoIndex++}-title`;
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-            <img src="placeholder.jpg" alt="">
-            <div class="info">
-                <div class="title" contenteditable data-key="${key}">新作品</div>
-                <div class="desc" contenteditable data-key="${key.replace('title','desc')}">請輸入描述</div>
-            </div>
-        `;
-        grid.appendChild(card);
-        enableEdit();
-    }
+    // 讀取所有資料
+    async function loadAllData() {
+        try {
+            const res = await fetch(GAS_URL + '?action=load');
+            const data = await res.json();
 
-    // 新增影片
-    function addNewVideo(){
-        const grid = document.getElementById("videoGrid");
-        const key = `vid${videoIndex++}-title`;
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-            <video controls src="placeholder.mp4"></video>
-            <div class="info">
-                <div class="title" contenteditable data-key="${key}">新影片</div>
-                <div class="desc" contenteditable data-key="${key.replace('title','desc')}">請輸入描述</div>
-            </div>
-        `;
-        grid.appendChild(card);
-        enableEdit();
-    }
+            // 文字資料
+            for (const key in data) {
+                const el = document.querySelector(`[data-key="${key}"]`);
+                if (el) el.innerText = data[key];
+            }
 
-    // 讀取資料
-    async function loadAllData(){
-        const res = await fetch(gasUrl+"?action=load");
-        const data = await res.json();
-        for(let key in data){
-            const el = document.querySelector(`[data-key="${key}"]`);
-            if(el) el.innerText = data[key];
+            // 圖片
+            if (data.photos) {
+                const photoGrid = document.getElementById('photoGrid');
+                photoGrid.innerHTML = '';
+                JSON.parse(data.photos).forEach(p => {
+                    photoGrid.innerHTML += `
+                    <div class="card" data-id="${p.id}" data-type="photo">
+                        <button class="delete-btn">🗑</button>
+                        <img src="${p.url}" alt="作品">
+                        <div class="info">
+                            <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title || '美甲'}</div>
+                            <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc || '質感設計'}</div>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            // 影片
+            if (data.videos) {
+                const videoGrid = document.getElementById('videoGrid');
+                videoGrid.innerHTML = '';
+                JSON.parse(data.videos).forEach(v => {
+                    videoGrid.innerHTML += `
+                    <div class="card" data-id="${v.id}" data-type="video">
+                        <button class="delete-btn">🗑</button>
+                        <video controls src="${v.url}"></video>
+                        <div class="info">
+                            <div class="title" contenteditable data-key="video-${v.id}-title">${v.title || '操作影片'}</div>
+                            <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc || '專業流程'}</div>
+                        </div>
+                    </div>`;
+                });
+            }
+        } catch (e) {
+            console.error('讀取失敗', e);
         }
     }
 
-    function switchTab(type){
-        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
-        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'))
-        event.target.classList.add('active')
-        document.getElementById(type+'Content').classList.add('active')
+    // 切換分頁
+    function switchTab(type) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById(type + 'Content').classList.add('active');
     }
 
-    window.onload = function(){
-        checkIsAdmin();
-        if(localStorage.isAdmin==="ok"){
-            enableEdit();
-            saveBtn.classList.add("show");
-            addPhotoBtn.classList.add("show");
-            addVideoBtn.classList.add("show");
-            loadAllData();
-        }
+    // 工具
+    function setStatus(text) {
+        document.getElementById('adminStatus').innerText = text;
+    }
+    function disableBtn(disabled) {
+        document.querySelectorAll('button').forEach(btn => btn.disabled = disabled);
     }
 </script>
-
 </body>
 </html>
