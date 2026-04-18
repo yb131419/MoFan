@@ -208,7 +208,7 @@
 
     <div class="tab-bar">
         <div class="tab active" onclick="switchTab('photo')">圖片</div>
-        <div class="tab active" onclick="switchTab('video')">影片</div>
+        <div class="tab" onclick="switchTab('video')">影片</div>
     </div>
 
     <div id="photoContent" class="tab-content active">
@@ -323,29 +323,25 @@
         });
     }
 
-    // 單項儲存（自動）
-    async function saveData(){
-        if(localStorage.isAdmin!=="ok") return;
-        const key = this.dataset.key;
-        const val = this.innerText;
-        if(!key) return;
-        await fetch(gasUrl+"?action=save&key="+encodeURIComponent(key)+"&val="+encodeURIComponent(val));
-    }
-
-    // 儲存所有修改（手動按鈕）→ 修復版
+    // 儲存所有修改（手動按鈕）→ 穩定版
     async function saveAllData(){
-        if(localStorage.isAdmin!=="ok") return;
-        const items = document.querySelectorAll("[contenteditable][data-key]");
-        let success = 0;
+        if(localStorage.isAdmin !== "ok") return;
+        
+        const items = document.querySelectorAll("[data-key]");
+        let count = 0;
 
-        for(let el of items){
+        for (let el of items) {
             const key = el.dataset.key;
             const val = el.innerText;
-            if(!key) continue;
-            await fetch(gasUrl+"?action=save&key="+encodeURIComponent(key)+"&val="+encodeURIComponent(val));
-            success++;
+            if (!key) continue;
+
+            await fetch(gasUrl, {
+                method: "POST",
+                body: new URLSearchParams({ action: "save", key, val })
+            });
+            count++;
         }
-        alert("✅ 全部儲存完成！共 " + success + " 個項目");
+        alert("✅ 儲存完成！已寫入試算表：" + count + " 筆");
     }
 
     // 讀取資料
