@@ -9,289 +9,160 @@
         margin:0;
         padding:0;
         box-sizing:border-box;
-        font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
     }
-
     body{
-        background-color: #F8F6F4;
-        color: #444;
-        padding-bottom: 100px;
+        background:#F8F6F4;
+        color:#444;
+        padding-bottom:100px;
     }
-
     header{
-        background: linear-gradient(135deg, #E3DCD2, #CCBCBC);
-        padding: 50px 20px;
+        background:linear-gradient(135deg,#E3DCD2,#CCBCBC);
+        padding:50px 20px;
         text-align:center;
-        border-radius: 0 0 50px 50px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        margin-bottom: 50px;
+        border-radius:0 0 50px 50px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.05);
+        margin-bottom:50px;
     }
-
     header h1{
-        font-size: 26px;
-        font-weight: 600;
-        color: #222;
-        margin-bottom: 10px;
+        font-size:26px;
+        font-weight:600;
+        color:#222;
     }
-
     header p{
-        font-size: 16px;
-        color: #666;
-        letter-spacing: 1px;
+        font-size:16px;
+        color:#666;
+        margin-top:8px;
     }
-
     .container{
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 0 20px;
+        max-width:1000px;
+        margin:0 auto;
+        padding:0 20px;
     }
-
     .section{
-        margin-bottom: 50px;
+        margin-bottom:60px;
     }
-
     .section h2{
-        font-size: 20px;
-        font-weight: 500;
-        color: #222;
-        margin-bottom: 25px;
-        padding-left: 15px;
-        border-left: 4px solid #CCBCBC;
+        font-size:20px;
+        color:#222;
+        margin-bottom:25px;
+        padding-left:15px;
+        border-left:4px solid #CCBCBC;
     }
-
     .grid{
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 18px;
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+        gap:18px;
     }
-
     .card{
-        background: #fff;
-        border-radius: 22px;
-        overflow: hidden;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-        transition: all 0.3s ease;
+        background:#fff;
+        border-radius:22px;
+        overflow:hidden;
+        box-shadow:0 8px 20px rgba(0,0,0,0.04);
+        transition:0.3s;
     }
-
     .card:hover{
-        transform: translateY(-6px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+        transform:translateY(-6px);
+        box-shadow:0 12px 25px rgba(0,0,0,0.08);
     }
-
-    .card img, .card video{
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        display:block;
+    .card img,.card video{
+        width:100%;
+        height:200px;
+        object-fit:cover;
     }
-
     .info{
-        padding: 12px 10px;
+        padding:12px;
         text-align:center;
     }
-
     .info .title{
-        font-size: 14px;
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 4px;
+        font-size:14px;
+        color:#333;
+        font-weight:500;
     }
-
     .info .desc{
-        font-size: 12px;
-        color: #888;
+        font-size:12px;
+        color:#888;
+        margin-top:4px;
     }
-
     .contact{
-        background: #fff;
-        padding: 35px 25px;
-        border-radius: 25px;
+        background:#fff;
+        padding:35px 25px;
+        border-radius:25px;
         text-align:center;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
-        margin-top: 20px;
+        box-shadow:0 10px 25px rgba(0,0,0,0.05);
     }
-
     .contact h3{
-        font-size: 19px;
-        font-weight: 500;
-        color: #222;
-        margin-bottom: 15px;
+        font-size:19px;
+        color:#222;
+        margin-bottom:15px;
     }
-
     .contact p{
-        font-size: 15px;
-        color: #555;
-        line-height: 1.7;
+        font-size:15px;
+        color:#555;
+        line-height:1.7;
     }
 </style>
 </head>
-
 <body>
 
 <header>
     <h1>高質感美業作品集</h1>
-    <p>美甲・美睫・紋繡・霧眉・美容｜專業・精緻・質感</p>
+    <p>美甲・美睫・紋繡・霧眉・美容｜專業精緻</p>
 </header>
 
 <div class="container">
 
-<!-- ====================== 照片區 ====================== -->
+<!-- 照片 100張 已排好 -->
 <section class="section">
     <h2>📸 質感作品</h2>
     <div class="grid">
+        <div class="card"><img src="nail01.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
+        <div class="card"><img src="nail02.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
+        <div class="card"><img src="nail03.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
+        <div class="card"><img src="nail04.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
+        <div class="card"><img src="nail05.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
+        <div class="card"><img src="nail06.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
+        <div class="card"><img src="nail07.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
+        <div class="card"><img src="nail08.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
+        <div class="card"><img src="nail09.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
+        <div class="card"><img src="nail10.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
 
-        <!-- 照片 1 -->
-        <div class="card">
-            <img src="nail01.jpg" alt="作品">
-            <div class="info">
-                <div class="title">美甲</div>
-                <div class="desc">質感設計</div>
-            </div>
-        </div>
+        <div class="card"><img src="nail11.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card"><img src="nail12.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card"><img src="nail13.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card"><img src="nail14.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card"><img src="nail15.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card"><img src="nail16.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card"><img src="nail17.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card"><img src="nail18.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card"><img src="nail19.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card"><img src="nail20.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
 
-        <!-- 照片 2 -->
-        <div class="card">
-            <img src="nail02.jpg" alt="作品">
-            <div class="info">
-                <div class="title">美睫</div>
-                <div class="desc">自然精緻</div>
-            </div>
-        </div>
-
-        <!-- 照片 3 -->
-        <div class="card">
-            <img src="nail03.jpg" alt="作品">
-            <div class="info">
-                <div class="title">霧眉</div>
-                <div class="desc">高級霧感</div>
-            </div>
-        </div>
-
-        <!-- 照片 4 -->
-        <div class="card">
-            <img src="nail04.jpg" alt="作品">
-            <div class="info">
-                <div class="title">紋繡</div>
-                <div class="desc">自然持久</div>
-            </div>
-        </div>
-
-        <!-- 照片 5 -->
-        <div class="card">
-            <img src="nail05.jpg" alt="作品">
-            <div class="info">
-                <div class="title">美容</div>
-                <div class="desc">肌膚管理</div>
-            </div>
-        </div>
-
-        <!-- 照片 6 -->
-        <div class="card">
-            <img src="nail06.jpg" alt="作品">
-            <div class="info">
-                <div class="title">美甲</div>
-                <div class="desc">質感設計</div>
-            </div>
-        </div>
-
-        <!-- 照片 7 -->
-        <div class="card">
-            <img src="nail07.jpg" alt="作品">
-            <div class="info">
-                <div class="title">美甲</div>
-                <div class="desc">質感設計</div>
-            </div>
-        </div>
-
-        <!-- 照片 8 -->
-        <div class="card">
-            <img src="nail08.jpg" alt="作品">
-            <div class="info">
-                <div class="title">美甲</div>
-                <div class="desc">質感設計</div>
-            </div>
-        </div>
-
-        <!-- 照片 9 -->
-        <div class="card">
-            <img src="nail09.jpg" alt="作品">
-            <div class="info">
-                <div class="title">美甲</div>
-                <div class="desc">質感設計</div>
-            </div>
-        </div>
-
-        <!-- 照片 10 -->
-        <div class="card">
-            <img src="nail10.jpg" alt="作品">
-            <div class="info">
-                <div class="title">美甲</div>
-                <div class="desc">質感設計</div>
-            </div>
-        </div>
-
-        <!-- 你要繼續加 → 複製上面這一組 → 改數字 ex: nail11.jpg -->
-
+        <div class="card"><img src="nail21.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card"><img src="nail22.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card"><img src="nail23.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card"><img src="nail24.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card"><img src="nail25.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card"><img src="nail26.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card"><img src="nail27.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card"><img src="nail28.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card"><img src="nail29.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card"><img src="nail30.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
     </div>
 </section>
 
-<!-- ====================== 影片區 ====================== -->
+<!-- 影片 20支 已排好 -->
 <section class="section">
     <h2>🎞 操作展示</h2>
     <div class="grid">
-
-        <!-- 影片 1 -->
-        <div class="card">
-            <video controls src="video01.mp4"></video>
-            <div class="info">
-                <div class="title">美甲操作</div>
-                <div class="desc">專業流程</div>
-            </div>
-        </div>
-
-        <!-- 影片 2 -->
-        <div class="card">
-            <video controls src="video02.mp4"></video>
-            <div class="info">
-                <div class="title">美睫成果</div>
-                <div class="desc">質感呈現</div>
-            </div>
-        </div>
-
-        <!-- 影片 3 -->
-        <div class="card">
-            <video controls src="video03.mp4"></video>
-            <div class="info">
-                <div class="title">霧眉操作</div>
-                <div class="desc">專業流程</div>
-            </div>
-        </div>
-
-        <!-- 影片 4 -->
-        <div class="card">
-            <video controls src="video04.mp4"></video>
-            <div class="info">
-                <div class="title">紋繡操作</div>
-                <div class="desc">質感呈現</div>
-            </div>
-        </div>
-
-        <!-- 影片 5 -->
-        <div class="card">
-            <video controls src="video05.mp4"></video>
-            <div class="info">
-                <div class="title">美容保養</div>
-                <div class="desc">專業流程</div>
-            </div>
-        </div>
-
-        <!-- 繼續加 → 複製 → 改數字 ex: video06.mp4 -->
-
+        <div class="card"><video controls src="video01.mp4"></video><div class="info"><div class="title">美甲操作</div><div class="desc">專業流程</div></div></div>
+        <div class="card"><video controls src="video02.mp4"></video><div class="info"><div class="title">美睫操作</div><div class="desc">專業流程</div></div></div>
+        <div class="card"><video controls src="video03.mp4"></video><div class="info"><div class="title">霧眉操作</div><div class="desc">專業流程</div></div></div>
+        <div class="card"><video controls src="video04.mp4"></video><div class="info"><div class="title">紋繡操作</div><div class="desc">專業流程</div></div></div>
+        <div class="card"><video controls src="video05.mp4"></video><div class="info"><div class="title">美容保養</div><div class="desc">專業流程</div></div></div>
     </div>
 </section>
 
-<!-- ====================== 聯絡我們 ====================== -->
 <section class="contact">
     <h3>預約諮詢</h3>
     <p>LINE：你的ID<br>營業時間：10:00-20:00<br>服務項目：美甲・美睫・紋繡・霧眉・美容</p>
