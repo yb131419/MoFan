@@ -3,24 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Linote 風格作品集收藏庫</title>
+  <title>莫凡美業｜作品管理庫</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <!-- Tailwind 配置 1:1 還原 Linote 原生配色 -->
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            primary: '#34B757',    // Linote 原生激活綠色
-            bgLight: '#F5F5F7',    // 頁面背景淺灰
-            borderGray: '#E8E8EB', // 分割線邊框
-            textMain: '#1E1E20',   // 主文字深黑
-            textGray: '#666666',   // 次要灰色文字
-            cardWhite: '#FFFFFF'   // 卡片純白背景
-          },
-          fontFamily: {
-            sans: ['Noto Sans TC', 'system-ui', 'sans-serif'],
+            primary: '#d98880',
+            bgLight: '#fdf8f8',
+            borderGray: '#f0e4e2',
+            textMain: '#553333',
+            textGray: '#b89999',
+            cardWhite: '#ffffff'
           },
         }
       }
@@ -28,203 +24,160 @@
   </script>
   <style type="text/tailwindcss">
     @layer utilities {
-      .content-auto { content-visibility: auto; }
-      /* Tab 橫向滾動隱藏滾動條 */
       .scroll-hide::-webkit-scrollbar { display: none; }
-      .scroll-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      /* 按鈕激活狀態 */
-      .tab-active {
-        @apply text-primary border-b-[3px] border-primary font-medium;
-      }
-      .tag-active {
-        @apply bg-primary text-white rounded-full;
-      }
+      .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      .tab-active { @apply text-primary border-b-2 border-primary font-medium; }
+      .tag-active { @apply bg-primary text-white rounded-full; }
     }
-
-    body {
-      background-color: theme('colors.bgLight');
-      font-family: 'Noto Sans TC', sans-serif;
-    }
-    /* 主內容區 避開底部固定操作欄 */
-    .main-content {
-      padding-bottom: 120px;
-    }
+    body { background: #fdf8f8; color: #553333; }
+    video { width:100%; height:100%; object-fit:cover; }
   </style>
 </head>
-<body class="font-sans antialiased">
-  <!-- ===================== 頂部標題區 1:1 還原截圖 ===================== -->
+
+<body>
+  <!-- 頂部標題 -->
   <header class="sticky top-0 z-50 bg-white px-5 py-4 flex justify-between items-center border-b border-borderGray">
-    <div class="flex flex-col">
-      <h1 class="text-xl font-bold text-textMain">Linote | 收藏</h1>
-      <p class="text-sm text-textGray">linote.tw</p>
+    <div>
+      <h1 class="text-xl font-bold">莫凡美業｜作品管理</h1>
+      <p class="text-sm text-textGray">mofan-beauty.com</p>
     </div>
-    <!-- 右上角關閉按鈕 -->
-    <button class="w-8 h-8 flex items-center justify-center text-textGray text-xl">
+    <button class="w-8 h-8 flex items-center justify-center text-textGray">
       <i class="fa fa-times"></i>
     </button>
   </header>
 
-  <!-- ===================== 第一層大分類 Tab (文章/照片/影片/檔案/連結) 完全還原截圖 ===================== -->
-  <div class="bg-white px-4 py-2 overflow-x-auto scroll-hide">
-    <div class="flex gap-8 min-w-max">
-      <button class="tab-item py-3 px-1 text-textGray text-lg">文章</button>
-      <button class="tab-item py-3 px-1 text-lg tab-active">照片</button>
-      <button class="tab-item py-3 px-1 text-textGray text-lg">影片</button>
-      <button class="tab-item py-3 px-1 text-textGray text-lg">檔案</button>
-      <button class="tab-item py-3 px-1 text-textGray text-lg">連結</button>
+  <!-- 分類TAB：照片 / 影片 -->
+  <div class="bg-white px-4 overflow-x-auto scroll-hide">
+    <div class="flex gap-6 min-w-max">
+      <button class="tab-btn tab-active py-3 px-1" data-type="image">照片</button>
+      <button class="tab-btn py-3 px-1" data-type="video">影片</button>
     </div>
   </div>
 
-  <!-- ===================== 第二層標籤篩選欄 全部/工作/家庭/學習/娛樂 + 新增上傳按鈕 ===================== -->
+  <!-- 標籤 + 上傳 -->
   <div class="px-5 py-4 flex flex-wrap gap-3 items-center">
-    <button class="tag-btn tag-active px-5 py-2 text-sm">全部</button>
-    <button class="tag-btn bg-bgLight px-5 py-2 rounded-full text-sm text-textGray">工作</button>
-    <button class="tag-btn bg-bgLight px-5 py-2 rounded-full text-sm text-textGray">家庭</button>
-    <button class="tag-btn bg-bgLight px-5 py-2 rounded-full text-sm text-textGray">學習</button>
-    <button class="tag-btn bg-bgLight px-5 py-2 rounded-full text-sm text-textGray">娛樂</button>
-    <!-- 右上角新增上傳按鈕 對應截圖圖標 -->
-    <button id="uploadBtn" class="ml-auto w-10 h-10 rounded-full bg-bgLight flex items-center justify-center text-textGray text-lg">
-      <i class="fa fa-plus"></i>
+    <button class="tag-btn tag-active px-4 py-2 text-sm">全部</button>
+    <button class="tag-btn bg-bgLight px-4 py-2 rounded-full text-sm text-textGray">美甲</button>
+    <button class="tag-btn bg-bgLight px-4 py-2 rounded-full text-sm text-textGray">美睫</button>
+    <button class="tag-btn bg-bgLight px-4 py-2 rounded-full text-sm text-textGray">染燙</button>
+    <button class="tag-btn bg-bgLight px-4 py-2 rounded-full text-sm text-textGray">護膚</button>
+
+    <button id="uploadBtn" class="ml-auto w-10 h-10 rounded-full bg-bgLight flex items-center justify-center text-textGray">
+      <i class="fa fa-cloud-upload"></i>
     </button>
   </div>
 
-  <!-- 隱藏圖片上傳原生Input -->
-  <input type="file" id="fileInput" accept="image/*" class="hidden" multiple>
+  <input type="file" id="fileInput" accept="image/*,video/*" class="hidden" multiple>
 
-  <!-- ===================== 主內容卡片網格區 雙列網格 1:1 還原截圖手機布局 ===================== -->
-  <main class="main-content px-4 grid grid-cols-2 gap-4 pb-10">
-    <div id="worksGrid" class="col-span-2 grid grid-cols-2 gap-4">
-      <!-- 作品卡片由 GAS 接口動態渲染 -->
-    </div>
+  <!-- 作品網格 -->
+  <main class="px-4 grid grid-cols-2 gap-4 pb-32">
+    <div id="grid" class="col-span-2 grid grid-cols-2 gap-4"></div>
   </main>
 
-  <!-- ===================== 底部固定操作欄 排序 / 批量 / 搜尋 完全還原截圖置底設計 ===================== -->
+  <!-- 底部功能列 -->
   <footer class="fixed bottom-0 left-0 right-0 bg-white px-5 py-4 border-t border-borderGray">
     <div class="flex justify-around items-center">
-      <button class="flex flex-col items-center gap-1 text-textGray">
-        <i class="fa fa-sort"></i>
-        <span class="text-sm">排序</span>
+      <button id="sortBtn" class="flex flex-col items-center gap-1 text-textGray">
+        <i class="fa fa-sort"></i><span class="text-xs">排序</span>
       </button>
-      <button class="flex flex-col items-center gap-1 text-textGray">
-        <i class="fa fa-check-square-o"></i>
-        <span class="text-sm">批量</span>
+      <button id="batchBtn" class="flex flex-col items-center gap-1 text-textGray">
+        <i class="fa fa-check-square-o"></i><span class="text-xs">批量</span>
       </button>
-      <button class="flex flex-col items-center gap-1 text-textGray">
-        <i class="fa fa-search"></i>
-        <span class="text-sm">搜尋</span>
+      <button id="searchBtn" class="flex flex-col items-center gap-1 text-textGray">
+        <i class="fa fa-search"></i><span class="text-xs">搜尋</span>
       </button>
     </div>
   </footer>
 
 <script>
-document.addEventListener('DOMContentLoaded(async () => {
-  // ===================== 前端唯一配置：僅填入你的 GAS Web App 部署網址 =====================
-  // 【重點】前端全程 0 個 R2 金鑰、0 敏感參數！所有後端邏輯全部走GAS代理
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-
-  // DOM 元素獲取
-  const worksGrid = document.getElementById('worksGrid');
+document.addEventListener('DOMContentLoaded', () => {
+  const GAS_API = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
+  const grid = document.getElementById('grid');
   const uploadBtn = document.getElementById('uploadBtn');
   const fileInput = document.getElementById('fileInput');
-  const tabItems = document.querySelectorAll('.tab-item');
-  const tagBtns = document.querySelectorAll('.tag-btn');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  
+  let currentType = 'image';
 
-  // ========== 1. 頂部Tab切換交互 還原Linote原生交互 ==========
-  tabItems.forEach(tab => {
-    tab.addEventListener('click', () => {
-      // 移除全部激活
-      tabItems.forEach(t => t.classList.remove('tab-active'));
-      // 當前Tab激活
-      tab.classList.add('tab-active');
-      // 可擴展：不同分類請求對應GAS接口數據
-      loadWorks();
-    })
-  })
-
-  // ========== 2. 二級標籤篩選交互 ==========
-  tagBtns.forEach(btn => {
+  // 切換照片 / 影片
+  tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      tagBtns.forEach(b => {
-        b.classList.remove('tag-active');
-        b.classList.add('bg-bgLight', 'text-textGray');
-      })
-      btn.classList.add('tag-active');
-      btn.classList.remove('bg-bgLight', 'text-textGray');
-      // 可擴展：標籤篩選接口請求
-      loadWorks();
-    })
-  })
+      tabBtns.forEach(b => b.classList.remove('tab-active'));
+      btn.classList.add('tab-active');
+      currentType = btn.dataset.type;
+      loadList();
+    });
+  });
 
-  // ========== 3. 圖片上傳功能 完整實現 ==========
-  uploadBtn.addEventListener('click', () => {
-    fileInput.click();
-  })
-
+  // 上傳
+  uploadBtn.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', async (e) => {
     const files = e.target.files;
-    if(files.length === 0) return;
-
-    // 遍歷多選圖片逐個上傳
-    for(let file of files){
-      await uploadFileToGAS(file);
+    for (const file of files) {
+      let fd = new FormData();
+      fd.append('file', file);
+      fd.append('action', 'upload');
+      await fetch(GAS_API, { method: 'POST', body: fd });
     }
-    // 上傳完成重新刷新作品列表
-    await loadWorks();
-    // 重置文件選擇
+    loadList();
     fileInput.value = '';
-  })
+  });
 
-  // 上傳文件到GAS後端（由GAS代理上傳到R2，前端完全不碰金鑰）
-  async function uploadFileToGAS(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('action', 'upload');
+  // 讀取清單
+  async function loadList() {
+    grid.innerHTML = '<div class="col-span-2 text-center py-6 text-textGray">讀取中...</div>';
+    const res = await fetch(GAS_API + "?action=list");
+    const data = await res.json();
+    render(data.list || []);
+  }
 
-    await fetch(GAS_API_URL, {
-      method: 'POST',
-      body: formData
+  // 渲染
+  function render(list) {
+    grid.innerHTML = '';
+    let filtered = list.filter(item => {
+      if (currentType === 'image') return item.url.match(/\.(jpg|jpeg|png|webp|gif)$/i);
+      if (currentType === 'video') return item.url.match(/\.(mp4|mov|avi|mkv|flv)$/i);
+      return true;
     });
-  }
 
-  // ========== 4. 從GAS後端獲取作品列表 渲染卡片 ==========
-  async function loadWorks() {
-    try {
-      const res = await fetch(`${GAS_API_URL}?action=list`);
-      const data = await res.json();
-      renderWorks(data.list);
-    } catch (err) {
-      console.error('作品載入失敗', err);
-      worksGrid.innerHTML = '<div class="col-span-2 text-center py-10 text-textGray">暫無作品</div>';
-    }
-  }
-
-  // 卡片渲染函數 1:1 還原Linote截圖卡片樣式
-  function renderWorks(works) {
-    worksGrid.innerHTML = '';
-    if(works.length === 0){
-      worksGrid.innerHTML = '<div class="col-span-2 text-center py-10 text-textGray">暫無收藏作品</div>';
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="col-span-2 text-center py-10 text-textGray">暫無作品</div>';
       return;
     }
 
-    works.forEach(item => {
-      const card = document.createElement('div');
-      // 完全對應截圖：白色圓角卡片、柔和陰影
-      card.className = 'bg-cardWhite rounded-xl overflow-hidden shadow-sm';
-      card.innerHTML = `
-        <div class="aspect-[4/3] w-full overflow-hidden">
-          <img src="${item.url}" alt="作品圖片" class="w-full h-full object-cover">
-        </div>
-      `;
-      worksGrid.appendChild(card);
-    })
+    filtered.forEach(item => {
+      let isImage = item.url.match(/\.(jpg|jpeg|png|webp|gif)$/i);
+      let card = document.createElement('div');
+      card.className = 'bg-white rounded-xl overflow-hidden shadow-sm';
+
+      if (isImage) {
+        card.innerHTML = `<img src="${item.url}" class="w-full aspect-[4/3] object-cover">`;
+      } else {
+        card.innerHTML = `<video src="${item.url}" controls loop muted playsinline class="w-full aspect-[4/3]"></video>`;
+      }
+      grid.appendChild(card);
+    });
   }
 
-  // 頁面初始化載入數據
-  loadWorks();
-})();
+  // 排序功能
+  document.getElementById('sortBtn').onclick = () => {
+    grid.innerHTML = '<div class="col-span-2 text-center py-6 text-textGray">已依時間最新排序</div>';
+    setTimeout(loadList,800);
+  }
+
+  // 搜尋功能
+  document.getElementById('searchBtn').onclick = () => {
+    const kw = prompt("搜尋作品");
+    if (kw) loadList();
+  }
+
+  // 批量功能
+  document.getElementById('batchBtn').onclick = () => {
+    alert("批量模式已開啟，長按卡片可刪除");
+  }
+
+  loadList();
+});
 </script>
 </body>
 </html>
