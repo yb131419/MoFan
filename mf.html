@@ -340,10 +340,8 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   selectedFile = file;
-
   document.getElementById('fileName').innerText = "已選取：" + file.name;
   const preview = document.getElementById('previewImg');
-  
   if (file.type.startsWith('image/')) {
     preview.src = URL.createObjectURL(file);
     preview.style.display = 'block';
@@ -352,60 +350,42 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   }
 });
 
-// 確認上傳（修復版）
 async function confirmUpload() {
-  if (!selectedFile) {
-    alert("請選擇檔案");
-    return;
-  }
-
+  if (!selectedFile) { alert("請選擇檔案"); return; }
   setStatus("⬆️ 上傳中，請稍後...");
   disableBtn(true);
   
-  const progressContainer = document.getElementById('progressContainer');
   const progressBar = document.getElementById('progressBar');
-  progressContainer.style.display = 'block';
-  progressBar.style.width = '40%';
+  document.getElementById('progressContainer').style.display = 'block';
+  progressBar.style.width = '50%';
 
   try {
-    const reader = new FileReader();
-    reader.readAsDataURL(selectedFile);
+    const formData = new FormData();
+    formData.append('action', 'uploadBase64');
+    formData.append('type', currentUploadType);
+    formData.append('fileData', selectedFile);
 
-    reader.onload = async function (event) {
-      progressBar.style.width = '70%';
-      const base64 = event.target.result.split(',')[1];
+    const response = await fetch(GAS_URL, {
+      method: "POST",
+      body: formData
+    });
 
-      const response = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "uploadBase64",
-          type: currentUploadType,
-          fileData: base64
-        })
-      });
-
-      progressBar.style.width = '100%';
-      const data = await response.json();
-
-      if (data.url) {
-        addNewItem(currentUploadType, data.url, selectedFile.name);
-        setStatus("✅ 上傳成功：" + selectedFile.name);
-      } else {
-        alert("❌ 上傳失敗：" + (data.error || "未知錯誤"));
-        setStatus("❌ 上傳失敗");
-      }
-    };
-
+    progressBar.style.width = '100%';
+    const data = await response.json();
+    
+    if (data.url) {
+      addNewItem(currentUploadType, data.url, selectedFile.name);
+      setStatus("✅ 上傳成功：" + selectedFile.name);
+    } else {
+      alert("❌ 失敗：" + (data.error || "上傳失敗"));
+    }
   } catch (err) {
-    console.error(err);
-    alert("❌ 上傳異常：" + err.message);
-    setStatus("❌ 上傳異常");
+    alert("❌ 上傳異常");
   } finally {
     setTimeout(() => {
       disableBtn(false);
       document.getElementById('fileUpload').classList.remove('show');
-    }, 700);
+    }, 600);
   }
 }
 
@@ -429,79 +409,59 @@ function addNewItem(type, url, fileName) {
 
 async function deleteItem(id, type) {
   if (!confirm('確定刪除？')) return;
-  try {
-    await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}`);
-    document.querySelector(`.card[data-id="${id}"]`).remove();
-    setStatus('🗑 刪除成功');
-  } catch (e) {
-    alert('❌ 刪除失敗');
-  }
+  await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}`);
+  document.querySelector(`.card[data-id="${id}"]`).remove();
+  setStatus('🗑 刪除成功');
 }
 
 async function saveAllData() {
   setStatus('💾 儲存中...');
   disableBtn(true);
-  try {
-    const items = document.querySelectorAll('[data-key]');
-    for (const el of items) {
-      const key = el.dataset.key;
-      const val = el.innerText.trim();
-      await fetch(GAS_URL, {
-        method: 'POST',
-        body: new URLSearchParams({ action: 'save', key, val })
-      });
-    }
-    alert('✅ 儲存完成');
-    setStatus('✅ 全部儲存成功');
-  } catch (e) {
-    alert('❌ 儲存失敗');
-    setStatus('❌ 儲存失敗');
-  } finally {
-    disableBtn(false);
+  const items = document.querySelectorAll('[data-key]');
+  for (const el of items) {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      body: new URLSearchParams({ action: 'save', key: el.dataset.key, val: el.innerText.trim() })
+    });
   }
+  alert('✅ 儲存完成');
+  setStatus('✅ 全部儲存成功');
+  disableBtn(false);
 }
 
 async function loadAllData() {
   setStatus('🔄 載入資料中...');
-  try {
-    const res = await fetch(GAS_URL + '?action=load');
-    const data = await res.json();
-    
-    for (const key in data) {
-      const el = document.querySelector(`[data-key="${key}"]`);
-      if (el) el.innerText = data[key];
-    }
-
-    if (data.photos) {
-      const g = document.getElementById('photoGrid');
-      JSON.parse(data.photos).forEach(p => {
-        g.innerHTML += `<div class="card" data-id="${p.id}" data-type="photo">
-          <button class="delete-btn" onclick="deleteItem('${p.id}','photo')">🗑</button>
-          <img src="${p.url}" alt="作品圖片">
-          <div class="info">
-            <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title}</div>
-            <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc}</div>
-          </div></div>`;
-      });
-    }
-
-    if (data.videos) {
-      const g = document.getElementById('videoGrid');
-      JSON.parse(data.videos).forEach(v => {
-        g.innerHTML += `<div class="card" data-id="${v.id}" data-type="video">
-          <button class="delete-btn" onclick="deleteItem('${v.id}','video')">🗑</button>
-          <video controls src="${v.url}"></video>
-          <div class="info">
-            <div class="title" contenteditable data-key="video-${v.id}-title">${v.title}</div>
-            <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc}</div>
-          </div></div>`;
-      });
-    }
-    setStatus('✅ 載入完成');
-  } catch (e) {
-    setStatus('❌ 載入失敗');
-    alert('❌ 載入資料失敗');
+  const res = await fetch(GAS_URL + '?action=load');
+  const data = await res.json();
+  for (const key in data) {
+    const el = document.querySelector(`[data-key="${key}"]`);
+    if (el) el.innerText = data[key];
   }
+  if (data.photos) {
+    const g = document.getElementById('photoGrid');
+    JSON.parse(data.photos).forEach(p => {
+      g.innerHTML += `<div class="card" data-id="${p.id}" data-type="photo">
+        <button class="delete-btn" onclick="deleteItem('${p.id}','photo')">🗑</button>
+        <img src="${p.url}">
+        <div class="info">
+          <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title}</div>
+          <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc}</div>
+        </div></div>`;
+    });
+  }
+  if (data.videos) {
+    const g = document.getElementById('videoGrid');
+    JSON.parse(data.videos).forEach(v => {
+      g.innerHTML += `<div class="card" data-id="${v.id}" data-type="video">
+        <button class="delete-btn" onclick="deleteItem('${v.id}','video')">🗑</button>
+        <video controls src="${v.url}"></video>
+        <div class="info">
+          <div class="title" contenteditable data-key="video-${v.id}-title">${v.title}</div>
+          <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc}</div>
+        </div></div>`;
+    });
+  }
+  setStatus('✅ 載入完成');
 }
 
 function switchTab(type) {
@@ -511,13 +471,8 @@ function switchTab(type) {
   document.getElementById(type + 'Content').classList.add('active');
 }
 
-function setStatus(t) {
-  document.getElementById('adminStatus').innerText = t;
-}
-
-function disableBtn(d) {
-  document.querySelectorAll('.btn').forEach(b => b.disabled = d);
-}
+function setStatus(t) { document.getElementById('adminStatus').innerText = t; }
+function disableBtn(d) { document.querySelectorAll('.btn').forEach(b => b.disabled = d); }
 </script>
 </body>
 </html>
