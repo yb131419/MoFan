@@ -104,38 +104,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ======================================
-  // 上傳按鈕點擊（修復版）
-  // ======================================
+  // 上傳按鈕
   uploadBtn.addEventListener('click', () => {
-    console.log("點擊上傳");
     fileInput.click();
   });
 
-  // ======================================
-  // 選擇檔案後開始上傳（完整流程）
-  // ======================================
+  // 選擇檔案 → 上傳
   fileInput.addEventListener('change', async (e) => {
     const files = e.target.files;
-    if (files.length === 0) {
-      alert("請選擇檔案");
-      return;
-    }
+    if (!files.length) return;
 
-    alert("開始上傳 " + files.length + " 個檔案，請稍候...");
+    alert("開始上傳 " + files.length + " 個檔案")
 
     try {
       for (const file of files) {
         let fd = new FormData();
-        fd.append('file', file);
         fd.append('action', 'upload');
+        fd.append('file', file);
 
-        console.log("上傳中：", file.name);
-        await fetch(GAS_API, {
+        let res = await fetch(GAS_API, {
           method: 'POST',
-          body: fd,
-          mode: 'no-cors'
+          body: fd
         });
+
+        let json = await res.json();
+        console.log(json);
       }
 
       alert("✅ 上傳完成！");
@@ -148,24 +141,19 @@ document.addEventListener('DOMContentLoaded', () => {
     fileInput.value = '';
   });
 
-  // ======================================
-  // 讀取作品列表
-  // ======================================
+  // 讀取列表
   async function loadList() {
     grid.innerHTML = '<div class="col-span-2 text-center py-6 text-textGray">讀取中...</div>';
-    
     try {
-      const res = await fetch(GAS_API + "?action=list");
-      const data = await res.json();
+      let res = await fetch(GAS_API + "?action=list");
+      let data = await res.json();
       render(data.list || []);
     } catch (e) {
       grid.innerHTML = '<div class="col-span-2 text-center py-10 text-textGray">載入失敗</div>';
     }
   }
 
-  // ======================================
-  // 畫面渲染
-  // ======================================
+  // 渲染
   function render(list) {
     grid.innerHTML = '';
     let filtered = list.filter(item => {
