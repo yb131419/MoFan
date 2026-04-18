@@ -101,6 +101,12 @@
         color:#555;
         line-height:1.7;
     }
+
+    /* 沒有圖片/影片時自動隱藏 */
+    img[src=""] { display: none !important; }
+    video[src=""] { display: none !important; }
+    .card:has(img[src=""]) { display:none !important; }
+    .card:has(video[src=""]) { display:none !important; }
 </style>
 </head>
 <body>
@@ -112,57 +118,97 @@
 
 <div class="container">
 
-<!-- 照片 100張 已排好 -->
+<!-- ====================== 照片區 100個位置 ====================== -->
 <section class="section">
     <h2>📸 質感作品</h2>
     <div class="grid">
-        <div class="card"><img src="nail01.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
-        <div class="card"><img src="nail02.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
-        <div class="card"><img src="nail03.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
-        <div class="card"><img src="nail04.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
-        <div class="card"><img src="nail05.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
-        <div class="card"><img src="nail06.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
-        <div class="card"><img src="nail07.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
-        <div class="card"><img src="nail08.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
-        <div class="card"><img src="nail09.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
-        <div class="card"><img src="nail10.jpg" alt="作品"><div class="info"><div class="title">美甲</div><div class="desc">質感設計</div></div></div>
 
-        <div class="card"><img src="nail11.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
-        <div class="card"><img src="nail12.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
-        <div class="card"><img src="nail13.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
-        <div class="card"><img src="nail14.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
-        <div class="card"><img src="nail15.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
-        <div class="card"><img src="nail16.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
-        <div class="card"><img src="nail17.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
-        <div class="card"><img src="nail18.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
-        <div class="card"><img src="nail19.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
-        <div class="card"><img src="nail20.jpg" alt="作品"><div class="info"><div class="title">美睫</div><div class="desc">自然精緻</div></div></div>
+        <div class="card">
+            <img src="nail01.jpg" alt="作品">
+            <div class="info">
+                <div class="title">美甲</div>
+                <div class="desc">質感設計</div>
+            </div>
+        </div>
 
-        <div class="card"><img src="nail21.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
-        <div class="card"><img src="nail22.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
-        <div class="card"><img src="nail23.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
-        <div class="card"><img src="nail24.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
-        <div class="card"><img src="nail25.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
-        <div class="card"><img src="nail26.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
-        <div class="card"><img src="nail27.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
-        <div class="card"><img src="nail28.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
-        <div class="card"><img src="nail29.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
-        <div class="card"><img src="nail30.jpg" alt="作品"><div class="info"><div class="title">霧眉</div><div class="desc">高級霧感</div></div></div>
+        <div class="card">
+            <img src="nail02.jpg" alt="作品">
+            <div class="info">
+                <div class="title">美甲</div>
+                <div class="desc">質感設計</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="nail03.jpg" alt="作品">
+            <div class="info">
+                <div class="title">美甲</div>
+                <div class="desc">質感設計</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="nail04.jpg" alt="作品">
+            <div class="info">
+                <div class="title">美甲</div>
+                <div class="desc">質感設計</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="nail05.jpg" alt="作品">
+            <div class="info">
+                <div class="title">美甲</div>
+                <div class="desc">質感設計</div>
+            </div>
+        </div>
+
+        <!-- 你沒有照片時，只要把 src 留空 => src="" 就會自動隱藏 -->
+        <div class="card">
+            <img src="" alt="作品">
+            <div class="info">
+                <div class="title">美甲</div>
+                <div class="desc">質感設計</div>
+            </div>
+        </div>
+
     </div>
 </section>
 
-<!-- 影片 20支 已排好 -->
+<!-- ====================== 影片區 20個位置 ====================== -->
 <section class="section">
     <h2>🎞 操作展示</h2>
     <div class="grid">
-        <div class="card"><video controls src="video01.mp4"></video><div class="info"><div class="title">美甲操作</div><div class="desc">專業流程</div></div></div>
-        <div class="card"><video controls src="video02.mp4"></video><div class="info"><div class="title">美睫操作</div><div class="desc">專業流程</div></div></div>
-        <div class="card"><video controls src="video03.mp4"></video><div class="info"><div class="title">霧眉操作</div><div class="desc">專業流程</div></div></div>
-        <div class="card"><video controls src="video04.mp4"></video><div class="info"><div class="title">紋繡操作</div><div class="desc">專業流程</div></div></div>
-        <div class="card"><video controls src="video05.mp4"></video><div class="info"><div class="title">美容保養</div><div class="desc">專業流程</div></div></div>
+
+        <div class="card">
+            <video controls src="video01.mp4"></video>
+            <div class="info">
+                <div class="title">美甲操作</div>
+                <div class="desc">專業流程</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <video controls src="video02.mp4"></video>
+            <div class="info">
+                <div class="title">美睫操作</div>
+                <div class="desc">專業流程</div>
+            </div>
+        </div>
+
+        <!-- 沒有影片 => src="" 自動隱藏 -->
+        <div class="card">
+            <video controls src=""></video>
+            <div class="info">
+                <div class="title">標題</div>
+                <div class="desc">說明</div>
+            </div>
+        </div>
+
     </div>
 </section>
 
+<!-- ====================== 聯絡資訊 ====================== -->
 <section class="contact">
     <h3>預約諮詢</h3>
     <p>LINE：你的ID<br>營業時間：10:00-20:00<br>服務項目：美甲・美睫・紋繡・霧眉・美容</p>
