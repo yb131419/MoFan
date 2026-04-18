@@ -70,7 +70,7 @@
         color:#fff;
     }
     .btn-success{
-        background:#a89696;
+        background:#a89699;
         color:#fff;
     }
     .btn-danger{
@@ -274,7 +274,7 @@
         </section>
     </div>
 
-    <div id="videoContent" class="tab-content">
+    <div id="videoContent" class="tab-content active">
         <section class="section">
             <h2>🎞 操作流程影片</h2>
             <div class="grid" id="videoGrid"></div>
@@ -288,187 +288,194 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-    let isAdmin = false;
-    let currentUploadType = '';
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
+let isAdmin = false;
+let currentUploadType = '';
 
-    window.onload = async () => {
-        await loadAllData();
-        checkAdminStatus();
+window.onload = async () => {
+  await loadAllData();
+  checkAdminStatus();
+};
+
+function checkAdminStatus() {
+  if (localStorage.getItem('adminToken') === 'logged') {
+    enableAdminMode();
+  }
+}
+
+async function adminLogin() {
+  const pwd = document.getElementById('adminPwd').value.trim();
+  if (!pwd) return alert('請輸入密碼');
+  setStatus('🔑 驗證中...');
+  disableBtn(true);
+  try {
+    const res = await fetch(GAS_URL + '?action=login&pwd=' + encodeURIComponent(pwd));
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('adminToken', 'logged');
+      localStorage.setItem('adminPwd', pwd);
+      enableAdminMode();
+      setStatus('✅ 登入成功');
+    } else {
+      alert('❌ 密碼錯誤');
+      setStatus('❌ 登入失敗');
+    }
+  } catch (e) {
+    alert('❌ 連線失敗');
+  } finally {
+    disableBtn(false);
+  }
+}
+
+function enableAdminMode() {
+  isAdmin = true;
+  document.body.classList.add('admin-mode');
+  document.getElementById('saveBtn').disabled = false;
+}
+
+function adminLogout() {
+  localStorage.clear();
+  isAdmin = false;
+  document.body.classList.remove('admin-mode');
+  document.getElementById('saveBtn').disabled = true;
+  setStatus('👋 已登出');
+}
+
+function showUpload(type) {
+  if (!isAdmin) return alert('請先登入');
+  currentUploadType = type;
+  document.getElementById('fileUpload').classList.add('show');
+}
+
+document.getElementById('fileInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const pwd = localStorage.getItem('adminPwd');
+  if (!pwd) return alert('請先登入');
+
+  setStatus('⬆️ 上傳中...');
+  disableBtn(true);
+  try {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+      const base64 = reader.result.split(',')[1];
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          action: 'uploadBase64',
+          pwd: pwd,
+          type: currentUploadType,
+          fileData: base64
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        addNewItem(currentUploadType, data.url);
+        setStatus('✅ 上傳成功');
+      } else {
+        alert('❌ 上傳失敗：' + (data.error || ''));
+      }
     };
+  } catch (err) {
+    alert('❌ 上傳異常');
+  } finally {
+    disableBtn(false);
+    document.getElementById('fileUpload').classList.remove('show');
+    document.getElementById('fileInput').value = '';
+  }
+});
 
-    function checkAdminStatus() {
-        if (localStorage.getItem('adminToken') === 'logged') {
-            enableAdminMode();
-        }
+function addNewItem(type, url) {
+  const grid = document.getElementById(type + 'Grid');
+  const id = Date.now().toString();
+  const media = type === 'photo' ? `<img src="${url}">` : `<video controls src="${url}"></video>`;
+  grid.innerHTML += `
+  <div class="card" data-id="${id}" data-type="${type}">
+    <button class="delete-btn" onclick="deleteItem('${id}','${type}')">🗑</button>
+    ${media}
+    <div class="info">
+      <div class="title" contenteditable data-key="${type}-${id}-title">新作品</div>
+      <div class="desc" contenteditable data-key="${type}-${id}-desc">請輸入描述</div>
+    </div>
+  </div>`;
+}
+
+async function deleteItem(id, type) {
+  if (!confirm('確定刪除？')) return;
+  const pwd = localStorage.getItem('adminPwd');
+  await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}&pwd=${pwd}`);
+  document.querySelector(`.card[data-id="${id}"]`).remove();
+  setStatus('🗑 已刪除');
+}
+
+async function saveAllData() {
+  if (!isAdmin) return;
+  const pwd = localStorage.getItem('adminPwd');
+  setStatus('💾 儲存中...');
+  disableBtn(true);
+  try {
+    const items = document.querySelectorAll('[data-key]');
+    for (const el of items) {
+      const key = el.dataset.key;
+      const val = el.innerText.trim();
+      await fetch(GAS_URL, {
+        method: 'POST',
+        body: new URLSearchParams({ action: 'save', key, val, pwd })
+      });
     }
+    alert('✅ 儲存完成');
+    setStatus('✅ 全部儲存成功');
+  } catch (e) {
+    alert('❌ 儲存失敗');
+  } finally {
+    disableBtn(false);
+  }
+}
 
-    async function adminLogin() {
-        const pwd = document.getElementById('adminPwd').value.trim();
-        if (!pwd) return alert('請輸入密碼');
-
-        setStatus('🔑 驗證中...');
-        disableBtn(true);
-        try {
-            const res = await fetch(GAS_URL + '?action=login&pwd=' + encodeURIComponent(pwd));
-            const data = await res.json();
-            if (data.success) {
-                localStorage.setItem('adminToken', 'logged');
-                localStorage.setItem('adminPwd', pwd);
-                enableAdminMode();
-                setStatus('✅ 登入成功');
-            } else {
-                alert('❌ 密碼錯誤');
-                setStatus('❌ 登入失敗');
-            }
-        } catch (e) {
-            alert('❌ 連線失敗');
-        } finally {
-            disableBtn(false);
-        }
-    }
-
-    function enableAdminMode() {
-        isAdmin = true;
-        document.body.classList.add('admin-mode');
-        document.getElementById('saveBtn').disabled = false;
-    }
-
-    function adminLogout() {
-        localStorage.clear();
-        isAdmin = false;
-        document.body.classList.remove('admin-mode');
-        document.getElementById('saveBtn').disabled = true;
-        setStatus('👋 已登出');
-    }
-
-    function showUpload(type) {
-        if (!isAdmin) return alert('請先登入');
-        currentUploadType = type;
-        document.getElementById('fileUpload').classList.add('show');
-        document.getElementById('fileInput').accept = type === 'photo' ? 'image/*' : 'video/*';
-    }
-
-    document.getElementById('fileInput').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const pwd = localStorage.getItem('adminPwd');
-        if (!pwd) return alert('請先登入');
-
-        setStatus('⬆️ 上傳中...');
-        disableBtn(true);
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('type', currentUploadType);
-            formData.append('pwd', pwd);
-
-            const res = await fetch(GAS_URL, { method: 'POST', body: formData });
-            const data = await res.json();
-            if (data.url) {
-                addNewItem(currentUploadType, data.url);
-                setStatus('✅ 上傳成功');
-            } else {
-                alert('❌ 上傳失敗：' + (data.error || ''));
-            }
-        } catch (err) {
-            alert('❌ 上傳異常');
-        } finally {
-            disableBtn(false);
-            document.getElementById('fileUpload').classList.remove('show');
-            document.getElementById('fileInput').value = '';
-        }
+async function loadAllData() {
+  const res = await fetch(GAS_URL + '?action=load');
+  const data = await res.json();
+  for (const key in data) {
+    const el = document.querySelector(`[data-key="${key}"]`);
+    if (el) el.innerText = data[key];
+  }
+  if (data.photos) {
+    const g = document.getElementById('photoGrid');
+    JSON.parse(data.photos).forEach(p => {
+      g.innerHTML += `<div class="card" data-id="${p.id}" data-type="photo">
+        <button class="delete-btn">🗑</button>
+        <img src="${p.url}">
+        <div class="info">
+          <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title}</div>
+          <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc}</div>
+        </div></div>`;
     });
+  }
+  if (data.videos) {
+    const g = document.getElementById('videoGrid');
+    JSON.parse(data.videos).forEach(v => {
+      g.innerHTML += `<div class="card" data-id="${v.id}" data-type="video">
+        <button class="delete-btn">🗑</button>
+        <video controls src="${v.url}"></video>
+        <div class="info">
+          <div class="title" contenteditable data-key="video-${v.id}-title">${v.title}</div>
+          <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc}</div>
+        </div></div>`;
+    });
+  }
+}
 
-    function addNewItem(type, url) {
-        const grid = document.getElementById(type + 'Grid');
-        const id = Date.now().toString();
-        const media = type === 'photo' ? `<img src="${url}">` : `<video controls src="${url}"></video>`;
-        grid.innerHTML += `
-        <div class="card" data-id="${id}" data-type="${type}">
-            <button class="delete-btn" onclick="deleteItem('${id}','${type}')">🗑</button>
-            ${media}
-            <div class="info">
-                <div class="title" contenteditable data-key="${type}-${id}-title">新作品</div>
-                <div class="desc" contenteditable data-key="${type}-${id}-desc">請輸入描述</div>
-            </div>
-        </div>`;
-    }
+function switchTab(type) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(type + 'Content').classList.add('active');
+}
 
-    async function deleteItem(id, type) {
-        if (!confirm('確定刪除？')) return;
-        const pwd = localStorage.getItem('adminPwd');
-        await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}&pwd=${pwd}`);
-        document.querySelector(`.card[data-id="${id}"]`).remove();
-        setStatus('🗑 已刪除');
-    }
-
-    async function saveAllData() {
-        if (!isAdmin) return;
-        const pwd = localStorage.getItem('adminPwd');
-        setStatus('💾 儲存中...');
-        disableBtn(true);
-        try {
-            const items = document.querySelectorAll('[data-key]');
-            for (const el of items) {
-                const key = el.dataset.key;
-                const val = el.innerText.trim();
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: new URLSearchParams({ action: 'save', key, val, pwd })
-                });
-            }
-            alert('✅ 儲存完成');
-            setStatus('✅ 全部儲存成功');
-        } catch (e) {
-            alert('❌ 儲存失敗');
-        } finally {
-            disableBtn(false);
-        }
-    }
-
-    async function loadAllData() {
-        const res = await fetch(GAS_URL + '?action=load');
-        const data = await res.json();
-        for (const key in data) {
-            const el = document.querySelector(`[data-key="${key}"]`);
-            if (el) el.innerText = data[key];
-        }
-        if (data.photos) {
-            const g = document.getElementById('photoGrid');
-            JSON.parse(data.photos).forEach(p => {
-                g.innerHTML += `<div class="card" data-id="${p.id}" data-type="photo">
-                    <button class="delete-btn">🗑</button>
-                    <img src="${p.url}">
-                    <div class="info">
-                        <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title}</div>
-                        <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc}</div>
-                    </div></div>`;
-            });
-        }
-        if (data.videos) {
-            const g = document.getElementById('videoGrid');
-            JSON.parse(data.videos).forEach(v => {
-                g.innerHTML += `<div class="card" data-id="${v.id}" data-type="video">
-                    <button class="delete-btn">🗑</button>
-                    <video controls src="${v.url}"></video>
-                    <div class="info">
-                        <div class="title" contenteditable data-key="video-${v.id}-title">${v.title}</div>
-                        <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc}</div>
-                    </div></div>`;
-            });
-        }
-    }
-
-    function switchTab(type) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById(type + 'Content').classList.add('active');
-    }
-
-    function setStatus(t) { document.getElementById('adminStatus').innerText = t; }
-    function disableBtn(d) { document.querySelectorAll('button').forEach(b => b.disabled = d); }
+function setStatus(t) { document.getElementById('adminStatus').innerText = t; }
+function disableBtn(d) { document.querySelectorAll('.btn').forEach(b => b.disabled = d); }
 </script>
 </body>
 </html>
