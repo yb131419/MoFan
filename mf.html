@@ -109,29 +109,35 @@ document.addEventListener('DOMContentLoaded', () => {
     fileInput.click();
   });
 
-  // 選擇檔案 → 上傳
+  // 選擇檔案上傳
   fileInput.addEventListener('change', async (e) => {
     const files = e.target.files;
     if (!files.length) return;
 
-    alert("開始上傳 " + files.length + " 個檔案")
+    alert("開始上傳 " + files.length + " 個檔案，請稍候...");
 
     try {
       for (const file of files) {
-        let fd = new FormData();
-        fd.append('action', 'upload');
-        fd.append('file', file);
-
-        let res = await fetch(GAS_API, {
-          method: 'POST',
-          body: fd
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        
+        await new Promise((resolve) => {
+          reader.onload = async () => {
+            const base64 = reader.result.split(',')[1];
+            
+            const res = await fetch(GAS_API, {
+              method: 'POST',
+              contentType: 'application/x-www-form-urlencoded',
+              body: 'action=upload&name=' + encodeURIComponent(file.name) + '&base64=' + encodeURIComponent(base64)
+            });
+            
+            await res.json();
+            resolve();
+          };
         });
-
-        let json = await res.json();
-        console.log(json);
       }
 
-      alert("✅ 上傳完成！");
+      alert("✅ 上傳成功！");
       loadList();
     } catch (err) {
       console.error(err);
@@ -145,8 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadList() {
     grid.innerHTML = '<div class="col-span-2 text-center py-6 text-textGray">讀取中...</div>';
     try {
-      let res = await fetch(GAS_API + "?action=list");
-      let data = await res.json();
+      const res = await fetch(GAS_API + "?action=list");
+      const data = await res.json();
       render(data.list || []);
     } catch (e) {
       grid.innerHTML = '<div class="col-span-2 text-center py-10 text-textGray">載入失敗</div>';
