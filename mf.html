@@ -3,40 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>上傳測試</title>
+  <title>莫凡美業 - 作品集管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#d98880',
+            pink: '#fef2f2',
+            dark: '#555'
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    .progress{height:6px;background:#d98880;width:0%;transition:0.2s;}
-    .text{text-align:center;font-size:12px;padding:4px;}
+    * { box-sizing: border-box; }
+    .progress { transition: width 0.3s ease; }
+    .card { transition: transform 0.2s; }
+    .card:hover { transform: scale(1.02); }
   </style>
 </head>
-<body>
+<body class="bg-pink">
 
-<div class="progress" id="pBar"></div>
-<div class="text" id="pText">請選擇檔案上傳</div>
+<!-- 進度條 -->
+<div class="fixed top-0 left-0 w-full h-1 bg-primary z-50" id="progress"></div>
 
-<button onclick="document.getElementById('file').click()">上傳照片</button>
-<input type="file" id="file" accept="image/*" hidden>
+<!-- 標題 -->
+<div class="pt-14 pb-6 text-center">
+  <h1 class="text-2xl font-bold text-dark">莫凡美業 作品集管理</h1>
+  <p class="text-gray-500 mt-1">美甲 / 美容 / 美睫 作品管理</p>
+</div>
+
+<!-- 分類標籤 -->
+<div class="flex justify-center gap-3 px-4 mb-6">
+  <button onclick="loadItems('all')" class="tag-btn bg-primary text-white px-4 py-2 rounded-full text-sm">全部</button>
+  <button onclick="loadItems('美甲')" class="tag-btn bg-white px-4 py-2 rounded-full text-sm">美甲</button>
+  <button onclick="loadItems('美容')" class="tag-btn bg-white px-4 py-2 rounded-full text-sm">美容</button>
+  <button onclick="loadItems('美睫')" class="tag-btn bg-white px-4 py-2 rounded-full text-sm">美睫</button>
+</div>
+
+<!-- 上傳區域 -->
+<div class="px-5 mb-8">
+  <div class="bg-white rounded-2xl p-5 shadow-sm">
+    <h3 class="font-bold mb-3 text-dark"><i class="fa fa-upload mr-1"></i> 上傳新作品</h3>
+    <select id="type" class="w-full border rounded-lg p-3 mb-2">
+      <option value="美甲">💅 美甲</option>
+      <option value="美容">💆 美容</option>
+      <option value="美睫">👁️ 美睫</option>
+    </select>
+    <button onclick="document.getElementById('file').click()" class="w-full bg-primary text-white py-3 rounded-lg">
+      <i class="fa fa-image mr-1"></i> 選擇照片/影片
+    </button>
+    <input type="file" id="file" accept="image/*,video/*" hidden>
+  </div>
+</div>
+
+<!-- 作品列表 -->
+<div id="list" class="px-5 grid grid-cols-2 gap-3 pb-20"></div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-const file = document.getElementById('file');
+const fileInput = document.getElementById('file');
+let currentTag = 'all';
+let items = [];
 
-file.onchange = async () => {
-  document.getElementById('pText').innerText = "上傳中...";
-  document.getElementById('pBar').style.width = "50%";
+// 進度條
+function setProgress(w) {
+  document.getElementById('progress').style.width = w + '%';
+}
+
+// 讀取作品
+async function loadItems(tag) {
+  currentTag = tag;
+  document.getElementById('list').innerHTML = '<div class="col-span-2 text-center py-10">載入中...</div>';
   
+  const res = await fetch(API);
+  const data = await res.json();
+  items = data.list || [];
+  
+  render();
+}
+
+// 畫面渲染
+function render() {
+  const list = document.getElementById('list');
+  const filtered = currentTag === 'all' ? items : items.filter(i => i.tag === currentTag);
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="col-span-2 text-center py-10 text-gray-400">暫無作品</div>';
+    return;
+  }
+  
+  list.innerHTML = filtered.map(item => `
+    <div class="card bg-white rounded-xl shadow-sm overflow-hidden">
+      ${item.type === 'image' 
+        ? `<img src="${item.url}" class="w-full aspect-square object-cover">`
+        : `<video src="${item.url}" class="w-full aspect-square object-cover" muted></video>`
+      }
+      <div class="p-2 text-center text-sm font-medium">${item.tag}</div>
+      <div class="flex justify-center gap-2 pb-2">
+        <button onclick="preview('${item.url}','${item.type}')" class="text-xs bg-gray-100 px-2 py-1 rounded">預覽</button>
+        <button onclick="del('${item.id}')" class="text-xs bg-red-500 text-white px-2 py-1 rounded">刪除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// 預覽
+function preview(url, type) {
+  const html = type === 'image' 
+    ? `<img src="${url}" class="w-full">`
+    : `<video src="${url}" controls class="w-full"></video>`;
+  
+  const div = document.createElement('div');
+  div.className = 'fixed inset-0 bg-black z-50 flex items-center justify-center';
+  div.innerHTML = `
+    <div class="relative w-full max-w-lg">
+      <button onclick="this.parentElement.remove()" class="absolute -top-10 right-2 text-white text-2xl">&times;</button>
+      ${html}
+    </div>
+  `;
+  document.body.appendChild(div);
+}
+
+// 刪除
+async function del(id) {
+  if (!confirm('確定刪除？')) return;
+  await fetch(API + "?action=delete&id=" + id);
+  loadItems(currentTag);
+}
+
+// 上傳
+fileInput.onchange = async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  
+  const tag = document.getElementById('type').value;
+  const newName = tag + "_" + file.name;
+  const renamedFile = new File([file], newName, { type: file.type });
+  
+  setProgress(20);
   const fd = new FormData();
-  fd.append('file', file.files[0]);
-
+  fd.append('file', renamedFile);
+  
   try {
-    await fetch(API, { method:"POST", body:fd, mode:"no-cors" });
+    await fetch(API, { method: 'POST', body: fd, mode: 'no-cors' });
   } catch(e) {}
-
-  document.getElementById('pBar').style.width = "100%";
-  document.getElementById('pText').innerText = "✅ 上傳完成，請檢查 Google Drive";
-  alert("✅ 上傳完成！");
+  
+  setProgress(100);
+  alert('✅ 上傳完成');
+  fileInput.value = '';
+  loadItems(currentTag);
+  setTimeout(() => setProgress(0), 500);
 };
-</script>
 
+// 初始化
+loadItems('all');
+</script>
 </body>
 </html>
