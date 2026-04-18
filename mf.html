@@ -350,43 +350,59 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   }
 });
 
+// 穩定上傳（使用 base64 相容你的後端）
 async function confirmUpload() {
-  if (!selectedFile) { alert("請選擇檔案"); return; }
+  if (!selectedFile) {
+    alert("請選擇檔案");
+    return;
+  }
+
   setStatus("⬆️ 上傳中，請稍後...");
   disableBtn(true);
   
   const progressBar = document.getElementById('progressBar');
-  document.getElementById('progressContainer').style.display = 'block';
-  progressBar.style.width = '50%';
+  const progressContainer = document.getElementById('progressContainer');
+  progressContainer.style.display = 'block';
+  progressBar.style.width = '30%';
 
-  try {
-    const formData = new FormData();
-    formData.append('action', 'uploadBase64');
-    formData.append('type', currentUploadType);
-    formData.append('fileData', selectedFile);
+  const reader = new FileReader();
+  reader.readAsDataURL(selectedFile);
 
-    const response = await fetch(GAS_URL, {
-      method: "POST",
-      body: formData
-    });
+  reader.onload = async function (e) {
+    try {
+      progressBar.style.width = '60%';
+      const base64Data = e.target.result.split(',')[1];
 
-    progressBar.style.width = '100%';
-    const data = await response.json();
-    
-    if (data.url) {
-      addNewItem(currentUploadType, data.url, selectedFile.name);
-      setStatus("✅ 上傳成功：" + selectedFile.name);
-    } else {
-      alert("❌ 失敗：" + (data.error || "上傳失敗"));
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          action: 'uploadBase64',
+          type: currentUploadType,
+          fileData: base64Data
+        })
+      });
+
+      progressBar.style.width = '100%';
+      const data = await res.json();
+
+      if (data.url) {
+        addNewItem(currentUploadType, data.url, selectedFile.name);
+        setStatus("✅ 上傳成功：" + selectedFile.name);
+      } else {
+        alert("❌ 上傳失敗：" + (data.error || "未知錯誤"));
+        setStatus("❌ 上傳失敗");
+      }
+    } catch (err) {
+      alert("❌ 上傳異常：" + err.message);
+      setStatus("❌ 上傳異常");
+    } finally {
+      setTimeout(() => {
+        disableBtn(false);
+        document.getElementById('fileUpload').classList.remove('show');
+      }, 500);
     }
-  } catch (err) {
-    alert("❌ 上傳異常");
-  } finally {
-    setTimeout(() => {
-      disableBtn(false);
-      document.getElementById('fileUpload').classList.remove('show');
-    }, 600);
-  }
+  };
 }
 
 function addNewItem(type, url, fileName) {
@@ -409,59 +425,76 @@ function addNewItem(type, url, fileName) {
 
 async function deleteItem(id, type) {
   if (!confirm('確定刪除？')) return;
-  await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}`);
-  document.querySelector(`.card[data-id="${id}"]`).remove();
-  setStatus('🗑 刪除成功');
+  try {
+    await fetch(GAS_URL + `?action=delete&id=${id}&type=${type}`);
+    document.querySelector(`.card[data-id="${id}"]`).remove();
+    setStatus('🗑 刪除成功');
+  } catch (e) {
+    alert('❌ 刪除失敗');
+  }
 }
 
 async function saveAllData() {
   setStatus('💾 儲存中...');
   disableBtn(true);
-  const items = document.querySelectorAll('[data-key]');
-  for (const el of items) {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      body: new URLSearchParams({ action: 'save', key: el.dataset.key, val: el.innerText.trim() })
-    });
+  try {
+    const items = document.querySelectorAll('[data-key]');
+    for (const el of items) {
+      await fetch(GAS_URL, {
+        method: 'POST',
+        body: new URLSearchParams({
+          action: 'save',
+          key: el.dataset.key,
+          val: el.innerText.trim()
+        })
+      });
+    }
+    alert('✅ 儲存完成');
+    setStatus('✅ 全部儲存成功');
+  } catch (e) {
+    alert('❌ 儲存失敗');
+  } finally {
+    disableBtn(false);
   }
-  alert('✅ 儲存完成');
-  setStatus('✅ 全部儲存成功');
-  disableBtn(false);
 }
 
 async function loadAllData() {
   setStatus('🔄 載入資料中...');
-  const res = await fetch(GAS_URL + '?action=load');
-  const data = await res.json();
-  for (const key in data) {
-    const el = document.querySelector(`[data-key="${key}"]`);
-    if (el) el.innerText = data[key];
+  try {
+    const res = await fetch(GAS_URL + '?action=load');
+    const data = await res.json();
+    for (const key in data) {
+      const el = document.querySelector(`[data-key="${key}"]`);
+      if (el) el.innerText = data[key];
+    }
+    if (data.photos) {
+      const g = document.getElementById('photoGrid');
+      JSON.parse(data.photos).forEach(p => {
+        g.innerHTML += `<div class="card" data-id="${p.id}" data-type="photo">
+          <button class="delete-btn" onclick="deleteItem('${p.id}','photo')">🗑</button>
+          <img src="${p.url}" alt="${p.desc}">
+          <div class="info">
+            <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title}</div>
+            <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc}</div>
+          </div></div>`;
+      });
+    }
+    if (data.videos) {
+      const g = document.getElementById('videoGrid');
+      JSON.parse(data.videos).forEach(v => {
+        g.innerHTML += `<div class="card" data-id="${v.id}" data-type="video">
+          <button class="delete-btn" onclick="deleteItem('${v.id}','video')">🗑</button>
+          <video controls src="${v.url}"></video>
+          <div class="info">
+            <div class="title" contenteditable data-key="video-${v.id}-title">${v.title}</div>
+            <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc}</div>
+          </div></div>`;
+      });
+    }
+    setStatus('✅ 載入完成');
+  } catch (e) {
+    setStatus('❌ 載入失敗');
   }
-  if (data.photos) {
-    const g = document.getElementById('photoGrid');
-    JSON.parse(data.photos).forEach(p => {
-      g.innerHTML += `<div class="card" data-id="${p.id}" data-type="photo">
-        <button class="delete-btn" onclick="deleteItem('${p.id}','photo')">🗑</button>
-        <img src="${p.url}">
-        <div class="info">
-          <div class="title" contenteditable data-key="photo-${p.id}-title">${p.title}</div>
-          <div class="desc" contenteditable data-key="photo-${p.id}-desc">${p.desc}</div>
-        </div></div>`;
-    });
-  }
-  if (data.videos) {
-    const g = document.getElementById('videoGrid');
-    JSON.parse(data.videos).forEach(v => {
-      g.innerHTML += `<div class="card" data-id="${v.id}" data-type="video">
-        <button class="delete-btn" onclick="deleteItem('${v.id}','video')">🗑</button>
-        <video controls src="${v.url}"></video>
-        <div class="info">
-          <div class="title" contenteditable data-key="video-${v.id}-title">${v.title}</div>
-          <div class="desc" contenteditable data-key="video-${v.id}-desc">${v.desc}</div>
-        </div></div>`;
-    });
-  }
-  setStatus('✅ 載入完成');
 }
 
 function switchTab(type) {
@@ -471,8 +504,12 @@ function switchTab(type) {
   document.getElementById(type + 'Content').classList.add('active');
 }
 
-function setStatus(t) { document.getElementById('adminStatus').innerText = t; }
-function disableBtn(d) { document.querySelectorAll('.btn').forEach(b => b.disabled = d); }
+function setStatus(t) {
+  document.getElementById('adminStatus').innerText = t;
+}
+function disableBtn(d) {
+  document.querySelectorAll('.btn').forEach(b => b.disabled = d);
+}
 </script>
 </body>
 </html>
