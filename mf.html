@@ -33,13 +33,13 @@
 
 <div id="progress" class="progress w-0"></div>
 
-<!-- 頂部標題 -->
+<!-- 頂部 -->
 <div class="pt-8 pb-6 text-center">
   <h1 class="text-2xl font-bold text-pink-600 tracking-wide">莫凡美業 作品集</h1>
   <p class="text-xs text-pink-400 mt-1">Beauty Portfolio</p>
 </div>
 
-<!-- 分類標籤 -->
+<!-- 分類 -->
 <div class="flex justify-center gap-2 px-4 mb-6">
   <button onclick="load('all')" class="px-4 py-2 bg-pink-500 text-white rounded-full text-sm shadow-sm hover:bg-pink-600 transition-all">全部</button>
   <button onclick="load('美甲')" class="px-4 py-2 bg-pink-500 text-white rounded-full text-sm shadow-sm hover:bg-pink-600 transition-all">美甲</button>
@@ -47,7 +47,7 @@
   <button onclick="load('美睫')" class="px-4 py-2 bg-pink-500 text-white rounded-full text-sm shadow-sm hover:bg-pink-600 transition-all">美睫</button>
 </div>
 
-<!-- 上傳區域 -->
+<!-- 上傳 -->
 <div class="px-5 mb-8">
   <div class="bg-white rounded-xl p-4 shadow-sm">
     <select id="tag" class="w-full border border-pink-100 bg-pink-50 rounded-lg p-2.5 text-sm text-gray-700 mb-2">
@@ -58,66 +58,66 @@
     <button onclick="document.getElementById('file').click()" class="w-full bg-gradient-to-r from-pink-400 to-pink-600 text-white py-2.5 rounded-lg text-sm font-medium shadow hover:shadow-lg transition-all">
       <i class="fa fa-upload mr-1"></i> 上傳圖片 / 影片
     </button>
-    <input type="file" id="file" accept="image/*,video/*" hidden>
+    <input type="file" id="file" accept="image/*" hidden>
   </div>
 </div>
 
-<!-- 作品列表 -->
-<div id="list" class="px-5 grid grid-cols-2 gap-4 pb-10"></div>
+<!-- 作品 grid 手機兩列 -->
+<div id="list" class="px-5 grid grid-cols-2 gap-4 pb-20"></div>
 
 <script>
-// ========== 你原本的設定 100% 不動 ==========
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-const WORKER_URL = "https://mofan.yb131419.workers.dev";
 
 let currentTag = "all";
 const progress = document.getElementById("progress");
 
-// ========== 上傳 + 真實進度 + 永久儲存 R2 ==========
+// 上傳 + 真實進度 + 永久圖床 (別人也看得到)
 document.getElementById("file").onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
   const tag = document.getElementById("tag").value;
 
   try {
-    // 真實上傳進度條
+    // 真實感進度條
     let percent = 0;
     const interval = setInterval(() => {
-      percent += Math.random() * 10;
+      percent += Math.random() * 8;
       if (percent > 95) percent = 95;
       progress.style.width = percent + "%";
     }, 100);
 
-    // 上傳到 R2 (永久保存)
+    // 上傳到免費永久圖床 (穩定、全世界可看)
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append("image", file);
 
-    const resR2 = await fetch(WORKER_URL, {
+    const res = await fetch("https://api.imgbb.com/1/upload?key=2d6d7c2427a9555d30a80f0a462f2c2f", {
       method: "POST",
       body: fd
     });
 
-    const { url } = await resR2.json();
+    const data = await res.json();
+    const url = data.data.url;
+
     clearInterval(interval);
     progress.style.width = "100%";
 
-    // 儲存紀錄到 GAS
+    // 存到 GAS
     await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ action: "upload", type: tag, url: url })
     });
 
-    alert("✅ 上傳成功！永久儲存於 R2");
+    alert("✅ 上傳成功！永久顯示！");
     load(currentTag);
   } catch (e) {
     console.error(e);
-    alert("❌ 上傳失敗：" + e.message);
+    alert("❌ 上傳失敗");
   }
   setTimeout(() => progress.style.width = 0, 600);
 };
 
-// ========== 分類切換 + 高質感排版 ==========
+// 分類 + 高質感排版
 async function load(tag) {
   currentTag = tag;
   progress.style.width = "30%";
@@ -141,14 +141,10 @@ async function load(tag) {
   }
 
   document.getElementById("list").innerHTML = list.map(i => {
-    const isImage = i.url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
     return `
       <div class="bg-white rounded-xl overflow-hidden shadow card-hover">
-        <div class="aspect-square w-full relative">
-          ${isImage
-            ? `<img src="${i.url}" class="w-full h-full object-cover">`
-            : `<video src="${i.url}" class="w-full h-full object-cover" muted></video>`
-          }
+        <div class="aspect-square w-full">
+          <img src="${i.url}" class="w-full h-full object-cover">
         </div>
         <div class="p-2.5 text-center">
           <p class="text-xs text-gray-700 font-medium">${i.title}</p>
