@@ -215,6 +215,7 @@
       justify-content: center;
       color: #fff;
       font-size: 20px;
+      pointer-events: none; /* 禁止图标阻挡点击 */
     }
     .work-info { padding: 14px; text-align: center; }
     .work-tag { font-size: 13px; color: #b8a2a8; font-weight: 500; letter-spacing: 0.5px; }
@@ -574,7 +575,7 @@ function saveSortOrder(idList) {
   localStorage.setItem('works_sort', JSON.stringify(idList));
 }
 
-// 渲染作品：影片封面增加onerror兜底，100%显示
+// ✅ 终极修复：首页仅显示封面图片，绝对无播放器
 function renderWorks() {
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
@@ -591,6 +592,7 @@ function renderWorks() {
     private: "私密粉嫩素" 
   };
   
+  // 🔥 核心修复：视频只渲染封面图片，永远不出现播放器
   listDom.innerHTML = filterData.filter(i => i?.url).map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
@@ -620,15 +622,20 @@ function initSortable() {
   });
 }
 
-// 轮播
+// 轮播：点击后弹窗播放视频
 function openCarousel(index) { currentSlideIndex = index; showSlide(); document.getElementById("carouselModal").style.display = "flex"; }
 function closeCarousel() { document.getElementById("carouselModal").style.display = "none"; document.getElementById("carouselVideo").pause(); }
 function showSlide() {
   const item = allWorksData[currentSlideIndex];
   const img = document.getElementById("carouselImg");
   const video = document.getElementById("carouselVideo");
-  if (item.mediaType === "image") { img.src=item.url; img.style.display="block"; video.style.display="none"; }
-  else { video.src=item.url; video.style.display="block"; img.style.display="none"; }
+  if (item.mediaType === "image") { 
+    img.src=item.url; img.style.display="block"; video.style.display="none"; 
+  } else { 
+    video.src=item.url; video.style.display="block"; img.style.display="none"; 
+    // 自动播放弹窗内视频
+    video.play().catch(()=>{});
+  }
 }
 function prevSlide() { currentSlideIndex = (currentSlideIndex -1 + allWorksData.length) % allWorksData.length; showSlide(); }
 function nextSlide() { currentSlideIndex = (currentSlideIndex +1) % allWorksData.length; showSlide(); }
