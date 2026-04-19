@@ -16,7 +16,6 @@
       background: #fdf2f8;
       font-family: system-ui, -apple-system, sans-serif;
     }
-    /* 进度条 */
     .progress {
       height: 3px;
       background: linear-gradient(90deg, #f472b6, #ec4899);
@@ -26,7 +25,6 @@
       left: 0;
       z-index: 999;
     }
-    /* 手机端一行两列网格 */
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -34,7 +32,6 @@
       padding: 0 20px;
       padding-bottom: 60px;
     }
-    /* 高级卡片样式 */
     .card {
       background: white;
       border-radius: 16px;
@@ -51,7 +48,6 @@
       aspect-ratio: 1/1;
       object-fit: cover;
     }
-    /* 按钮样式 */
     .btn-primary {
       background: #ec4899;
       color: white;
@@ -80,7 +76,6 @@
       font-size: 12px;
       cursor: pointer;
     }
-    /* 布局 */
     .container {
       padding: 0 20px;
       margin-bottom: 24px;
@@ -89,16 +84,13 @@
 </head>
 <body>
 
-<!-- 进度条 -->
 <div class="progress" id="progress" style="width:0"></div>
 
-<!-- 标题 -->
 <div style="padding: 32px 0 12px; text-align: center;">
   <h1 style="font-size: 22px; font-weight: 700; color: #db2777;">莫凡美業 作品集</h1>
   <p style="font-size:12px; color: #f9a8d4; margin-top:4px;">Beauty Portfolio</p>
 </div>
 
-<!-- 分类按钮 -->
 <div style="display: flex; justify-content: center; gap: 8px; padding: 0 16px; margin-bottom: 20px;">
   <button onclick="load('all')" class="btn-primary">全部</button>
   <button onclick="load('美甲')" class="btn-primary">美甲</button>
@@ -106,7 +98,6 @@
   <button onclick="load('美睫')" class="btn-primary">美睫</button>
 </div>
 
-<!-- 上传区域 -->
 <div class="container">
   <div style="background:white; padding:16px; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
     <select id="tag" style="width:100%; padding:10px; border:1px solid #fce7f3; border-radius:12px; background:#fdf4f8; margin-bottom:10px;">
@@ -121,23 +112,20 @@
   </div>
 </div>
 
-<!-- 作品列表 -->
 <div id="list" class="grid"></div>
 
 <script>
-// 你的GAS地址（保持不变）
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
 let currentTag = "all";
 const progress = document.getElementById("progress");
 
-// ============== 上传功能（真写入表格，无假成功） ==============
+// 修复上传：弃用Base64（超长报错），改用图床，GAS只存URL
 document.getElementById("file").onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
   const tag = document.getElementById("tag").value;
 
   try {
-    // 进度条动画
     let per = 0;
     const itv = setInterval(() => {
       per += Math.random() * 9;
@@ -145,47 +133,45 @@ document.getElementById("file").onchange = async function(e) {
       progress.style.width = per + "%";
     }, 90);
 
-    // 转Base64（纯GAS存储，无第三方依赖）
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    
-    reader.onload = async function() {
-      const url = reader.result;
-      clearInterval(itv);
-      progress.style.width = "100%";
+    // 上传到免费图床（无长度限制，解决GAS报错）
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await fetch("https://api.imgbb.com/1/upload?key=2d6d7c2427a9555d30a80f0a462f2c2f", {
+      method: "POST",
+      body: formData
+    });
 
-      // 真实请求GAS，写入表格
-      const response = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ 
-          action: "upload", 
-          type: tag, 
-          url: url 
-        })
-      });
+    const data = await res.json();
+    if (!data.data || !data.data.url) throw new Error("圖床上傳失敗");
+    const imageUrl = data.data.url;
 
-      const result = await response.json();
-      
-      // 只有真的成功才提示
-      if (result.ok) {
-        alert("✅ 上傳成功！已儲存至試算表");
-        load(currentTag); // 强制刷新前端
-      } else {
-        alert("❌ 上傳失敗：" + (result.error || "未知錯誤"));
-      }
+    clearInterval(itv);
+    progress.style.width = "100%";
 
-      setTimeout(() => progress.style.width = 0, 600);
-    };
+    // 保存URL到GAS（极短字符，永不报错）
+    const gasRes = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ action: "upload", type: tag, url: imageUrl })
+    });
+
+    const result = await gasRes.json();
+    if (result.ok) {
+      alert("✅ 上傳成功！試算表已記錄");
+      load(currentTag);
+    } else {
+      alert("❌ GAS寫入失敗：" + result.error);
+    }
 
   } catch (e) {
     console.error(e);
     alert("❌ 上傳失敗：" + e.message);
-    progress.style.width = 0;
+  } finally {
+    setTimeout(() => progress.style.width = 0, 600);
   }
 };
 
-// ============== 加载+分类功能 ==============
+// 加载功能（带报错）
 async function load(tag) {
   currentTag = tag;
   progress.style.width = "30%";
@@ -208,7 +194,6 @@ async function load(tag) {
       list = data[map[tag]] ? JSON.parse(data[map[tag]]) : [];
     }
 
-    // 渲染前端
     document.getElementById("list").innerHTML = list.map(i => `
       <div class="card">
         <img src="${i.url}" alt="作品">
@@ -220,20 +205,21 @@ async function load(tag) {
     `).join("");
 
   } catch (e) {
-    alert("❌ 載入失敗");
+    alert("❌ 載入失敗：" + e.message);
   }
-  
-  setTimeout(() => progress.style.width = 0, 300);
 }
 
-// ============== 删除功能 ==============
+// 删除功能
 async function del(type, id) {
   if (!confirm("確定刪除？")) return;
-  await fetch(GAS_URL + `?action=delete&type=${type}&id=${id}`);
-  load(currentTag);
+  try {
+    await fetch(GAS_URL + `?action=delete&type=${type}&id=${id}`);
+    load(currentTag);
+  } catch (e) {
+    alert("刪除失敗：" + e.message);
+  }
 }
 
-// 初始化加载
 load("all");
 </script>
 </body>
