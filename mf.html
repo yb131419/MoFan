@@ -19,35 +19,37 @@
       font-family: 'PingFang SC', 'Helvetica Neue', 'Noto Sans TC', sans-serif;
       padding-bottom: 120px;
       color: #2a2a2a;
+      overflow-x: hidden;
     }
 
-    /* 🔥 高级感全屏加载浮窗（替换原进度条） */
+    /* 🔥 高级感全屏加载浮窗（仪式感拉满） */
     .loader-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(253, 251, 252, 0.92);
+      background: rgba(253, 251, 252, 0.95);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
+      transition: all 1s ease;
     }
     .loader-overlay.hidden {
       opacity: 0;
       visibility: hidden;
+      transform: scale(1.05);
     }
     .loader-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
+      gap: 24px;
     }
     .loader-ring {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       border: 2px solid transparent;
       border-top: 2px solid #d4b2b8;
       border-right: 2px solid #b8929a;
@@ -55,9 +57,9 @@
       animation: loader-spin 1.2s linear infinite;
     }
     .loader-text {
-      font-size: 15px;
+      font-size: 16px;
       color: #b8929a;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       font-weight: 300;
     }
     @keyframes loader-spin {
@@ -69,6 +71,8 @@
       padding: 60px 20px 40px;
       text-align: center;
       position: relative;
+      opacity: 0;
+      animation: fadeIn 1s 0.5s forwards;
     }
     .page-header::before,
     .page-header::after {
@@ -89,7 +93,7 @@
       background-clip: text;
       margin-bottom: 12px;
       letter-spacing: 3px;
-      box-shadow: 0 2px 4px rgba(212,178,184,0.1);
+      line-height: 1.4;
     }
     .page-subtitle {
       font-size: 13px;
@@ -114,6 +118,8 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      opacity: 0;
+      animation: fadeIn 1s 1s forwards;
     }
     /* 筛选标签居中 */
     .tab-group {
@@ -159,6 +165,8 @@
 
     .upload-area {
       padding: 0 20px 30px;
+      opacity: 0;
+      animation: fadeIn 1s 1.5s forwards;
     }
     .upload-card {
       background: #fff;
@@ -200,11 +208,14 @@
     }
     #file-input { display: none; }
 
+    /* 🔥 感动感核心：作品逐行动画入场 */
     .works-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
       padding: 0 20px;
+      opacity: 0;
+      animation: fadeIn 1s 2s forwards;
     }
     .works-grid .sortable-ghost {
       opacity: 0.4;
@@ -216,12 +227,22 @@
       border-radius: 22px;
       overflow: hidden;
       box-shadow: 0 3px 18px rgba(0,0,0,0.03);
-      transition: all 0.3s ease;
+      transition: all 0.4s ease;
       cursor: grab;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    /* 卡片逐个入场动画，感动感拉满 */
+    .work-card.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .work-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 24px rgba(212,178,184,0.1);
     }
     .work-card:active {
       cursor: grabbing;
-      transform: scale(1.02);
     }
     .media-box {
       width: 100%;
@@ -235,6 +256,11 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      transition: transform 0.5s ease;
+    }
+    .work-card:hover .work-img,
+    .work-card:hover .work-video-cover {
+      transform: scale(1.05);
     }
     .video-play-icon {
       position: absolute;
@@ -258,8 +284,18 @@
     .delete-btn {
       width: 100%; padding: 6px 0; border-radius: 8px; border: none;
       background: #e0a8a8; color: #fff; font-size: 11px; cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .delete-btn:hover {
+      background: #d88a8a;
     }
     .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
+
+    /* 通用淡入动画 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     .modal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -273,6 +309,7 @@
     .category-item {
       padding: 15px; margin: 8px 0; border-radius: 18px;
       background: #fdfbfc; cursor: pointer; font-size: 15px; color: #666;
+      transition: all 0.3s ease;
     }
     .category-item.active { background: linear-gradient(135deg, #d4b2b8, #b8a2a8); color: #fff; }
     .loading-modal .loading-text { margin-top: 12px; font-size: 14px; color: #666; }
@@ -290,12 +327,20 @@
       position: absolute; top: 50%; transform: translateY(-50%);
       background: rgba(255,255,250,0.1); color: #fff; border: none;
       width: 48px; height: 48px; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 1001;
+      transition: all 0.3s ease;
+    }
+    .carousel-btn:hover {
+      background: rgba(255,255,250,0.2);
     }
     .carousel-prev { left: 10px; }
     .carousel-next { right: 10px; }
     .carousel-close {
       position: absolute; top: 25px; right: 25px; background: transparent;
       color: #fff; border: none; font-size: 36px; cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    .carousel-close:hover {
+      color: #d4b2b8;
     }
 
     .bottom-nav {
@@ -303,6 +348,8 @@
       width: 92%; max-width: 500px; background: #ffffff;
       border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       padding: 12px 8px; display: flex; z-index: 99;
+      opacity: 0;
+      animation: fadeIn 1s 2.5s forwards;
     }
     .bottom-nav-item {
       flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -321,7 +368,7 @@
 <div class="loader-overlay" id="loaderOverlay">
   <div class="loader-container">
     <div class="loader-ring"></div>
-    <div class="loader-text">作品載入中</div>
+    <div class="loader-text">作品即將呈現 ✨</div>
   </div>
 </div>
 
@@ -353,15 +400,13 @@
   </div>
 </div>
 
-<p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
-<div class="works-grid" id="worksList">
-  <div class="empty-tip" id="delayTip">頁面載入中，5秒後顯示作品...</div>
-</div>
+<p class="page-subtitle" style="text-align: center; margin: 0 0 20px; opacity: 0; animation: fadeIn 1s 1.8s forwards;">點圖可放大</p>
+<div class="works-grid" id="worksList"></div>
 
 <!-- 分类弹窗 -->
 <div class="modal" id="categoryModal">
   <div class="modal-content">
-    <h3 style="margin-bottom:16px; font-size:16px;">選擇作品分類</h3>
+    <h3 style="margin-bottom:16px; font-size:16px;">選擇分類</h3>
     <div class="category-item active" data-val="nail">美甲</div>
     <div class="category-item" data-val="eyelash">美睫</div>
     <div class="category-item" data-val="eyebrow">霧眉</div>
@@ -373,7 +418,7 @@
 
 <div class="modal" id="filterCategoryModal">
   <div class="modal-content">
-    <h3 style="margin-bottom:16px; font-size:16px;">篩選作品分類</h3>
+    <h3 style="margin-bottom:16px; font-size:16px;">篩選分類</h3>
     <div class="category-item active" data-val="all">全部</div>
     <div class="category-item" data-val="nail">美甲</div>
     <div class="category-item" data-val="eyelash">美睫</div>
@@ -421,7 +466,6 @@ let sortable = null;
 let isDelaying = true;
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
-const delayTip = document.getElementById('delayTip');
 const loaderOverlay = document.getElementById('loaderOverlay');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
@@ -453,7 +497,7 @@ function hideLoading() { document.getElementById("loadingModal").style.display =
 
 // 分类选择
 function openCategoryModal() { 
-  if(isDelaying) return alert('請等待5秒載入完成後操作');
+  if(isDelaying) return alert('請等待載入完成後操作');
   document.getElementById("categoryModal").style.display = "flex"; 
 }
 document.querySelectorAll('#categoryModal .category-item').forEach(item => {
@@ -468,7 +512,7 @@ document.querySelectorAll('#categoryModal .category-item').forEach(item => {
 
 // 筛选分类
 function openFilterCategoryModal() { 
-  if(isDelaying) return alert('請等待5秒載入完成後操作');
+  if(isDelaying) return alert('請等待載入完成後操作');
   document.getElementById("filterCategoryModal").style.display = "flex"; 
 }
 document.querySelectorAll('#filterCategoryModal .category-item').forEach(item => {
@@ -485,7 +529,7 @@ document.querySelectorAll('#filterCategoryModal .category-item').forEach(item =>
 // 媒体筛选
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    if(isDelaying) return alert('請等待5秒載入完成後操作');
+    if(isDelaying) return alert('請等待載入完成後操作');
     document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentMediaFilter = tab.dataset.type;
@@ -495,7 +539,7 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
 
 // 触发文件选择
 function triggerFile() { 
-  if(isDelaying) return alert('請等待5秒載入完成後操作');
+  if(isDelaying) return alert('請等待載入完成後操作');
   document.getElementById('file-input').click(); 
 }
 
@@ -580,17 +624,20 @@ function saveSortOrder(idList) {
   localStorage.setItem('works_sort', JSON.stringify(idList));
 }
 
-// 渲染作品
+// 🔥 感动感渲染：作品卡片逐个动画入场
 function renderWorks() {
   if(isDelaying) return;
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
 
-  if (filterData.length === 0) { listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; return; }
+  if (filterData.length === 0) { 
+    listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; 
+    return; 
+  }
 
   listDom.innerHTML = filterData.filter(i => i?.url).map((item, index) => `
-    <div class="work-card" data-id="${item.id}">
+    <div class="work-card" data-id="${item.id}" style="animation-delay: ${index * 0.1}s">
       <div class="media-box" onclick="openCarousel(${index})">
         ${item.mediaType==="image" 
           ? `<img src="${item.url}" class="work-img">` 
@@ -602,6 +649,14 @@ function renderWorks() {
       </div>
     </div>
   `).join("");
+
+  // 触发卡片入场动画
+  setTimeout(() => {
+    document.querySelectorAll('.work-card').forEach(card => {
+      card.classList.add('show');
+    });
+  }, 100);
+  
   initSortable();
 }
 
@@ -641,7 +696,7 @@ function nextSlide() { currentSlideIndex = (currentSlideIndex +1) % allWorksData
 
 // 删除
 async function deleteWork(id) {
-  if(isDelaying) return alert('請等待5秒載入完成後操作');
+  if(isDelaying) return alert('請等待載入完成後操作');
   if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
     method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -666,19 +721,19 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// 5秒延迟加载 + 隐藏高级加载浮窗
+// 🔥 延长至8秒加载 + 平滑隐藏浮窗
 window.addEventListener('load', () => {
   uploadBtn.disabled = true;
   
+  // 核心：延长加载时长为 8000ms = 8秒
   setTimeout(async () => {
     isDelaying = false;
     uploadBtn.disabled = false;
-    delayTip.remove();
-    // 隐藏加载浮窗
+    // 平滑隐藏加载浮窗
     loaderOverlay.classList.add('hidden');
     await loadAllWorks();
     renderWorks();
-  }, 5000);
+  }, 8000);
 });
 </script>
 </body>
