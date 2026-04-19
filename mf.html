@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
   <style>
-    .progress{height:4px;background:#ec4899;transition:0.3s;position:fixed;top:0;left:0;z-50;}
+    .progress{height:4px;background:#ec4899;transition:0.3s;position:fixed;top:0;left-0;z-50;}
   </style>
 </head>
 <body class="bg-gray-50">
@@ -40,8 +40,9 @@
 <div id="list" class="px-4 grid grid-cols-2 gap-3"></div>
 
 <script>
+// ========== 我已經幫你全部設定好了 ==========
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-const WORKER_URL = "https://mofan.yb131419.workers.dev";
+const WORKER_URL = "https://testupload.100000000000000000000000000000000000.workers.dev";
 
 let currentTag = "all";
 const progress = document.getElementById("progress");
@@ -56,18 +57,14 @@ document.getElementById("file").onchange = async function(e){
     const fd = new FormData();
     fd.append("file", file);
 
-    // 上傳 R2
     const resR2 = await fetch(WORKER_URL, {
       method: "POST",
       body: fd
     });
 
     const { url } = await resR2.json();
-    console.log("圖片網址:", url);
-
     progress.style.width = "70%";
 
-    // 存到 GAS
     await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -78,7 +75,7 @@ document.getElementById("file").onchange = async function(e){
     alert("✅ 上傳成功！");
     load(currentTag);
   } catch(e) {
-    console.error("錯誤:", e);
+    console.error(e);
     alert("❌ 上傳失敗：" + e.message);
   }
   setTimeout(()=>progress.style.width=0,600);
