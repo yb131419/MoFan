@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> 莫凡韓式皮膚管理 | 作品集</title>
+<title>莫凡韓式皮膚管理 | 作品集</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
   <!-- 拖拽排序核心库 -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -17,7 +17,6 @@
     body {
       background: #fdfbfc;
       font-family: 'PingFang SC', 'Helvetica Neue', 'Noto Sans TC', sans-serif;
-      /* 加大底部內邊距，避免內容被底部固定導航欄遮擋 */
       padding-bottom: 120px;
       color: #2a2a2a;
     }
@@ -52,7 +51,6 @@
     .page-title {
       font-size: 32px;
       font-weight: 600;
-      /* 渐变文字，轻奢高级感 */
       background: linear-gradient(135deg, #b8929a, #d4b2b8, #a88890);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -69,7 +67,6 @@
       position: relative;
       padding: 0 15px;
     }
-    /* 副标题装饰 */
     .page-subtitle::before,
     .page-subtitle::after {
       content: "·";
@@ -80,14 +77,13 @@
     .page-subtitle::before { left: 0; }
     .page-subtitle::after { right: 0; }
 
-    /* ====================== 高級美業分類導航 ====================== */
+    /* 高級美業分類導航 */
     .filter-nav {
       padding: 0 20px 30px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-    /* 媒体分类 + 服务分类 统一高级样式 */
     .tab-group {
       display: flex;
       gap: 10px;
@@ -114,7 +110,7 @@
       box-shadow: 0 4px 12px rgba(212, 178, 184, 0.15);
     }
 
-    /* 上传区域 - 极简高级 */
+    /* 上传区域 */
     .upload-area {
       padding: 0 20px 30px;
     }
@@ -160,14 +156,13 @@
       display: none;
     }
 
-    /* 作品網格 - 拖拽排序 + 高級卡片 */
+    /* 作品網格 */
     .works-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
       padding: 0 20px;
     }
-    /* 拖拽悬浮样式 */
     .works-grid .sortable-ghost {
       opacity: 0.4;
       background: #f0e9eb;
@@ -206,7 +201,6 @@
       font-weight: 500;
       letter-spacing: 0.5px;
     }
-    /* 单按钮样式优化 */
     .work-operate {
       display: flex;
       margin-top: 10px;
@@ -221,7 +215,6 @@
       font-size: 11px;
       cursor: pointer;
     }
-    /* 空内容提示 */
     .empty-tip {
       text-align: center;
       padding: 80px 20px;
@@ -285,7 +278,7 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* 圖片輪播 - 全屏高级 */
+    /* 圖片輪播 */
     #carouselModal {
       background: rgba(0,0,0,0.95);
     }
@@ -304,7 +297,7 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(255,255,250.1);
+      background: rgba(255,255,255,0.1);
       color: #fff;
       border: none;
       width: 48px;
@@ -327,24 +320,21 @@
       cursor: pointer;
     }
 
-    /* ====================== 【新增】底部固定導航欄 完全參考Linote介面風格 ====================== */
+    /* 底部固定導航欄 */
     .bottom-nav {
-      /* 固定在頁面最底部，懸浮不隨頁面滾動 */
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       width: 92%;
       max-width: 500px;
-      /* 參考圖白色大圓角外框 */
       background: #ffffff;
       border-radius: 24px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       padding: 12px 8px;
       display: flex;
-      z-index: 99; /* 層級在內容上方，彈窗下方 */
+      z-index: 99;
     }
-    /* 三個均分按鈕 */
     .bottom-nav-item {
       flex: 1;
       display: flex;
@@ -359,12 +349,10 @@
       border-radius: 16px;
       padding: 8px 0;
     }
-    /* 按鈕點擊激活樣式（融合網站原生粉棕主色） */
     .bottom-nav-item.active {
       color: #d4b2b8;
       background: linear-gradient(135deg, rgba(212,178,184,0.12), rgba(184,162,168,0.12));
     }
-    /* 按鈕圖標大小 */
     .bottom-nav-item i {
       font-size: 18px;
     }
@@ -373,21 +361,19 @@
 <body>
 <div class="progress" id="progress"></div>
 
-<!-- 全新升级标题区域 -->
+<!-- 标题区域 -->
 <div class="page-header">
   <h1 class="page-title">莫凡韓式皮膚管理</h1>
   <p class="page-subtitle">KOREAN SKIN CARE & BEAUTY</p>
 </div>
 
-<!-- ====================== 高級分類導航 ====================== -->
+<!-- 分類導航 -->
 <div class="filter-nav">
-  <!-- 媒體類型：全部/照片/影片 -->
   <div class="tab-group media-tabs">
     <div class="filter-tab active" data-type="all-media">全部</div>
     <div class="filter-tab" data-type="image">照片</div>
     <div class="filter-tab" data-type="video">影片</div>
   </div>
-  <!-- 服務項目：全部/美甲/美睫/美容 -->
   <div class="tab-group category-tabs">
     <div class="filter-tab active" data-category="all">全部</div>
     <div class="filter-tab" data-category="nail">美甲</div>
@@ -412,7 +398,7 @@
 
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
 
-<!-- 作品展示 + 拖拽排序 -->
+<!-- 作品展示 -->
 <div class="works-grid" id="worksList"></div>
 
 <!-- 彈窗 -->
@@ -432,7 +418,7 @@
   </div>
 </div>
 
-<!-- 圖片輪播 -->
+<!-- 輪播 -->
 <div class="modal" id="carouselModal">
   <button class="carousel-close" onclick="closeCarousel()">&times;</button>
   <button class="carousel-btn carousel-prev" onclick="prevSlide()"><i class="fa fa-chevron-left"></i></button>
@@ -443,7 +429,7 @@
   <button class="carousel-btn carousel-next" onclick="nextSlide()"><i class="fa fa-chevron-right"></i></button>
 </div>
 
-<!-- ====================== 【新增】底部固定三選項導航欄 HTML ====================== -->
+<!-- 底部導航 -->
 <div class="bottom-nav">
   <div class="bottom-nav-item active" id="navReserve">
     <i class="fa fa-calendar-check-o"></i>
@@ -472,8 +458,10 @@ let sortable = null;
 const progress = document.getElementById("progress");
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
+// 视频大小限制 50MB (可自行修改)
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
-// 工具函数
+// 工具函数：图片压缩
 function compressImage(file) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -491,6 +479,7 @@ function compressImage(file) {
     };
   });
 }
+
 function showLoading() {
   document.getElementById("loadingModal").style.display = "flex";
   uploadBtn.disabled = true;
@@ -532,7 +521,7 @@ document.querySelectorAll('.category-tabs .filter-tab').forEach(tab => {
   });
 });
 
-// 上传功能
+// 上传功能（修复视频上传）
 function triggerFile() {
   document.getElementById('file-input').click();
 }
@@ -540,13 +529,24 @@ document.getElementById('file-input').onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
 
+  // 校验视频大小
+  if (file.type.startsWith('video/')) {
+    if (file.size > MAX_VIDEO_SIZE) {
+      alert(`❌ 影片大小超過限制，請上傳小於 ${MAX_VIDEO_SIZE/1024/1024}MB 的影片`);
+      return;
+    }
+  }
+
   try {
     showLoading();
     let uploadFile = file;
+
+    // 仅压缩图片，视频不处理
     if (file.type.startsWith('image/')) {
       uploadFile = await compressImage(file);
     }
 
+    // 统一读取文件为Base64
     const reader = new FileReader();
     reader.readAsDataURL(uploadFile);
     
@@ -573,12 +573,19 @@ document.getElementById('file-input').onchange = async function(e) {
         await loadAllWorks();
         renderWorks();
       } else {
-        alert("❌ 上傳失敗");
+        alert("❌ 上傳失敗，請重試");
       }
     };
+
+    // 监听文件读取错误
+    reader.onerror = function() {
+      hideLoading();
+      alert("❌ 檔案讀取失敗");
+    };
+
   } catch (err) {
     hideLoading();
-    alert("❌ 上傳失敗");
+    alert("❌ 上傳失敗：" + err.message);
   }
 };
 
@@ -592,7 +599,7 @@ async function loadAllWorks() {
   setTimeout(() => progress.style.width = 0, 300);
 }
 
-// ====================== 保存拖拽排序到服务器 ======================
+// 保存拖拽排序
 async function saveSortOrder(idList) {
   try {
     const res = await fetch(GAS_URL, {
@@ -614,7 +621,7 @@ async function saveSortOrder(idList) {
   }
 }
 
-// 渲染作品（删除编辑按钮）
+// 渲染作品
 function renderWorks() {
   let filterData = [...allWorksData];
 
@@ -642,7 +649,6 @@ function renderWorks() {
         <div class="work-info">
           <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
           <div class="work-operate">
-            <!-- 仅保留删除按钮 -->
             <button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button>
           </div>
         </div>
@@ -653,7 +659,7 @@ function renderWorks() {
   initSortable();
 }
 
-// 初始化拖拽（拖拽结束自动保存）
+// 初始化拖拽
 function initSortable() {
   if (sortable) sortable.destroy();
   sortable = new Sortable(listDom, {
@@ -661,14 +667,13 @@ function initSortable() {
     ghostClass: 'sortable-ghost',
     dragClass: 'sortable-drag',
     onEnd: function (evt) {
-      // 拖拽完成 → 保存新顺序
       const newOrder = Array.from(listDom.children).map(item => item.dataset.id);
       saveSortOrder(newOrder);
     }
   });
 }
 
-// 图片轮播
+// 轮播功能
 function openCarousel(index) {
   currentSlideIndex = index;
   showSlide();
@@ -720,28 +725,22 @@ async function deleteWork(id) {
   }
 }
 
-// ====================== 【新增】底部導航欄 點擊交互功能 ======================
+// 底部导航
 const navItems = document.querySelectorAll('.bottom-nav-item');
 navItems.forEach(item => {
   item.addEventListener('click', () => {
-    // 移除全部按鈕激活狀態
     navItems.forEach(nav => nav.classList.remove('active'));
-    // 當前點擊按鈕高亮激活
     item.classList.add('active');
 
-    // 每個按鈕對應獨立功能
     const navText = item.querySelector('span').innerText;
     switch(navText) {
       case '預約':
-        // 跳轉LINE預約鏈接
         window.open('https://liff.line.me/2009598216-ZsS47DM8', '_blank');
         break;
       case '地址':
-        // 跳轉地圖定位鏈接
         window.open('https://share.google/L5vzxJrpotDQnkWAx', '_blank');
         break;
       case '分享':
-        // 手機原生系統分享功能（支援IG/Line/Facebook/WhatsApp分享）
         if (navigator.share) {
           navigator.share({
             title: '莫凡韓式皮膚管理',
