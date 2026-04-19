@@ -106,6 +106,21 @@
       border-color: transparent;
       box-shadow: 0 4px 12px rgba(212, 178, 184, 0.15);
     }
+    /* 分类筛选下拉按钮 与上传分类样式统一 */
+    .filter-select-btn {
+      width: 100%;
+      padding: 16px;
+      border: 1px solid #f0e9eb;
+      border-radius: 20px;
+      background: #fdfbfc;
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #555;
+    }
 
     .upload-area {
       padding: 0 20px 30px;
@@ -279,12 +294,10 @@
     <div class="filter-tab" data-type="image">照片</div>
     <div class="filter-tab" data-type="video">影片</div>
   </div>
-  <div class="tab-group category-tabs">
-    <div class="filter-tab active" data-category="all">全部</div>
-    <div class="filter-tab" data-category="nail">美甲</div>
-    <div class="filter-tab" data-category="eyelash">美睫</div>
-    <div class="filter-tab" data-category="beauty">美容</div>
-  </div>
+  <!-- 改为统一的下拉式分类筛选 -->
+  <button class="filter-select-btn" id="filterCategoryBtn" onclick="openFilterCategoryModal()">
+    <span>篩選分類：全部</span><i class="fa fa-chevron-down"></i>
+  </button>
 </div>
 
 <div class="upload-area">
@@ -302,12 +315,30 @@
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
 <div class="works-grid" id="worksList"></div>
 
+<!-- 上传分类弹窗 -->
 <div class="modal" id="categoryModal">
   <div class="modal-content">
     <h3 style="margin-bottom:16px; font-size:16px;">選擇作品分類</h3>
     <div class="category-item active" data-val="nail">美甲</div>
     <div class="category-item" data-val="eyelash">美睫</div>
-    <div class="category-item" data-val="beauty">美容</div>
+    <div class="category-item" data-val="eyebrow">霧眉</div>
+    <div class="category-item" data-val="skin">韓式皮膚管理</div>
+    <div class="category-item" data-val="exosome">外泌體育法</div>
+    <div class="category-item" data-val="private">私密粉嫩素</div>
+  </div>
+</div>
+
+<!-- 筛选分类弹窗（与上传样式统一） -->
+<div class="modal" id="filterCategoryModal">
+  <div class="modal-content">
+    <h3 style="margin-bottom:16px; font-size:16px;">篩選作品分類</h3>
+    <div class="category-item active" data-val="all">全部</div>
+    <div class="category-item" data-val="nail">美甲</div>
+    <div class="category-item" data-val="eyelash">美睫</div>
+    <div class="category-item" data-val="eyebrow">霧眉</div>
+    <div class="category-item" data-val="skin">韓式皮膚管理</div>
+    <div class="category-item" data-val="exosome">外泌體育法</div>
+    <div class="category-item" data-val="private">私密粉嫩素</div>
   </div>
 </div>
 
@@ -417,11 +448,11 @@ function captureVideoCover(file) {
 function showLoading() { document.getElementById("loadingModal").style.display = "flex"; uploadBtn.disabled = true; }
 function hideLoading() { document.getElementById("loadingModal").style.display = "none"; uploadBtn.disabled = false; }
 
-// 分类弹窗
+// 上传分类弹窗
 function openCategoryModal() { document.getElementById("categoryModal").style.display = "flex"; }
-document.querySelectorAll('.category-item').forEach(item => {
+document.querySelectorAll('#categoryModal .category-item').forEach(item => {
   item.addEventListener('click', () => {
-    document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('#categoryModal .category-item').forEach(i => i.classList.remove('active'));
     item.classList.add('active');
     selectedCategory = item.dataset.val;
     document.getElementById("categoryBtn").innerHTML = `<span>選擇分類：${item.innerText}</span><i class="fa fa-chevron-down"></i>`;
@@ -429,20 +460,25 @@ document.querySelectorAll('.category-item').forEach(item => {
   });
 });
 
-// 筛选切换
+// 筛选分类弹窗（与上传样式统一）
+function openFilterCategoryModal() { document.getElementById("filterCategoryModal").style.display = "flex"; }
+document.querySelectorAll('#filterCategoryModal .category-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('#filterCategoryModal .category-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    currentCategoryFilter = item.dataset.val;
+    document.getElementById("filterCategoryBtn").innerHTML = `<span>篩選分類：${item.innerText}</span><i class="fa fa-chevron-down"></i>`;
+    document.getElementById("filterCategoryModal").style.display = "none";
+    renderWorks();
+  });
+});
+
+// 媒体类型筛选
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentMediaFilter = tab.dataset.type;
-    renderWorks();
-  });
-});
-document.querySelectorAll('.category-tabs .filter-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.category-tabs .filter-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    currentCategoryFilter = tab.dataset.category;
     renderWorks();
   });
 });
@@ -523,14 +559,22 @@ function saveSortOrder(idList) {
   localStorage.setItem('works_sort', JSON.stringify(idList));
 }
 
-// 渲染作品：視頻預覽強制顯示封面
+// 渲染作品：分類映射更新
 function renderWorks() {
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
 
   if (filterData.length === 0) { listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; return; }
-  const categoryMap = { nail: "美甲", eyelash: "美睫", beauty: "美容" };
+  // 最新分類映射
+  const categoryMap = { 
+    nail: "美甲", 
+    eyelash: "美睫", 
+    eyebrow: "霧眉", 
+    skin: "韓式皮膚管理", 
+    exosome: "外泌體育法", 
+    private: "私密粉嫩素" 
+  };
   
   listDom.innerHTML = filterData.filter(i => i?.url).map((item, index) => `
     <div class="work-card" data-id="${item.id}">
@@ -556,7 +600,7 @@ function initSortable() {
     onEnd: () => {
       const newOrder = Array.from(listDom.children).map(i => i.dataset.id);
       saveSortOrder(newOrder);
-      allWorksData.sort((a,b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
+      allWorksData.sort((a,b) => newOrder.indexOf(a.id) - newOrder.indexOf(a.id));
     }
   });
 }
