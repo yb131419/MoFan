@@ -168,7 +168,6 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
       padding: 0 20px;
-      min-height: 200px;
     }
     .works-grid .sortable-ghost {
       opacity: 0.4;
@@ -199,8 +198,6 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      /* 图片懒加载优化 */
-      loading: lazy;
     }
     .video-play-icon {
       position: absolute;
@@ -224,18 +221,6 @@
     .delete-btn {
       width: 100%; padding: 6px 0; border-radius: 8px; border: none;
       background: #e0a8a8; color: #fff; font-size: 11px; cursor: pointer;
-    }
-    /* 加载骨架屏 - 优化视觉体验 */
-    .skeleton {
-      background: #f5f5f5;
-      border-radius: 22px;
-      aspect-ratio: 1/1;
-      animation: skeleton 1.5s infinite ease-in-out;
-    }
-    @keyframes skeleton {
-      0% { opacity: 0.6; }
-      50% { opacity: 0.8; }
-      100% { opacity: 0.6; }
     }
     .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
 
@@ -326,13 +311,7 @@
 </div>
 
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
-<!-- 预加载骨架屏 -->
-<div class="works-grid" id="worksList">
-  <div class="skeleton"></div>
-  <div class="skeleton"></div>
-  <div class="skeleton"></div>
-  <div class="skeleton"></div>
-</div>
+<div class="works-grid" id="worksList"></div>
 
 <!-- 分类弹窗 -->
 <div class="modal" id="categoryModal">
@@ -398,9 +377,6 @@ const progress = document.getElementById("progress");
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
-// 本地缓存key - 加速重复加载
-const CACHE_KEY = 'mofan_works_cache';
-const CACHE_EXPIRE = 5 * 60 * 1000; // 缓存5分钟
 
 // 分类映射
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
@@ -408,7 +384,7 @@ const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin
 // 绝对稳定的视频封面
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
-// 图片压缩（优化速度）
+// 图片压缩
 function compressImage(file) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -417,11 +393,11 @@ function compressImage(file) {
     img.onload = function() {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      const maxSize = 800; // 缩小尺寸，提速加载
+      const maxSize = 900;
       canvas.width = maxSize;
       canvas.height = maxSize;
       ctx.drawImage(img, 0,0, maxSize,maxSize);
-      canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.6);
+      canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.65);
       URL.revokeObjectURL(url);
     };
   });
@@ -486,6 +462,7 @@ document.getElementById('file-input').onchange = async function(e) {
   try {
     showLoading();
     let successCount = 0;
+    // 获取当前选中的分类名称
     const categoryName = categoryMap[selectedCategory] || '未分類';
 
     for (let file of validFiles) {
@@ -506,6 +483,7 @@ document.getElementById('file-input').onchange = async function(e) {
                 action: "upload",
                 type: selectedCategory,
                 mediaType: file.type.startsWith('image/') ? "image" : "video",
+                // 🔥 核心修改：名称改为 分类+作品
                 title: `${categoryName} - 作品`,
                 url: reader.result,
                 cover: DEFAULT_VIDEO_COVER
@@ -522,8 +500,6 @@ document.getElementById('file-input').onchange = async function(e) {
 
     hideLoading();
     alert(`✅ 上傳完成！成功：${successCount}/${validFiles.length} 個`);
-    // 上传后清除缓存，重新加载
-    localStorage.removeItem(CACHE_KEY);
     await loadAllWorks();
     renderWorks();
   } catch (err) {
@@ -533,41 +509,15 @@ document.getElementById('file-input').onchange = async function(e) {
   this.value = '';
 };
 
-// 🔥 核心优化：加载作品（本地缓存+极速请求）
+// 加载作品
 async function loadAllWorks() {
-  // 优先读取本地缓存，加速加载
-  const cache = localStorage.getItem(CACHE_KEY);
-  if (cache) {
-    const { data, time } = JSON.parse(cache);
-    if (Date.now() - time < CACHE_EXPIRE) {
-      allWorksData = data || [];
-      progress.style.width = "100%";
-      setTimeout(() => progress.style.width = 0, 300);
-      return;
-    }
-  }
-
-  progress.style.width = "20%";
+  localStorage.removeItem('works_sort');
+  progress.style.width = "30%";
   try {
-    // 极速网络请求：无冗余参数，超时兜底
-    const controller = new AbortController();
-    setTimeout(() => controller.abort(), 8000); // 8秒超时
-    const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime(), {
-      signal: controller.signal,
-      cache: 'no-store'
-    });
-    progress.style.width = "60%";
+    const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
     const data = await res.json();
     allWorksData = Array.isArray(data.list) ? data.list : [];
-    
-    // 缓存数据
-    localStorage.setItem(CACHE_KEY, JSON.stringify({
-      data: allWorksData,
-      time: Date.now()
-    }));
-  } catch (e) { 
-    allWorksData = []; 
-  }
+  } catch (e) { allWorksData = []; }
   progress.style.width = "100%";
   setTimeout(() => progress.style.width = 0, 300);
 }
@@ -577,24 +527,16 @@ function saveSortOrder(idList) {
   localStorage.setItem('works_sort', JSON.stringify(idList));
 }
 
-// 🔥 核心优化：极速渲染作品
+// 渲染作品
 function renderWorks() {
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
 
-  if (filterData.length === 0) { 
-    listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; 
-    return; 
-  }
+  if (filterData.length === 0) { listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; return; }
 
-  // 批量DOM渲染，减少重绘
-  const fragment = document.createDocumentFragment();
-  filterData.filter(i => i?.url).forEach((item, index) => {
-    const card = document.createElement('div');
-    card.className = 'work-card';
-    card.dataset.id = item.id;
-    card.innerHTML = `
+  listDom.innerHTML = filterData.filter(i => i?.url).map((item, index) => `
+    <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
         ${item.mediaType==="image" 
           ? `<img src="${item.url}" class="work-img">` 
@@ -604,12 +546,8 @@ function renderWorks() {
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
         <div class="work-operate"><button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button></div>
       </div>
-    `;
-    fragment.appendChild(card);
-  });
-
-  listDom.innerHTML = '';
-  listDom.appendChild(fragment);
+    </div>
+  `).join("");
   initSortable();
 }
 
@@ -617,8 +555,7 @@ function renderWorks() {
 function initSortable() {
   if (sortable) sortable.destroy();
   sortable = new Sortable(listDom, {
-    animation: 200, // 缩短动画时间，提速
-    ghostClass: 'sortable-ghost',
+    animation: 300, ghostClass: 'sortable-ghost',
     onEnd: () => {
       const newOrder = Array.from(listDom.children).map(i => i.dataset.id);
       saveSortOrder(newOrder);
@@ -653,13 +590,8 @@ async function deleteWork(id) {
     body: new URLSearchParams({ action: "delete", id })
   });
   const result = await res.json();
-  if (result.ok) { 
-    alert("✅ 刪除成功！"); 
-    localStorage.removeItem(CACHE_KEY);
-    localStorage.removeItem('works_sort'); 
-    await loadAllWorks(); 
-    renderWorks(); 
-  } else alert("❌ 刪除失敗");
+  if (result.ok) { alert("✅ 刪除成功！"); localStorage.removeItem('works_sort'); await loadAllWorks(); renderWorks(); }
+  else alert("❌ 刪除失敗");
 }
 
 // 底部导航
@@ -676,18 +608,10 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// 🔥 核心优化：页面打开立即预加载作品（不等待任何资源）
-(async () => {
+// 初始化
+window.addEventListener('load', async () => {
   await loadAllWorks();
   renderWorks();
-})();
-
-// 原有初始化（兼容）
-window.addEventListener('load', () => {
-  // 二次校验渲染，确保万无一失
-  if (allWorksData.length === 0) {
-    loadAllWorks().then(renderWorks);
-  }
 });
 </script>
 </body>
