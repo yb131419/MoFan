@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>莫凡韓式皮膚管理 | 作品集</title>
+  <title>莫凡美業 | 作品集</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
   <style>
     * {
@@ -14,10 +14,10 @@
     }
     body {
       background: #f7f8fa;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      padding-bottom: 90px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding-bottom: 30px;
     }
-    /* 頂部進度條 */
+    /* 顶部进度条 */
     .progress {
       height: 3px;
       background: linear-gradient(90deg, #e8a8b8, #d96b8c);
@@ -28,7 +28,7 @@
       z-index: 999;
       width: 0;
     }
-    /* 頁面標題 */
+    /* 页面标题 */
     .page-header {
       padding: 36px 20px 16px;
       text-align: center;
@@ -36,17 +36,17 @@
     .page-title {
       font-size: 22px;
       font-weight: 600;
-      color: #222222;
+      color: #222;
       margin-bottom: 4px;
     }
     .page-subtitle {
       font-size: 12px;
-      color: #999999;
+      color: #999;
     }
-    /* 第一層標籤：全部 / 照片 / 影片 */
+    /* 第一层标签：全部 / 照片 / 影片 */
     .tab-layer-1 {
       display: flex;
-      border-bottom: 1px solid #eeeeee;
+      border-bottom: 1px solid #eee;
       padding: 0 20px;
       gap: 32px;
       overflow-x: auto;
@@ -75,7 +75,7 @@
       background: #222;
       border-radius: 3px 3px 0 0;
     }
-    /* 第二層標籤：業務分類 */
+    /* 第二层标签：业务分类 */
     .tab-layer-2 {
       display: flex;
       padding: 16px 20px;
@@ -87,7 +87,7 @@
       padding: 8px 16px;
       border-radius: 999px;
       border: none;
-      background: #eeeeee;
+      background: #eee;
       color: #555;
       font-size: 13px;
       cursor: pointer;
@@ -95,25 +95,31 @@
     }
     .tag-btn.active {
       background: #d96b8c;
-      color: #ffffff;
+      color: #fff;
     }
-    /* 上傳區域 */
+    /* 上传区域 */
     .upload-area {
       padding: 0 20px 20px;
     }
     .upload-card {
-      background: #ffffff;
+      background: #fff;
       border-radius: 16px;
       padding: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
-    .upload-select {
+    /* 高质感分类选择按钮 */
+    .category-select-btn {
       width: 100%;
       padding: 12px;
-      border: 1px solid #eeeeee;
+      border: 1px solid #eee;
       border-radius: 12px;
       background: #f7f8fa;
       font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 12px;
     }
     .upload-btn {
@@ -127,10 +133,14 @@
       font-weight: 500;
       cursor: pointer;
     }
+    .upload-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
     #file-input {
       display: none;
     }
-    /* 作品網格 */
+    /* 作品网格 */
     .works-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -138,27 +148,18 @@
       padding: 0 20px;
     }
     .work-card {
-      background: #ffffff;
+      background: #fff;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 3px 10px rgba(0,0,0,0.05);
       transition: all 0.3s ease;
-    }
-    .work-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(217,107,140,0.12);
     }
     .media-box {
       width: 100%;
       aspect-ratio: 1 / 1;
       overflow: hidden;
     }
-    .work-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .work-video {
+    .work-img, .work-video {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -171,11 +172,13 @@
       color: #333;
       margin-bottom: 8px;
       font-weight: 500;
+      text-align: center;
     }
     .work-tag {
       font-size: 11px;
       color: #999;
       margin-bottom: 10px;
+      text-align: center;
     }
     .work-operate {
       display: flex;
@@ -201,64 +204,71 @@
       font-size: 11px;
       cursor: pointer;
     }
-    /* 底部固定欄 1:1 還原Linote */
-    .bottom-bar {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 40px);
-      max-width: 500px;
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      display: flex;
-      padding: 14px;
-      gap: 12px;
+    /* 空内容提示 */
+    .empty-tip {
+      text-align: center;
+      padding: 60px 20px;
+      color: #aaa;
+      font-size: 14px;
     }
-    .bottom-btn {
-      flex: 1;
-      padding: 10px 0;
-      border: none;
-      background: transparent;
-      color: #333;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    /* 編輯彈窗 */
-    .modal-mask {
+    /* -------------- 高质感弹窗 -------------- */
+    .modal {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.5);
       z-index: 1000;
       display: none;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
-    .modal-box {
+    .modal-content {
       background: #fff;
       width: 100%;
-      max-width: 400px;
-      border-radius: 16px;
+      max-width: 320px;
+      border-radius: 20px;
       padding: 24px;
+      text-align: center;
     }
-    .modal-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: #222;
+    /* 分类选择弹窗 */
+    .category-item {
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 12px;
+      background: #f7f8fa;
+      cursor: pointer;
+      font-size: 14px;
     }
+    .category-item.active {
+      background: #d96b8c;
+      color: #fff;
+    }
+    /* 上传加载浮窗（防呆） */
+    .loading-modal .loading-text {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #666;
+    }
+    .loading-modal .loader {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f0f0f0;
+      border-top: 4px solid #d96b8c;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* 编辑弹窗 */
     .modal-item {
       margin-bottom: 16px;
+      text-align: left;
     }
     .modal-label {
       display: block;
@@ -273,121 +283,103 @@
       border-radius: 10px;
       font-size: 14px;
     }
-    .modal-select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      font-size: 14px;
-    }
     .modal-btn-group {
       display: flex;
       gap: 12px;
-      margin-top: 24px;
+      margin-top: 20px;
     }
-    .modal-cancel {
+    .modal-cancel, .modal-save {
       flex: 1;
       padding: 12px;
-      border: 1px solid #ddd;
-      background: transparent;
       border-radius: 10px;
+      font-size: 14px;
+    }
+    .modal-cancel {
+      border: 1px solid #ddd;
+      background: #fff;
       color: #666;
     }
     .modal-save {
-      flex: 1;
-      padding: 12px;
       border: none;
       background: #d96b8c;
-      border-radius: 10px;
       color: #fff;
-    }
-    /* 空內容提示 */
-    .empty-tip {
-      text-align: center;
-      padding: 60px 20px;
-      color: #aaa;
-      font-size: 14px;
     }
   </style>
 </head>
 <body>
+<!-- 顶部进度条 -->
 <div class="progress" id="progress"></div>
 
-<!-- 頁面標題 -->
+<!-- 页面标题 -->
 <div class="page-header">
-  <h1 class="page-title">莫凡韓式皮膚管理</h1>
-  <p class="page-subtitle">Beauty Skin Management Portfolio</p>
+  <h1 class="page-title">莫凡美業</h1>
+  <p class="page-subtitle">Beauty Portfolio</p>
 </div>
 
-<!-- 第一層標籤：全部 / 照片 / 影片 -->
+<!-- 第一层标签：全部 / 照片 / 影片 -->
 <div class="tab-layer-1">
   <button class="tab-item-1 active" data-type="all-media">全部</button>
   <button class="tab-item-1" data-type="image">照片</button>
   <button class="tab-item-1" data-type="video">影片</button>
 </div>
 
-<!-- 第二層標籤：業務分類 -->
+<!-- 第二层标签：业务分类 -->
 <div class="tab-layer-2">
   <button class="tag-btn active" data-category="all">全部</button>
-  <button class="tag-btn" data-category="skin">韓式皮膚管理</button>
   <button class="tag-btn" data-category="nail">美甲</button>
   <button class="tag-btn" data-category="eyelash">美睫</button>
   <button class="tag-btn" data-category="beauty">美容</button>
 </div>
 
-<!-- 上傳區域 -->
+<!-- 上传区域 -->
 <div class="upload-area">
   <div class="upload-card">
-    <select class="upload-select" id="workCategory">
-      <option value="skin">韓式皮膚管理</option>
-      <option value="nail">美甲</option>
-      <option value="eyelash">美睫</option>
-      <option value="beauty">美容</option>
-    </select>
-    <button class="upload-btn" onclick="document.getElementById('file-input').click()">
-      <i class="fa fa-plus"></i> 新增上傳作品（圖片/影片）
+    <!-- 高质感分类选择按钮 -->
+    <button class="category-select-btn" id="categoryBtn" onclick="openCategoryModal()">
+      <span>選擇分類：美甲</span>
+      <i class="fa fa-chevron-down"></i>
+    </button>
+    <button class="upload-btn" id="uploadBtn" onclick="triggerFile()">
+      <i class="fa fa-plus"></i> 新增上傳作品
     </button>
     <input type="file" id="file-input" accept="image/*,video/*">
   </div>
 </div>
 
-<!-- 作品展示區 -->
+<!-- 作品展示区 -->
 <div class="works-grid" id="worksList"></div>
 
-<!-- 底部固定功能欄 -->
-<div class="bottom-bar">
-  <button class="bottom-btn" id="sortBtn">
-    <i class="fa fa-sort"></i> 排序
-  </button>
-  <button class="bottom-btn" id="batchBtn">
-    <i class="fa fa-check-square-o"></i> 批量
-  </button>
-  <button class="bottom-btn" id="searchBtn">
-    <i class="fa fa-search"></i> 搜尋
-  </button>
+<!-- ============== 高质感弹窗 ============== -->
+<!-- 1. 分类选择弹窗 -->
+<div class="modal" id="categoryModal">
+  <div class="modal-content">
+    <h3 style="margin-bottom:16px; font-size:16px;">選擇作品分類</h3>
+    <div class="category-item active" data-val="nail">美甲</div>
+    <div class="category-item" data-val="eyelash">美睫</div>
+    <div class="category-item" data-val="beauty">美容</div>
+  </div>
 </div>
 
-<!-- 編輯彈窗 -->
-<div class="modal-mask" id="editModal">
-  <div class="modal-box">
-    <h3 class="modal-title">編輯作品</h3>
+<!-- 2. 上传加载浮窗（防呆） -->
+<div class="modal loading-modal" id="loadingModal">
+  <div class="modal-content">
+    <div class="loader"></div>
+    <div class="loading-text">上傳中，請稍候...</div>
+  </div>
+</div>
+
+<!-- 3. 编辑弹窗 -->
+<div class="modal" id="editModal">
+  <div class="modal-content">
+    <h3 style="text-align:left; margin-bottom:20px;">編輯作品</h3>
     <div class="modal-item">
       <label class="modal-label">作品標題</label>
       <input type="text" class="modal-input" id="editTitle">
     </div>
-    <div class="modal-item">
-      <label class="modal-label">作品分類</label>
-      <select class="modal-select" id="editCategory">
-        <option value="skin">韓式皮膚管理</option>
-        <option value="nail">美甲</option>
-        <option value="eyelash">美睫</option>
-        <option value="beauty">美容</option>
-      </select>
-    </div>
     <input type="hidden" id="editId">
     <div class="modal-btn-group">
       <button class="modal-cancel" onclick="closeEditModal()">取消</button>
-      <button class="modal-save" onclick="saveEdit()">儲存修改</button>
+      <button class="modal-save" onclick="saveEdit()">儲存</button>
     </div>
   </div>
 </div>
@@ -395,13 +387,20 @@
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
 
-// 全域變數
+// 全局变量
 let currentMediaFilter = "all-media";
 let currentCategoryFilter = "all";
 let allWorksData = [];
+let selectedCategory = "nail"; // 默认分类
 const progress = document.getElementById("progress");
+const uploadBtn = document.getElementById("uploadBtn");
 
-// ====================== 圖片壓縮（僅圖片壓縮，影片不處理）======================
+// ====================== 工具函数 ======================
+// 去除文件名后缀（核心：不显示后缀）
+function removeFileExtension(filename) {
+  return filename.replace(/\.[^/.]+$/, "");
+}
+// 图片压缩
 function compressImage(file) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -419,8 +418,31 @@ function compressImage(file) {
     };
   });
 }
+// 显示/隐藏加载浮窗
+function showLoading() {
+  document.getElementById("loadingModal").style.display = "flex";
+  uploadBtn.disabled = true;
+}
+function hideLoading() {
+  document.getElementById("loadingModal").style.display = "none";
+  uploadBtn.disabled = false;
+}
 
-// ====================== 標籤切換事件 ======================
+// ====================== 分类选择弹窗 ======================
+function openCategoryModal() {
+  document.getElementById("categoryModal").style.display = "flex";
+}
+document.querySelectorAll('.category-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    selectedCategory = item.dataset.val;
+    document.getElementById("categoryBtn").innerHTML = `<span>選擇分類：${item.innerText}</span><i class="fa fa-chevron-down"></i>`;
+    document.getElementById("categoryModal").style.display = "none";
+  });
+});
+
+// ====================== 标签切换 ======================
 document.querySelectorAll('.tab-item-1').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab-item-1').forEach(t => t.classList.remove('active'));
@@ -429,7 +451,6 @@ document.querySelectorAll('.tab-item-1').forEach(tab => {
     renderWorks();
   });
 });
-
 document.querySelectorAll('.tag-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
@@ -439,20 +460,20 @@ document.querySelectorAll('.tag-btn').forEach(btn => {
   });
 });
 
-// ====================== 上傳新增作品 ======================
+// ====================== 上传触发 ======================
+function triggerFile() {
+  document.getElementById('file-input').click();
+}
+
+// ====================== 上传作品（带浮窗+防呆） ======================
 document.getElementById('file-input').onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
-  const selectCategory = document.getElementById('workCategory').value;
 
   try {
-    let per = 0;
-    const progressInterval = setInterval(() => {
-      per += 11;
-      if (per > 90) per = 90;
-      progress.style.width = per + "%";
-    }, 100);
-
+    // 显示加载浮窗，禁止重复上传
+    showLoading();
+    
     let uploadFile = file;
     if (file.type.startsWith('image/')) {
       uploadFile = await compressImage(file);
@@ -462,100 +483,82 @@ document.getElementById('file-input').onchange = async function(e) {
     reader.readAsDataURL(uploadFile);
     
     reader.onload = async function() {
-      clearInterval(progressInterval);
-      progress.style.width = "100%";
       const fileUrl = reader.result;
       const mediaType = file.type.startsWith('image/') ? "image" : "video";
+      // 去除文件名后缀
+      const title = removeFileExtension(file.name);
 
       const res = await fetch(GAS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ 
           action: "upload", 
-          type: selectCategory, 
+          type: selectedCategory, 
           mediaType: mediaType,
-          title: file.name, 
+          title: title, 
           url: fileUrl 
         })
       });
 
       const result = await res.json();
+      hideLoading();
       if (result.ok) {
-        alert("✅ 作品新增上傳成功！");
+        alert("✅ 上傳成功！");
         await loadAllWorks();
         renderWorks();
       } else {
         alert("❌ 上傳失敗：" + (result.error || "未知錯誤"));
       }
-      setTimeout(() => progress.style.width = 0, 600);
     };
   } catch (err) {
     console.error(err);
+    hideLoading();
     alert("❌ 上傳失敗：" + err.message);
-    progress.style.width = 0;
   }
 };
 
-// ====================== 讀取全部數據（先讀完再渲染，根治undefined報錯）======================
+// ====================== 读取数据 ======================
 async function loadAllWorks() {
   progress.style.width = "30%";
   const res = await fetch(GAS_URL + "?action=load");
   const data = await res.json();
   progress.style.width = "100%";
-
-  // 強制判斷數據格式，空值保護
   allWorksData = Array.isArray(data.list) ? data.list : [];
   setTimeout(() => progress.style.width = 0, 300);
 }
 
-// ====================== 渲染作品（每處全部加空值防護，絕對不會出現undefined）======================
+// ====================== 渲染作品 ======================
 function renderWorks() {
   let filterData = [...allWorksData];
 
-  // 媒體類型篩選
   if (currentMediaFilter !== "all-media") {
     filterData = filterData.filter(item => item && item.mediaType === currentMediaFilter);
   }
-  // 分類篩選
   if (currentCategoryFilter !== "all") {
     filterData = filterData.filter(item => item && item.category === currentCategoryFilter);
   }
 
   const listDom = document.getElementById('worksList');
   if (filterData.length === 0) {
-    listDom.innerHTML = `<div class="empty-tip">暫無對應作品</div>`;
+    listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`;
     return;
   }
 
-  const categoryMap = {
-    skin: "韓式皮膚管理",
-    nail: "美甲",
-    eyelash: "美睫",
-    beauty: "美容"
-  };
-
-  // 逐個空值判斷，杜絕 src=undefined
+  const categoryMap = { nail: "美甲", eyelash: "美睫", beauty: "美容" };
   listDom.innerHTML = filterData.filter(item => item && item.url).map(item => {
-    let mediaHtml = "";
-    if (item.mediaType === "image") {
-      mediaHtml = `<img src="${item.url}" class="work-img" alt="${item.title||'作品'}">`;
-    } else {
-      mediaHtml = `<video src="${item.url}" class="work-video" muted controls></video>`;
-    }
+    let mediaHtml = item.mediaType === "image" 
+      ? `<img src="${item.url}" class="work-img">`
+      : `<video src="${item.url}" class="work-video" muted controls></video>`;
 
     return `
       <div class="work-card">
         <div class="media-box">${mediaHtml}</div>
         <div class="work-info">
-          <div class="work-title">${item.title||'無標題'}</div>
+          <div class="work-title">${item.title||'作品'}</div>
           <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
           <div class="work-operate">
-            <button class="edit-btn" onclick="openEditModal('${item.id}','${item.title||''}','${item.category||''}')">
-              <i class="fa fa-pencil"></i> 編輯
-            </button>
-            <button class="delete-btn" onclick="deleteWork('${item.id}')">
-              <i class="fa fa-trash"></i> 刪除
-            </button>
+            <button class="edit-btn" onclick="openEditModal('${item.id}','${item.title||''}')">編輯</button>
+            <button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button>
           </div>
         </div>
       </div>
@@ -563,102 +566,55 @@ function renderWorks() {
   }).join("");
 }
 
-// ====================== 編輯功能 ======================
-function openEditModal(id, title, category) {
+// ====================== 编辑功能 ======================
+function openEditModal(id, title) {
   document.getElementById('editId').value = id;
   document.getElementById('editTitle').value = title;
-  document.getElementById('editCategory').value = category;
   document.getElementById('editModal').style.display = 'flex';
 }
 function closeEditModal() {
   document.getElementById('editModal').style.display = 'none';
 }
-
 async function saveEdit() {
   const id = document.getElementById('editId').value;
-  const title = document.getElementById('editTitle').value;
-  const category = document.getElementById('editCategory').value;
-  if (!title.trim()) {
-    alert("請輸入作品標題");
-    return;
-  }
+  const title = document.getElementById('editTitle').value.trim();
+  if (!title) { alert("請輸入標題"); return; }
 
   const res = await fetch(GAS_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "edit", id: id, title: title, type: category })
+    body: new URLSearchParams({ action: "edit", id: id, title: title })
   });
+  
   const result = await res.json();
   if (result.ok) {
-    alert("✅ 修改儲存成功！");
+    alert("✅ 修改成功！");
     closeEditModal();
-    await loadAllWorks();
-    renderWorks();
+    loadAllWorks().then(renderWorks);
   } else {
-    alert("❌ 修改失敗：" + (result.error || "未知錯誤"));
+    alert("❌ 修改失敗");
   }
 }
 
-// ====================== 刪除功能 ======================
+// ====================== 删除功能（修复：找不到作品） ======================
 async function deleteWork(id) {
-  if (!confirm("確定要刪除此作品？刪除後無法復原")) return;
+  if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "delete", type: id })
+    body: new URLSearchParams({ action: "delete", id: id }) // 修复参数名
   });
   const result = await res.json();
   if (result.ok) {
-    alert("✅ 作品已刪除");
-    await loadAllWorks();
-    renderWorks();
+    alert("✅ 刪除成功！");
+    loadAllWorks().then(renderWorks);
   } else {
-    alert("❌ 刪除失敗：" + (result.error || "未知錯誤"));
+    alert("❌ 刪除失敗：未找到作品");
   }
 }
 
-// ====================== 底部功能按鈕 ======================
-// 最新排序
-document.getElementById('sortBtn').onclick = function() {
-  allWorksData.sort((a,b) => Number(b.id) - Number(a.id));
-  renderWorks();
-  alert("已依照最新上傳排序");
-};
-// 標題關鍵字搜尋
-document.getElementById('searchBtn').onclick = function() {
-  const keyword = prompt("請輸入要搜尋的作品關鍵字");
-  if (!keyword) return;
-  const result = allWorksData.filter(item => item.title && item.title.includes(keyword));
-  document.getElementById('worksList').innerHTML = result.length === 0 
-    ? `<div class="empty-tip">無搜尋結果</div>`
-    : result.filter(item=>item.url).map(item => {
-        const map = {skin:"韓式皮膚管理",nail:"美甲",eyelash:"美睫",beauty:"美容"};
-        let m = item.mediaType==="image" 
-          ?`<img src="${item.url}" class="work-img">`
-          :`<video src="${item.url}" class="work-video" muted controls></video>`;
-        return `
-          <div class="work-card">
-            <div class="media-box">${m}</div>
-            <div class="work-info">
-              <div class="work-title">${item.title}</div>
-              <div class="work-tag">${map[item.category]}</div>
-              <div class="work-operate">
-                <button class="edit-btn" onclick="openEditModal('${item.id}','${item.title}','${item.category}')">編輯</button>
-                <button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button>
-              </div>
-            </div>
-          </div>`;
-      }).join("");
-};
-// 批量功能
-document.getElementById('batchBtn').onclick = function() {
-  alert("批量管理功能已啟用框架");
-};
-
-// ====================== 頁面初始化（嚴格順序：先讀數據 → 再渲染）======================
-loadAllWorks().then(() => {
-  renderWorks();
-});
+// 初始化
+loadAllWorks().then(renderWorks);
 </script>
 </body>
 </html>
