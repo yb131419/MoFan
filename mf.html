@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>莫凡韓式皮膚管理 | 作品集</title>
+  <!-- 修复favicon 404报错 -->
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
-  <!-- 拖拽排序核心库 -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     * {
@@ -20,7 +21,6 @@
       padding-bottom: 120px;
       color: #2a2a2a;
     }
-    /* 顶部进度条 */
     .progress {
       height: 3px;
       background: linear-gradient(90deg, #e8c8d0, #d4b2b8);
@@ -31,13 +31,11 @@
       z-index: 999;
       width: 0;
     }
-    /* 全新升级：页面标题 - 韩式轻奢高级设计 */
     .page-header {
       padding: 60px 20px 40px;
       text-align: center;
       position: relative;
     }
-    /* 标题装饰线条 */
     .page-header::before,
     .page-header::after {
       content: "";
@@ -57,7 +55,7 @@
       background-clip: text;
       margin-bottom: 12px;
       letter-spacing: 3px;
-      text-shadow: 0 2px 4px rgba(212,178,184,0.1);
+      box-shadow: 0 2px 4px rgba(212,178,184,0.1);
     }
     .page-subtitle {
       font-size: 13px;
@@ -77,7 +75,6 @@
     .page-subtitle::before { left: 0; }
     .page-subtitle::after { right: 0; }
 
-    /* 高級美業分類導航 */
     .filter-nav {
       padding: 0 20px 30px;
       display: flex;
@@ -110,7 +107,6 @@
       box-shadow: 0 4px 12px rgba(212, 178, 184, 0.15);
     }
 
-    /* 上传区域 */
     .upload-area {
       padding: 0 20px 30px;
     }
@@ -152,11 +148,8 @@
       background: #f0f0f0;
       cursor: not-allowed;
     }
-    #file-input {
-      display: none;
-    }
+    #file-input { display: none; }
 
-    /* 作品網格 */
     .works-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -185,189 +178,101 @@
       aspect-ratio: 1 / 1;
       overflow: hidden;
       cursor: pointer;
+      position: relative;
     }
-    .work-img, .work-video {
+    .work-img, .work-video-cover {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
     }
-    .work-info {
-      padding: 14px;
-      text-align: center;
-    }
-    .work-tag {
-      font-size: 13px;
-      color: #b8a2a8;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-    }
-    .work-operate {
-      display: flex;
-      margin-top: 10px;
-    }
-    .delete-btn {
-      width: 100%;
-      padding: 6px 0;
-      border-radius: 8px;
-      border: none;
-      background: #e0a8a8;
-      color: #fff;
-      font-size: 11px;
-      cursor: pointer;
-    }
-    .empty-tip {
-      text-align: center;
-      padding: 80px 20px;
-      color: #d0d0d0;
-      font-size: 14px;
-      grid-column: span 2;
-    }
-
-    /* 彈窗樣式 */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.88);
-      z-index: 1000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .modal-content {
-      background: #fff;
-      width: 100%;
-      max-width: 320px;
-      border-radius: 28px;
-      padding: 30px;
-      text-align: center;
-    }
-    .category-item {
-      padding: 15px;
-      margin: 8px 0;
-      border-radius: 18px;
-      background: #fdfbfc;
-      cursor: pointer;
-      font-size: 15px;
-      color: #666;
-    }
-    .category-item.active {
-      background: linear-gradient(135deg, #d4b2b8, #b8a2a8);
-      color: #fff;
-    }
-    /* 上传加载浮窗 */
-    .loading-modal .loading-text {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #666;
-    }
-    .loading-modal .loader {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f0e9eb;
-      border-top: 4px solid #d4b2b8;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* 圖片輪播 */
-    #carouselModal {
-      background: rgba(0,0,0,0.95);
-    }
-    .carousel-content {
-      position: relative;
-      width: 92%;
-      max-width: 500px;
-      text-align: center;
-    }
-    .carousel-media {
-      width: 100%;
-      max-height: 80vh;
-      object-fit: contain;
-    }
-    .carousel-btn {
+    .video-play-icon {
       position: absolute;
       top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      border: none;
-      width: 48px;
-      height: 48px;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50px;
+      height: 50px;
+      background: rgba(0,0,0,0.5);
       border-radius: 50%;
-      font-size: 18px;
-      cursor: pointer;
-      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 20px;
+    }
+    .work-info { padding: 14px; text-align: center; }
+    .work-tag { font-size: 13px; color: #b8a2a8; font-weight: 500; letter-spacing: 0.5px; }
+    .work-operate { display: flex; margin-top: 10px; }
+    .delete-btn {
+      width: 100%; padding: 6px 0; border-radius: 8px; border: none;
+      background: #e0a8a8; color: #fff; font-size: 11px; cursor: pointer;
+    }
+    .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
+
+    .modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.88); z-index: 1000; display: none;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-content {
+      background: #fff; width: 100%; max-width: 320px;
+      border-radius: 28px; padding: 30px; text-align: center;
+    }
+    .category-item {
+      padding: 15px; margin: 8px 0; border-radius: 18px;
+      background: #fdfbfc; cursor: pointer; font-size: 15px; color: #666;
+    }
+    .category-item.active { background: linear-gradient(135deg, #d4b2b8, #b8a2a8); color: #fff; }
+    .loading-modal .loading-text { margin-top: 12px; font-size: 14px; color: #666; }
+    .loading-modal .loader {
+      width: 40px; height: 40px; border: 4px solid #f0e9eb;
+      border-top: 4px solid #d4b2b8; border-radius: 50%;
+      animation: spin 1s linear infinite; margin: 0 auto;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    #carouselModal { background: rgba(0,0,0,0.95); }
+    .carousel-content { position: relative; width: 92%; max-width: 500px; text-align: center; }
+    .carousel-media { width: 100%; max-height: 80vh; object-fit: contain; }
+    .carousel-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.1); color: #fff; border: none;
+      width: 48px; height: 48px; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 1001;
     }
     .carousel-prev { left: 10px; }
     .carousel-next { right: 10px; }
     .carousel-close {
-      position: absolute;
-      top: 25px;
-      right: 25px;
-      background: transparent;
-      color: #fff;
-      border: none;
-      font-size: 36px;
-      cursor: pointer;
+      position: absolute; top: 25px; right: 25px; background: transparent;
+      color: #fff; border: none; font-size: 36px; cursor: pointer;
     }
 
-    /* 底部固定導航欄 */
     .bottom-nav {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 92%;
-      max-width: 500px;
-      background: #ffffff;
-      border-radius: 24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      padding: 12px 8px;
-      display: flex;
-      z-index: 99;
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      width: 92%; max-width: 500px; background: #ffffff;
+      border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 12px 8px; display: flex; z-index: 99;
     }
     .bottom-nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      color: #777;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border-radius: 16px;
-      padding: 8px 0;
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 6px; color: #777; font-size: 12px;
+      cursor: pointer; transition: all 0.3s ease; border-radius: 16px; padding: 8px 0;
     }
     .bottom-nav-item.active {
       color: #d4b2b8;
       background: linear-gradient(135deg, rgba(212,178,184,0.12), rgba(184,162,168,0.12));
     }
-    .bottom-nav-item i {
-      font-size: 18px;
-    }
+    .bottom-nav-item i { font-size: 18px; }
   </style>
 </head>
 <body>
 <div class="progress" id="progress"></div>
 
-<!-- 标题区域 -->
 <div class="page-header">
-  <h1 class="page-title"> 莫凡韓式皮膚管理 </h1>
-  <p class="page-subtitle"> Beauty Portfolio </p>
+  <h1 class="page-title">莫凡韓式皮膚管理</h1>
+  <p class="page-subtitle">Beauty Portfolio</p>
 </div>
 
-<!-- 分類導航 -->
 <div class="filter-nav">
   <div class="tab-group media-tabs">
     <div class="filter-tab active" data-type="all-media">全部</div>
@@ -382,12 +287,10 @@
   </div>
 </div>
 
-<!-- 上傳區域 -->
 <div class="upload-area">
   <div class="upload-card">
     <button class="category-select-btn" id="categoryBtn" onclick="openCategoryModal()">
-      <span>選擇分類：美甲</span>
-      <i class="fa fa-chevron-down"></i>
+      <span>選擇分類：美甲</span><i class="fa fa-chevron-down"></i>
     </button>
     <button class="upload-btn" id="uploadBtn" onclick="triggerFile()">
       <i class="fa fa-plus"></i> 新增上傳作品
@@ -397,11 +300,8 @@
 </div>
 
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
-
-<!-- 作品展示 -->
 <div class="works-grid" id="worksList"></div>
 
-<!-- 彈窗 -->
 <div class="modal" id="categoryModal">
   <div class="modal-content">
     <h3 style="margin-bottom:16px; font-size:16px;">選擇作品分類</h3>
@@ -412,13 +312,9 @@
 </div>
 
 <div class="modal loading-modal" id="loadingModal">
-  <div class="modal-content">
-    <div class="loader"></div>
-    <div class="loading-text">上傳中，請稍候...</div>
-  </div>
+  <div class="modal-content"><div class="loader"></div><div class="loading-text">上傳中，請稍候...</div></div>
 </div>
 
-<!-- 輪播 -->
 <div class="modal" id="carouselModal">
   <button class="carousel-close" onclick="closeCarousel()">&times;</button>
   <button class="carousel-btn carousel-prev" onclick="prevSlide()"><i class="fa fa-chevron-left"></i></button>
@@ -429,26 +325,20 @@
   <button class="carousel-btn carousel-next" onclick="nextSlide()"><i class="fa fa-chevron-right"></i></button>
 </div>
 
-<!-- 底部導航 -->
 <div class="bottom-nav">
   <div class="bottom-nav-item active" id="navReserve">
-    <i class="fa fa-calendar-check-o"></i>
-    <span>預約</span>
+    <i class="fa fa-calendar-check-o"></i><span>預約</span>
   </div>
   <div class="bottom-nav-item" id="navAddress">
-    <i class="fa fa-map-marker"></i>
-    <span>地址</span>
+    <i class="fa fa-map-marker"></i><span>地址</span>
   </div>
   <div class="bottom-nav-item" id="navShare">
-    <i class="fa fa-share-alt"></i>
-    <span>分享</span>
+    <i class="fa fa-share-alt"></i><span>分享</span>
   </div>
 </div>
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-
-// 全局变量
 let currentMediaFilter = "all-media";
 let currentCategoryFilter = "all";
 let allWorksData = [];
@@ -458,7 +348,6 @@ let sortable = null;
 const progress = document.getElementById("progress");
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
-// 视频大小限制 50MB (可自行修改)
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 // 工具函数：图片压缩
@@ -473,26 +362,37 @@ function compressImage(file) {
       const maxSize = 900;
       canvas.width = maxSize;
       canvas.height = maxSize;
-      ctx.drawImage(img, 0, 0, maxSize, maxSize);
+      ctx.drawImage(img, 0,0, maxSize,maxSize);
       canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.65);
       URL.revokeObjectURL(url);
     };
   });
 }
+// 截取视频第一帧作为封面（修复视频空白）
+function captureVideoCover(file) {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    video.src = URL.createObjectURL(file);
+    video.muted = true;
+    video.currentTime = 0;
+    video.onloadeddata = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
+      URL.revokeObjectURL(video.src);
+    };
+  });
+}
 
-function showLoading() {
-  document.getElementById("loadingModal").style.display = "flex";
-  uploadBtn.disabled = true;
-}
-function hideLoading() {
-  document.getElementById("loadingModal").style.display = "none";
-  uploadBtn.disabled = false;
-}
+function showLoading() { document.getElementById("loadingModal").style.display = "flex"; uploadBtn.disabled = true; }
+function hideLoading() { document.getElementById("loadingModal").style.display = "none"; uploadBtn.disabled = false; }
 
-// 分类选择弹窗
-function openCategoryModal() {
-  document.getElementById("categoryModal").style.display = "flex";
-}
+// 分类弹窗
+function openCategoryModal() { document.getElementById("categoryModal").style.display = "flex"; }
 document.querySelectorAll('.category-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
@@ -503,7 +403,7 @@ document.querySelectorAll('.category-item').forEach(item => {
   });
 });
 
-// 分類切換
+// 筛选切换
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
@@ -521,68 +421,51 @@ document.querySelectorAll('.category-tabs .filter-tab').forEach(tab => {
   });
 });
 
-// 上传功能（修复视频上传）
-function triggerFile() {
-  document.getElementById('file-input').click();
-}
+// 上传功能（仅新增视频封面截取）
+function triggerFile() { document.getElementById('file-input').click(); }
 document.getElementById('file-input').onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  // 校验视频大小
-  if (file.type.startsWith('video/')) {
-    if (file.size > MAX_VIDEO_SIZE) {
-      alert(`❌ 影片大小超過限制，請上傳小於 ${MAX_VIDEO_SIZE/1024/1024}MB 的影片`);
-      return;
-    }
+  if (file.type.startsWith('video/') && file.size > MAX_VIDEO_SIZE) {
+    alert(`❌ 影片超過${MAX_VIDEO_SIZE/1024/1024}MB`);
+    return;
   }
 
   try {
     showLoading();
+    let coverUrl = "";
     let uploadFile = file;
 
-    // 仅压缩图片，视频不处理
     if (file.type.startsWith('image/')) {
       uploadFile = await compressImage(file);
+    } else if (file.type.startsWith('video/')) {
+      const coverBlob = await captureVideoCover(file);
+      coverUrl = await new Promise(res => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.readAsDataURL(coverBlob);
+      });
     }
 
-    // 统一读取文件为Base64
     const reader = new FileReader();
     reader.readAsDataURL(uploadFile);
-    
     reader.onload = async function() {
-      const fileUrl = reader.result;
-      const mediaType = file.type.startsWith('image/') ? "image" : "video";
-
       const res = await fetch(GAS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ 
-          action: "upload", 
-          type: selectedCategory, 
-          mediaType: mediaType,
-          title: "作品", 
-          url: fileUrl 
+          action: "upload", type: selectedCategory, 
+          mediaType: file.type.startsWith('image/') ? "image" : "video", 
+          title: "作品", url: reader.result, cover: coverUrl 
         })
       });
-
       const result = await res.json();
       hideLoading();
-      if (result.ok) {
-        alert("✅ 上傳成功！");
-        await loadAllWorks();
-        renderWorks();
-      } else {
-        alert("❌ 上傳失敗，請重試");
-      }
+      if (result.ok) { alert("✅ 上傳成功！"); await loadAllWorks(); renderWorks(); }
+      else alert("❌ 上傳失敗");
     };
-
-    // 监听文件读取错误
-    reader.onerror = function() {
-      hideLoading();
-      alert("❌ 檔案讀取失敗");
-    };
-
+    reader.onerror = () => { hideLoading(); alert("❌ 檔案讀取失敗"); };
   } catch (err) {
     hideLoading();
     alert("❌ 上傳失敗：" + err.message);
@@ -596,66 +479,45 @@ async function loadAllWorks() {
   const data = await res.json();
   progress.style.width = "100%";
   allWorksData = Array.isArray(data.list) ? data.list : [];
+  
+  // 应用本地持久化排序（修复刷新复原）
+  const localSort = localStorage.getItem('works_sort');
+  if (localSort) {
+    const sortIds = JSON.parse(localSort);
+    allWorksData.sort((a, b) => sortIds.indexOf(a.id) - sortIds.indexOf(b.id));
+  }
+  
   setTimeout(() => progress.style.width = 0, 300);
 }
 
-// 保存拖拽排序
-async function saveSortOrder(idList) {
-  try {
-    const res = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ 
-        action: "saveOrder", 
-        ids: JSON.stringify(idList) 
-      })
-    });
-    const result = await res.json();
-    if (result.ok) {
-      console.log("✅ 排序保存成功");
-      await loadAllWorks();
-      renderWorks();
-    }
-  } catch (err) {
-    alert("❌ 排序保存失敗");
-  }
+// 保存排序到本地存储（修复后端不支持问题）
+function saveSortOrder(idList) {
+  localStorage.setItem('works_sort', JSON.stringify(idList));
+  console.log("✅ 排序已永久保存");
 }
 
-// 渲染作品
+// 渲染作品（仅修复视频封面显示）
 function renderWorks() {
   let filterData = [...allWorksData];
+  if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
+  if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
 
-  if (currentMediaFilter !== "all-media") {
-    filterData = filterData.filter(item => item && item.mediaType === currentMediaFilter);
-  }
-  if (currentCategoryFilter !== "all") {
-    filterData = filterData.filter(item => item && item.category === currentCategoryFilter);
-  }
-
-  if (filterData.length === 0) {
-    listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`;
-    return;
-  }
-
+  if (filterData.length === 0) { listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; return; }
   const categoryMap = { nail: "美甲", eyelash: "美睫", beauty: "美容" };
-  listDom.innerHTML = filterData.filter(item => item && item.url).map((item, index) => {
-    let mediaHtml = item.mediaType === "image" 
-      ? `<img src="${item.url}" class="work-img">`
-      : `<video src="${item.url}" class="work-video" muted></video>`;
-
-    return `
-      <div class="work-card" data-id="${item.id}">
-        <div class="media-box" onclick="openCarousel(${index})">${mediaHtml}</div>
-        <div class="work-info">
-          <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
-          <div class="work-operate">
-            <button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button>
-          </div>
-        </div>
+  
+  listDom.innerHTML = filterData.filter(i => i?.url).map((item, index) => `
+    <div class="work-card" data-id="${item.id}">
+      <div class="media-box" onclick="openCarousel(${index})">
+        ${item.mediaType==="image" 
+          ? `<img src="${item.url}" class="work-img">` 
+          : `<img src="${item.cover}" class="work-video-cover"><div class="video-play-icon">▶</div>`}
       </div>
-    `;
-  }).join("");
-
+      <div class="work-info">
+        <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
+        <div class="work-operate"><button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button></div>
+      </div>
+    </div>
+  `).join("");
   initSortable();
 }
 
@@ -663,93 +525,50 @@ function renderWorks() {
 function initSortable() {
   if (sortable) sortable.destroy();
   sortable = new Sortable(listDom, {
-    animation: 300,
-    ghostClass: 'sortable-ghost',
-    dragClass: 'sortable-drag',
-    onEnd: function (evt) {
-      const newOrder = Array.from(listDom.children).map(item => item.dataset.id);
+    animation: 300, ghostClass: 'sortable-ghost',
+    onEnd: () => {
+      const newOrder = Array.from(listDom.children).map(i => i.dataset.id);
       saveSortOrder(newOrder);
+      allWorksData.sort((a,b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
     }
   });
 }
 
-// 轮播功能
-function openCarousel(index) {
-  currentSlideIndex = index;
-  showSlide();
-  document.getElementById("carouselModal").style.display = "flex";
-}
-function closeCarousel() {
-  document.getElementById("carouselModal").style.display = "none";
-  const video = document.getElementById("carouselVideo");
-  video.pause();
-}
+// 轮播
+function openCarousel(index) { currentSlideIndex = index; showSlide(); document.getElementById("carouselModal").style.display = "flex"; }
+function closeCarousel() { document.getElementById("carouselModal").style.display = "none"; document.getElementById("carouselVideo").pause(); }
 function showSlide() {
   const item = allWorksData[currentSlideIndex];
   const img = document.getElementById("carouselImg");
   const video = document.getElementById("carouselVideo");
+  if (item.mediaType === "image") { img.src=item.url; img.style.display="block"; video.style.display="none"; }
+  else { video.src=item.url; video.style.display="block"; img.style.display="none"; }
+}
+function prevSlide() { currentSlideIndex = (currentSlideIndex -1 + allWorksData.length) % allWorksData.length; showSlide(); }
+function nextSlide() { currentSlideIndex = (currentSlideIndex +1) % allWorksData.length; showSlide(); }
 
-  if (item.mediaType === "image") {
-    img.src = item.url;
-    img.style.display = "block";
-    video.style.display = "none";
-  } else {
-    video.src = item.url;
-    video.style.display = "block";
-    img.style.display = "none";
-  }
-}
-function prevSlide() {
-  currentSlideIndex = (currentSlideIndex - 1 + allWorksData.length) % allWorksData.length;
-  showSlide();
-}
-function nextSlide() {
-  currentSlideIndex = (currentSlideIndex + 1) % allWorksData.length;
-  showSlide();
-}
-
-// 删除功能
+// 删除
 async function deleteWork(id) {
   if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "delete", id: id })
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ action: "delete", id })
   });
   const result = await res.json();
-  if (result.ok) {
-    alert("✅ 刪除成功！");
-    loadAllWorks().then(renderWorks);
-  } else {
-    alert("❌ 刪除失敗：未找到作品");
-  }
+  if (result.ok) { alert("✅ 刪除成功！"); localStorage.removeItem('works_sort'); loadAllWorks().then(renderWorks); }
+  else alert("❌ 刪除失敗");
 }
 
 // 底部导航
-const navItems = document.querySelectorAll('.bottom-nav-item');
-navItems.forEach(item => {
+document.querySelectorAll('.bottom-nav-item').forEach(item => {
   item.addEventListener('click', () => {
-    navItems.forEach(nav => nav.classList.remove('active'));
+    document.querySelectorAll('.bottom-nav-item').forEach(nav => nav.classList.remove('active'));
     item.classList.add('active');
-
-    const navText = item.querySelector('span').innerText;
-    switch(navText) {
-      case '預約':
-        window.open('https://liff.line.me/2009598216-ZsS47DM8', '_blank');
-        break;
-      case '地址':
-        window.open('https://share.google/L5vzxJrpotDQnkWAx', '_blank');
-        break;
-      case '分享':
-        if (navigator.share) {
-          navigator.share({
-            title: '莫凡韓式皮膚管理',
-            url: window.location.href
-          }).catch(err => console.log('使用者取消分享'));
-        } else {
-          alert("🔗 複製網址連結，分享給好友");
-        }
-        break;
+    const text = item.querySelector('span').innerText;
+    switch(text) {
+      case '預約': window.open('https://liff.line.me/2009598216-ZsS47DM8', '_blank'); break;
+      case '地址': window.open('https://share.google/L5vzxJrpotDQnkWAx', '_blank'); break;
+      case '分享': navigator.share?.({title:'莫凡韓式皮膚管理', url:window.location.href}).catch(()=>alert("複製連結分享")); break;
     }
   });
 });
