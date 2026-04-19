@@ -158,6 +158,7 @@
       width: 100%;
       aspect-ratio: 1 / 1;
       overflow: hidden;
+      cursor: pointer; /* 点击放大 */
     }
     .work-img, .work-video {
       width: 100%;
@@ -166,23 +167,17 @@
     }
     .work-info {
       padding: 12px;
-    }
-    .work-title {
-      font-size: 13px;
-      color: #333;
-      margin-bottom: 8px;
-      font-weight: 500;
       text-align: center;
     }
     .work-tag {
-      font-size: 11px;
-      color: #999;
-      margin-bottom: 10px;
-      text-align: center;
+      font-size: 13px;
+      color: #666;
+      font-weight: 500;
     }
     .work-operate {
       display: flex;
       gap: 8px;
+      margin-top: 8px;
     }
     .edit-btn {
       flex: 1;
@@ -211,14 +206,14 @@
       color: #aaa;
       font-size: 14px;
     }
-    /* -------------- 高质感弹窗 -------------- */
+    /* -------------- 通用弹窗 -------------- */
     .modal {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.85);
       z-index: 1000;
       display: none;
       align-items: center;
@@ -304,6 +299,48 @@
       background: #d96b8c;
       color: #fff;
     }
+
+    /* -------------- 图片轮播放大样式（新增）-------------- */
+    #carouselModal {
+      background: rgba(0,0,0,0.9);
+    }
+    .carousel-content {
+      position: relative;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    .carousel-media {
+      width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+    }
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+    .carousel-prev { left: 10px; }
+    .carousel-next { right: 10px; }
+    .carousel-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      color: #fff;
+      border: none;
+      font-size: 30px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -334,7 +371,6 @@
 <!-- 上传区域 -->
 <div class="upload-area">
   <div class="upload-card">
-    <!-- 高质感分类选择按钮 -->
     <button class="category-select-btn" id="categoryBtn" onclick="openCategoryModal()">
       <span>選擇分類：美甲</span>
       <i class="fa fa-chevron-down"></i>
@@ -349,7 +385,7 @@
 <!-- 作品展示区 -->
 <div class="works-grid" id="worksList"></div>
 
-<!-- ============== 高质感弹窗 ============== -->
+<!-- ============== 功能弹窗 ============== -->
 <!-- 1. 分类选择弹窗 -->
 <div class="modal" id="categoryModal">
   <div class="modal-content">
@@ -384,6 +420,17 @@
   </div>
 </div>
 
+<!-- 4. 图片轮播放大弹窗（新增） -->
+<div class="modal" id="carouselModal">
+  <button class="carousel-close" onclick="closeCarousel()">&times;</button>
+  <button class="carousel-btn carousel-prev" onclick="prevSlide()"><i class="fa fa-chevron-left"></i></button>
+  <div class="carousel-content">
+    <img id="carouselImg" class="carousel-media" style="display:none;">
+    <video id="carouselVideo" class="carousel-media" controls style="display:none;"></video>
+  </div>
+  <button class="carousel-btn carousel-next" onclick="nextSlide()"><i class="fa fa-chevron-right"></i></button>
+</div>
+
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
 
@@ -391,15 +438,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukS
 let currentMediaFilter = "all-media";
 let currentCategoryFilter = "all";
 let allWorksData = [];
-let selectedCategory = "nail"; // 默认分类
+let selectedCategory = "nail";
+let currentSlideIndex = 0; // 轮播索引
 const progress = document.getElementById("progress");
 const uploadBtn = document.getElementById("uploadBtn");
 
 // ====================== 工具函数 ======================
-// 去除文件名后缀（核心：不显示后缀）
-function removeFileExtension(filename) {
-  return filename.replace(/\.[^/.]+$/, "");
-}
 // 图片压缩
 function compressImage(file) {
   return new Promise((resolve) => {
@@ -418,7 +462,7 @@ function compressImage(file) {
     };
   });
 }
-// 显示/隐藏加载浮窗
+// 加载浮窗
 function showLoading() {
   document.getElementById("loadingModal").style.display = "flex";
   uploadBtn.disabled = true;
@@ -428,7 +472,7 @@ function hideLoading() {
   uploadBtn.disabled = false;
 }
 
-// ====================== 分类选择弹窗 ======================
+// ====================== 分类选择 ======================
 function openCategoryModal() {
   document.getElementById("categoryModal").style.display = "flex";
 }
@@ -442,7 +486,7 @@ document.querySelectorAll('.category-item').forEach(item => {
   });
 });
 
-// ====================== 标签切换 ======================
+// ====================== 标签筛选 ======================
 document.querySelectorAll('.tab-item-1').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab-item-1').forEach(t => t.classList.remove('active'));
@@ -460,20 +504,16 @@ document.querySelectorAll('.tag-btn').forEach(btn => {
   });
 });
 
-// ====================== 上传触发 ======================
+// ====================== 上传功能 ======================
 function triggerFile() {
   document.getElementById('file-input').click();
 }
-
-// ====================== 上传作品（带浮窗+防呆） ======================
 document.getElementById('file-input').onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
 
   try {
-    // 显示加载浮窗，禁止重复上传
     showLoading();
-    
     let uploadFile = file;
     if (file.type.startsWith('image/')) {
       uploadFile = await compressImage(file);
@@ -485,8 +525,6 @@ document.getElementById('file-input').onchange = async function(e) {
     reader.onload = async function() {
       const fileUrl = reader.result;
       const mediaType = file.type.startsWith('image/') ? "image" : "video";
-      // 去除文件名后缀
-      const title = removeFileExtension(file.name);
 
       const res = await fetch(GAS_URL, {
         method: "POST",
@@ -495,7 +533,7 @@ document.getElementById('file-input').onchange = async function(e) {
           action: "upload", 
           type: selectedCategory, 
           mediaType: mediaType,
-          title: title, 
+          title: "作品", 
           url: fileUrl 
         })
       });
@@ -507,13 +545,12 @@ document.getElementById('file-input').onchange = async function(e) {
         await loadAllWorks();
         renderWorks();
       } else {
-        alert("❌ 上傳失敗：" + (result.error || "未知錯誤"));
+        alert("❌ 上傳失敗");
       }
     };
   } catch (err) {
-    console.error(err);
     hideLoading();
-    alert("❌ 上傳失敗：" + err.message);
+    alert("❌ 上傳失敗");
   }
 };
 
@@ -527,7 +564,7 @@ async function loadAllWorks() {
   setTimeout(() => progress.style.width = 0, 300);
 }
 
-// ====================== 渲染作品 ======================
+// ====================== 渲染作品（仅显示分类，隐藏文件名） ======================
 function renderWorks() {
   let filterData = [...allWorksData];
 
@@ -545,19 +582,18 @@ function renderWorks() {
   }
 
   const categoryMap = { nail: "美甲", eyelash: "美睫", beauty: "美容" };
-  listDom.innerHTML = filterData.filter(item => item && item.url).map(item => {
+  listDom.innerHTML = filterData.filter(item => item && item.url).map((item, index) => {
     let mediaHtml = item.mediaType === "image" 
       ? `<img src="${item.url}" class="work-img">`
-      : `<video src="${item.url}" class="work-video" muted controls></video>`;
+      : `<video src="${item.url}" class="work-video" muted></video>`;
 
     return `
       <div class="work-card">
-        <div class="media-box">${mediaHtml}</div>
+        <div class="media-box" onclick="openCarousel(${index})">${mediaHtml}</div>
         <div class="work-info">
-          <div class="work-title">${item.title||'作品'}</div>
           <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
           <div class="work-operate">
-            <button class="edit-btn" onclick="openEditModal('${item.id}','${item.title||''}')">編輯</button>
+            <button class="edit-btn" onclick="openEditModal('${item.id}')">編輯</button>
             <button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button>
           </div>
         </div>
@@ -566,10 +602,45 @@ function renderWorks() {
   }).join("");
 }
 
+// ====================== 图片轮播放大（新增核心功能） ======================
+function openCarousel(index) {
+  currentSlideIndex = index;
+  showSlide();
+  document.getElementById("carouselModal").style.display = "flex";
+}
+function closeCarousel() {
+  document.getElementById("carouselModal").style.display = "none";
+  const video = document.getElementById("carouselVideo");
+  video.pause();
+}
+function showSlide() {
+  const item = allWorksData[currentSlideIndex];
+  const img = document.getElementById("carouselImg");
+  const video = document.getElementById("carouselVideo");
+
+  if (item.mediaType === "image") {
+    img.src = item.url;
+    img.style.display = "block";
+    video.style.display = "none";
+  } else {
+    video.src = item.url;
+    video.style.display = "block";
+    img.style.display = "none";
+  }
+}
+function prevSlide() {
+  currentSlideIndex = (currentSlideIndex - 1 + allWorksData.length) % allWorksData.length;
+  showSlide();
+}
+function nextSlide() {
+  currentSlideIndex = (currentSlideIndex + 1) % allWorksData.length;
+  showSlide();
+}
+
 // ====================== 编辑功能 ======================
-function openEditModal(id, title) {
+function openEditModal(id) {
   document.getElementById('editId').value = id;
-  document.getElementById('editTitle').value = title;
+  document.getElementById('editTitle').value = "作品";
   document.getElementById('editModal').style.display = 'flex';
 }
 function closeEditModal() {
@@ -596,13 +667,13 @@ async function saveEdit() {
   }
 }
 
-// ====================== 删除功能（修复：找不到作品） ======================
+// ====================== 删除功能（修复BUG） ======================
 async function deleteWork(id) {
   if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "delete", id: id }) // 修复参数名
+    body: new URLSearchParams({ action: "delete", id: id })
   });
   const result = await res.json();
   if (result.ok) {
