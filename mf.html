@@ -261,14 +261,28 @@
     }
     .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
 
+    /* ✅ 修复：所有弹窗强制居中（兼容全设备） */
     .modal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.88); z-index: 1000; display: none;
-      align-items: center; justify-content: center; padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.88);
+      z-index: 1000;
+      display: none;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px;
     }
     .modal-content {
-      background: #fff; width: 100%; max-width: 320px;
-      border-radius: 28px; padding: 30px; text-align: center;
+      background: #fff;
+      width: 100%;
+      max-width: 320px;
+      border-radius: 28px;
+      padding: 30px;
+      text-align: center;
+      margin: 0 auto;
     }
     .category-item {
       padding: 15px; margin: 8px 0; border-radius: 18px;
@@ -284,7 +298,7 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     #carouselModal { background: rgba(0,0,0,0.95); }
-    .carousel-content { position: relative; width: 92%; max-width: 500px; text-align: center; }
+    .carousel-content { position: relative; width: 92%; max-width: 500px; text-align: center; margin: 0 auto; }
     .carousel-media { width: 100%; max-height: 80vh; object-fit: contain; }
     .carousel-btn {
       position: absolute; top: 50%; transform: translateY(-50%);
@@ -354,9 +368,7 @@
 </div>
 
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
-<div class="works-grid" id="worksList">
-  <div class="empty-tip" id="delayTip">頁面載入中，5秒後顯示作品...</div>
-</div>
+<div class="works-grid" id="worksList"></div>
 
 <!-- 分类弹窗 -->
 <div class="modal" id="categoryModal">
@@ -418,10 +430,10 @@ let allWorksData = [];
 let selectedCategory = "nail";
 let currentSlideIndex = 0;
 let sortable = null;
-let isDelaying = true;
+// ✅ 修复：取消延迟限制，立即操作
+let isDelaying = false;
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
-const delayTip = document.getElementById('delayTip');
 const loaderOverlay = document.getElementById('loaderOverlay');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
@@ -453,7 +465,6 @@ function hideLoading() { document.getElementById("loadingModal").style.display =
 
 // 分类选择
 function openCategoryModal() { 
-  if(isDelaying) return alert('請等待5秒載入完成後操作');
   document.getElementById("categoryModal").style.display = "flex"; 
 }
 document.querySelectorAll('#categoryModal .category-item').forEach(item => {
@@ -468,7 +479,6 @@ document.querySelectorAll('#categoryModal .category-item').forEach(item => {
 
 // 筛选分类
 function openFilterCategoryModal() { 
-  if(isDelaying) return alert('請等待5秒載入完成後操作');
   document.getElementById("filterCategoryModal").style.display = "flex"; 
 }
 document.querySelectorAll('#filterCategoryModal .category-item').forEach(item => {
@@ -485,7 +495,6 @@ document.querySelectorAll('#filterCategoryModal .category-item').forEach(item =>
 // 媒体筛选
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    if(isDelaying) return alert('請等待5秒載入完成後操作');
     document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentMediaFilter = tab.dataset.type;
@@ -495,7 +504,6 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
 
 // 触发文件选择
 function triggerFile() { 
-  if(isDelaying) return alert('請等待5秒載入完成後操作');
   document.getElementById('file-input').click(); 
 }
 
@@ -582,7 +590,6 @@ function saveSortOrder(idList) {
 
 // 渲染作品
 function renderWorks() {
-  if(isDelaying) return;
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
@@ -620,7 +627,6 @@ function initSortable() {
 
 // 轮播
 function openCarousel(index) { 
-  if(isDelaying) return;
   currentSlideIndex = index; showSlide(); document.getElementById("carouselModal").style.display = "flex"; 
 }
 function closeCarousel() { 
@@ -641,7 +647,6 @@ function nextSlide() { currentSlideIndex = (currentSlideIndex +1) % allWorksData
 
 // 删除
 async function deleteWork(id) {
-  if(isDelaying) return alert('請等待5秒載入完成後操作');
   if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
     method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -666,19 +671,15 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// 5秒延迟加载 + 隐藏高级加载浮窗
-window.addEventListener('load', () => {
+// ✅ 修复：页面加载后立即加载作品，无任何延迟
+window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
-  
-  setTimeout(async () => {
-    isDelaying = false;
-    uploadBtn.disabled = false;
-    delayTip.remove();
-    // 隐藏加载浮窗
-    loaderOverlay.classList.add('hidden');
-    await loadAllWorks();
-    renderWorks();
-  }, 5000);
+  // 立即加载数据
+  await loadAllWorks();
+  uploadBtn.disabled = false;
+  // 隐藏加载浮窗
+  loaderOverlay.classList.add('hidden');
+  renderWorks();
 });
 </script>
 </body>
