@@ -80,8 +80,10 @@
       flex-direction: column;
       gap: 12px;
     }
+    /* 🔥 核心修改：筛选标签居中 */
     .tab-group {
       display: flex;
+      justify-content: center; /* 水平居中 */
       gap: 10px;
       overflow-x: auto;
       padding: 4px;
@@ -311,7 +313,10 @@
 </div>
 
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
-<div class="works-grid" id="worksList"></div>
+<!-- 初始加载提示 -->
+<div class="works-grid" id="worksList">
+  <div class="empty-tip" id="delayTip">頁面載入中，5秒後顯示作品...</div>
+</div>
 
 <!-- 分类弹窗 -->
 <div class="modal" id="categoryModal">
@@ -373,9 +378,11 @@ let allWorksData = [];
 let selectedCategory = "nail";
 let currentSlideIndex = 0;
 let sortable = null;
+let isDelaying = true; // 🔥 防呆：延迟加载状态
 const progress = document.getElementById("progress");
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
+const delayTip = document.getElementById('delayTip');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 // 分类映射
@@ -407,7 +414,10 @@ function showLoading() { document.getElementById("loadingModal").style.display =
 function hideLoading() { document.getElementById("loadingModal").style.display = "none"; uploadBtn.disabled = false; }
 
 // 分类选择
-function openCategoryModal() { document.getElementById("categoryModal").style.display = "flex"; }
+function openCategoryModal() { 
+  if(isDelaying) return alert('請等待5秒載入完成後操作'); // 防呆
+  document.getElementById("categoryModal").style.display = "flex"; 
+}
 document.querySelectorAll('#categoryModal .category-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('#categoryModal .category-item').forEach(i => i.classList.remove('active'));
@@ -419,7 +429,10 @@ document.querySelectorAll('#categoryModal .category-item').forEach(item => {
 });
 
 // 筛选分类
-function openFilterCategoryModal() { document.getElementById("filterCategoryModal").style.display = "flex"; }
+function openFilterCategoryModal() { 
+  if(isDelaying) return alert('請等待5秒載入完成後操作'); // 防呆
+  document.getElementById("filterCategoryModal").style.display = "flex"; 
+}
 document.querySelectorAll('#filterCategoryModal .category-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('#filterCategoryModal .category-item').forEach(i => i.classList.remove('active'));
@@ -434,6 +447,7 @@ document.querySelectorAll('#filterCategoryModal .category-item').forEach(item =>
 // 媒体筛选
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
+    if(isDelaying) return alert('請等待5秒載入完成後操作'); // 防呆
     document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentMediaFilter = tab.dataset.type;
@@ -442,7 +456,10 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
 });
 
 // 触发文件选择
-function triggerFile() { document.getElementById('file-input').click(); }
+function triggerFile() { 
+  if(isDelaying) return alert('請等待5秒載入完成後操作'); // 防呆
+  document.getElementById('file-input').click(); 
+}
 
 // 批量上传核心
 document.getElementById('file-input').onchange = async function(e) {
@@ -462,7 +479,6 @@ document.getElementById('file-input').onchange = async function(e) {
   try {
     showLoading();
     let successCount = 0;
-    // 获取当前选中的分类名称
     const categoryName = categoryMap[selectedCategory] || '未分類';
 
     for (let file of validFiles) {
@@ -483,7 +499,6 @@ document.getElementById('file-input').onchange = async function(e) {
                 action: "upload",
                 type: selectedCategory,
                 mediaType: file.type.startsWith('image/') ? "image" : "video",
-                // 🔥 核心修改：名称改为 分类+作品
                 title: `${categoryName} - 作品`,
                 url: reader.result,
                 cover: DEFAULT_VIDEO_COVER
@@ -517,7 +532,10 @@ async function loadAllWorks() {
     const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
     const data = await res.json();
     allWorksData = Array.isArray(data.list) ? data.list : [];
-  } catch (e) { allWorksData = []; }
+  } catch (e) { 
+    allWorksData = []; 
+    alert('❌ 作品加載失敗，請重新整理頁面');
+  }
   progress.style.width = "100%";
   setTimeout(() => progress.style.width = 0, 300);
 }
@@ -529,6 +547,7 @@ function saveSortOrder(idList) {
 
 // 渲染作品
 function renderWorks() {
+  if(isDelaying) return; // 防呆：延迟期间不渲染
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
@@ -565,7 +584,10 @@ function initSortable() {
 }
 
 // 轮播
-function openCarousel(index) { currentSlideIndex = index; showSlide(); document.getElementById("carouselModal").style.display = "flex"; }
+function openCarousel(index) { 
+  if(isDelaying) return; // 防呆
+  currentSlideIndex = index; showSlide(); document.getElementById("carouselModal").style.display = "flex"; 
+}
 function closeCarousel() { 
   document.getElementById("carouselModal").style.display = "none"; 
   const video = document.getElementById("carouselVideo");
@@ -584,6 +606,7 @@ function nextSlide() { currentSlideIndex = (currentSlideIndex +1) % allWorksData
 
 // 删除
 async function deleteWork(id) {
+  if(isDelaying) return alert('請等待5秒載入完成後操作');
   if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
     method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -608,10 +631,19 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// 初始化
-window.addEventListener('load', async () => {
-  await loadAllWorks();
-  renderWorks();
+// 🔥 核心：延迟5秒加载作品 + 全防呆
+window.addEventListener('load', () => {
+  // 初始禁用上传按钮
+  uploadBtn.disabled = true;
+  
+  // 5秒延迟执行
+  setTimeout(async () => {
+    isDelaying = false;
+    uploadBtn.disabled = false; // 恢复上传按钮
+    delayTip.remove(); // 移除加载提示
+    await loadAllWorks();
+    renderWorks();
+  }, 5000);
 });
 </script>
 </body>
