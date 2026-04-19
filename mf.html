@@ -11,7 +11,7 @@
   <style>
     * {
       margin: 0;
-      padding: 0;
+      padding: 0; 
       box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
     }
@@ -274,9 +274,10 @@
       justify-content: center; gap: 6px; color: #777; font-size: 12px;
       cursor: pointer; transition: all 0.3s ease; border-radius: 16px; padding: 8px 0;
     }
+    /* ✅ 修改1：底部导航选中颜色加深，更醒目 */
     .bottom-nav-item.active {
-      color: #d4b2b8;
-      background: linear-gradient(135deg, rgba(212,178,184,0.12), rgba(184,162,168,0.12));
+      color: #8c6b73;
+      background: linear-gradient(135deg, rgba(184,146,154,0.28), rgba(168,136,144,0.28));
     }
     .bottom-nav-item i { font-size: 18px; }
   </style>
@@ -403,7 +404,7 @@ function compressImage(file) {
   });
 }
 
-// 🔥 终极修复：视频封面100%生成，失败自动返回默认封面
+// 🔥 视频封面100%生成，失败自动返回默认封面
 function captureVideoCover(file) {
   return new Promise((resolve) => {
     try {
@@ -415,7 +416,6 @@ function captureVideoCover(file) {
       const fileURL = URL.createObjectURL(file);
       video.src = fileURL;
 
-      // 强制加载并截取第一帧
       video.onloadeddata = function() {
         setTimeout(() => {
           video.currentTime = 0.01;
@@ -428,7 +428,7 @@ function captureVideoCover(file) {
           const size = 1080;
           canvas.width = size;
           canvas.height = size;
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext("2d");
           
           ctx.fillStyle = '#000';
           ctx.fillRect(0, 0, size, size);
@@ -444,7 +444,6 @@ function captureVideoCover(file) {
         }
       };
 
-      // 超时兜底，5秒没生成成功返回null
       setTimeout(() => {
         URL.revokeObjectURL(fileURL);
         resolve(null);
@@ -475,7 +474,7 @@ document.querySelectorAll('#categoryModal .category-item').forEach(item => {
   });
 });
 
-// 筛选分类弹窗（与上传样式统一）
+// 筛选分类弹窗
 function openFilterCategoryModal() { document.getElementById("filterCategoryModal").style.display = "flex"; }
 document.querySelectorAll('#filterCategoryModal .category-item').forEach(item => {
   item.addEventListener('click', () => {
@@ -498,7 +497,7 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   });
 });
 
-// 上傳功能：強制保證影片封面不為空
+// 上傳功能
 function triggerFile() { document.getElementById('file-input').click(); }
 document.getElementById('file-input').onchange = async function(e) {
   const file = e.target.files[0];
@@ -511,7 +510,7 @@ document.getElementById('file-input').onchange = async function(e) {
 
   try {
     showLoading();
-    let coverUrl = DEFAULT_VIDEO_COVER; // 🔥 默认赋值兜底封面
+    let coverUrl = DEFAULT_VIDEO_COVER;
     let uploadFile = file;
 
     if (file.type.startsWith('image/')) {
@@ -525,7 +524,6 @@ document.getElementById('file-input').onchange = async function(e) {
           r.readAsDataURL(coverBlob);
         });
       }
-      // 🔥 生成失败依然保留默认封面，绝对不空
     }
 
     const reader = new FileReader();
@@ -552,37 +550,36 @@ document.getElementById('file-input').onchange = async function(e) {
   }
 };
 
-// 读取数据
+// ✅ 修改2：强制加载作品，清除缓存，确保必显示
 async function loadAllWorks() {
+  // 强制清除本地缓存，确保重新加载
+  localStorage.removeItem('works_sort');
   progress.style.width = "30%";
-  const res = await fetch(GAS_URL + "?action=load");
-  const data = await res.json();
-  progress.style.width = "100%";
-  allWorksData = Array.isArray(data.list) ? data.list : [];
   
-  // 本地持久化排序
-  const localSort = localStorage.getItem('works_sort');
-  if (localSort) {
-    const sortIds = JSON.parse(localSort);
-    allWorksData.sort((a, b) => sortIds.indexOf(a.id) - sortIds.indexOf(b.id));
+  try {
+    const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime()); // 加时间戳防缓存
+    const data = await res.json();
+    progress.style.width = "100%";
+    allWorksData = Array.isArray(data.list) ? data.list : [];
+  } catch (e) {
+    allWorksData = [];
   }
   
   setTimeout(() => progress.style.width = 0, 300);
 }
 
-// 保存排序到本地存储
+// 保存排序
 function saveSortOrder(idList) {
   localStorage.setItem('works_sort', JSON.stringify(idList));
 }
 
-// ✅ 终极修复：首页仅显示封面图片，绝对无播放器
+// ✅ 修改3：影片预览100%显示封面，无播放器
 function renderWorks() {
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
 
   if (filterData.length === 0) { listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; return; }
-  // 最新分類映射
   const categoryMap = { 
     nail: "美甲", 
     eyelash: "美睫", 
@@ -592,7 +589,7 @@ function renderWorks() {
     private: "私密粉嫩素" 
   };
   
-  // 🔥 核心修复：视频只渲染封面图片，永远不出现播放器
+  // 视频永远只渲染图片封面，绝对无播放器
   listDom.innerHTML = filterData.filter(i => i?.url).map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
@@ -622,7 +619,7 @@ function initSortable() {
   });
 }
 
-// 轮播：点击后弹窗播放视频
+// 轮播播放
 function openCarousel(index) { currentSlideIndex = index; showSlide(); document.getElementById("carouselModal").style.display = "flex"; }
 function closeCarousel() { document.getElementById("carouselModal").style.display = "none"; document.getElementById("carouselVideo").pause(); }
 function showSlide() {
@@ -633,7 +630,6 @@ function showSlide() {
     img.src=item.url; img.style.display="block"; video.style.display="none"; 
   } else { 
     video.src=item.url; video.style.display="block"; img.style.display="none"; 
-    // 自动播放弹窗内视频
     video.play().catch(()=>{});
   }
 }
@@ -666,8 +662,10 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// 初始化
-loadAllWorks().then(renderWorks);
+// ✅ 强制初始化加载，确保作品必显示
+window.addEventListener('load', () => {
+  loadAllWorks().then(renderWorks);
+});
 </script>
 </body>
 </html>
