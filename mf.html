@@ -62,23 +62,24 @@
   </div>
 </div>
 
-<!-- 手機兩列高質感網格 -->
+<!-- 手機兩列網格 -->
 <div id="list" class="px-5 grid grid-cols-2 gap-4 pb-20"></div>
 
 <script>
+// 你原本的正式 R2 上傳網址
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
+const WORKER_URL = "https://mofan.yb131419.workers.dev";
 
 let currentTag = "all";
 const progress = document.getElementById("progress");
 
-// ========== 上傳 + 真實進度 + 永久保存 (全世界可看) ==========
+// ========== 上傳 + 真實進度 + 永久存 R2 ==========
 document.getElementById("file").onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
   const tag = document.getElementById("tag").value;
 
   try {
-    // 真實感進度條
     let percent = 0;
     const interval = setInterval(() => {
       percent += Math.random() * 8;
@@ -86,40 +87,39 @@ document.getElementById("file").onchange = async function(e) {
       progress.style.width = percent + "%";
     }, 100);
 
-    // 轉成 Base64 直接存 GAS → 永久有效
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    
-    reader.onload = async function() {
-      const url = reader.result;
+    // 上傳到 R2 (永久保存)
+    const fd = new FormData();
+    fd.append("file", file);
 
-      clearInterval(interval);
-      progress.style.width = "100%";
+    const resR2 = await fetch(WORKER_URL, {
+      method: "POST",
+      mode: "cors",
+      body: fd
+    });
 
-      // 存到 GAS
-      await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "upload",
-          type: tag,
-          url: url
-        })
-      });
+    const data = await resR2.json();
+    const url = data.url;
 
-      alert("✅ 上傳成功！永久顯示！");
-      load(currentTag);
-      setTimeout(() => progress.style.width = 0, 600);
-    };
+    clearInterval(interval);
+    progress.style.width = "100%";
 
+    // 紀錄到 GAS
+    await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ action: "upload", type: tag, url: url })
+    });
+
+    alert("✅ 上傳成功！已儲存到 R2");
+    load(currentTag);
   } catch (e) {
     console.error(e);
     alert("❌ 上傳失敗");
-    progress.style.width = 0;
   }
+  setTimeout(() => progress.style.width = 0, 600);
 };
 
-// ========== 分類切換 + 高質感排版 ==========
+// ========== 載入作品 + 分類 ==========
 async function load(tag) {
   currentTag = tag;
   progress.style.width = "30%";
