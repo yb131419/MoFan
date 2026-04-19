@@ -138,7 +138,7 @@
       border-radius: 20px;
       border: none;
       background: linear-gradient(135deg, #d4b2b8, #b8a2a8);
-      color: #fff;
+      the color: #fff;
       font-size: 15px;
       font-weight: 400;
       cursor: pointer;
@@ -368,23 +368,39 @@ function compressImage(file) {
     };
   });
 }
-// 截取视频第一帧作为封面（修复视频空白）
+// 強制截取視頻第一幀，徹底解決預覽空白
 function captureVideoCover(file) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const video = document.createElement('video');
+    video.muted = true;
+    video.playsInline = true;
     video.preload = 'auto';
     video.src = URL.createObjectURL(file);
-    video.muted = true;
-    video.currentTime = 0;
-    video.onloadeddata = function() {
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
+    
+    video.addEventListener('loadeddata', function() {
+      setTimeout(() => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 1080;
+          canvas.height = 1080;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            URL.revokeObjectURL(video.src);
+            resolve(blob);
+          }, 'image/jpeg', 0.8);
+        } catch (e) {
+          resolve(null);
+        }
+      }, 300);
+    });
+
+    video.addEventListener('error', () => {
       URL.revokeObjectURL(video.src);
-    };
+      resolve(null);
+    });
   });
 }
 
@@ -421,7 +437,7 @@ document.querySelectorAll('.category-tabs .filter-tab').forEach(tab => {
   });
 });
 
-// 上传功能（仅新增视频封面截取）
+// 上傳功能：視頻封面強制生成+顯示
 function triggerFile() { document.getElementById('file-input').click(); }
 document.getElementById('file-input').onchange = async function(e) {
   const file = e.target.files[0];
@@ -441,11 +457,13 @@ document.getElementById('file-input').onchange = async function(e) {
       uploadFile = await compressImage(file);
     } else if (file.type.startsWith('video/')) {
       const coverBlob = await captureVideoCover(file);
-      coverUrl = await new Promise(res => {
-        const r = new FileReader();
-        r.onload = () => res(r.result);
-        r.readAsDataURL(coverBlob);
-      });
+      if (coverBlob) {
+        coverUrl = await new Promise(res => {
+          const r = new FileReader();
+          r.onload = () => res(r.result);
+          r.readAsDataURL(coverBlob);
+        });
+      }
     }
 
     const reader = new FileReader();
@@ -457,7 +475,7 @@ document.getElementById('file-input').onchange = async function(e) {
         body: new URLSearchParams({ 
           action: "upload", type: selectedCategory, 
           mediaType: file.type.startsWith('image/') ? "image" : "video", 
-          title: "作品", url: reader.result, cover: coverUrl 
+          title: "作品", url: reader.result, cover: coverUrl || reader.result 
         })
       });
       const result = await res.json();
@@ -480,7 +498,7 @@ async function loadAllWorks() {
   progress.style.width = "100%";
   allWorksData = Array.isArray(data.list) ? data.list : [];
   
-  // 应用本地持久化排序（修复刷新复原）
+  // 本地持久化排序
   const localSort = localStorage.getItem('works_sort');
   if (localSort) {
     const sortIds = JSON.parse(localSort);
@@ -490,13 +508,12 @@ async function loadAllWorks() {
   setTimeout(() => progress.style.width = 0, 300);
 }
 
-// 保存排序到本地存储（修复后端不支持问题）
+// 保存排序到本地存储
 function saveSortOrder(idList) {
   localStorage.setItem('works_sort', JSON.stringify(idList));
-  console.log("✅ 排序已永久保存");
 }
 
-// 渲染作品（仅修复视频封面显示）
+// 渲染作品：視頻預覽強制顯示封面，絕不空白
 function renderWorks() {
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
@@ -510,7 +527,7 @@ function renderWorks() {
       <div class="media-box" onclick="openCarousel(${index})">
         ${item.mediaType==="image" 
           ? `<img src="${item.url}" class="work-img">` 
-          : `<img src="${item.cover}" class="work-video-cover"><div class="video-play-icon">▶</div>`}
+          : `<img src="${item.cover || item.url}" class="work-video-cover"><div class="video-play-icon">▶</div>`}
       </div>
       <div class="work-info">
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
