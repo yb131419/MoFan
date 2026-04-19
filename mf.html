@@ -15,7 +15,7 @@
 <div id="progress" class="progress w-0"></div>
 
 <div class="py-6 text-center">
-  <h1 class="text-xl font-bold text-pink-60">莫凡美業 作品集</h1>
+  <h1 class="text-xl font-bold text-pink-600">莫凡美業 作品集</h1>
 </div>
 
 <div class="flex justify-center gap-2 px-4 mb-4">
@@ -40,9 +40,8 @@
 <div id="list" class="px-4 grid grid-cols-2 gap-3"></div>
 
 <script>
-// ========== 你只需要改这 2 个 ==========
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-const WORKER_URL = "https://mofan.yb131419.workers.dev"; 
+const WORKER_URL = "https://mofan.yb131419.workers.dev";
 
 let currentTag = "all";
 const progress = document.getElementById("progress");
@@ -54,17 +53,22 @@ document.getElementById("file").onchange = async function(e){
 
   try {
     progress.style.width = "30%";
-
-    // 上传到 R2
     const fd = new FormData();
     fd.append("file", file);
-    const resR2 = await fetch(WORKER_URL, { method: "POST", body: fd });
+
+    // 上傳 R2
+    const resR2 = await fetch(WORKER_URL, {
+      method: "POST",
+      body: fd
+    });
+
     const { url } = await resR2.json();
+    console.log("圖片網址:", url);
 
     progress.style.width = "70%";
 
-    // 保存到 GAS
-    const resGas = await fetch(GAS_URL, {
+    // 存到 GAS
+    await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ action: "upload", type: tag, url: url })
@@ -74,7 +78,7 @@ document.getElementById("file").onchange = async function(e){
     alert("✅ 上傳成功！");
     load(currentTag);
   } catch(e) {
-    console.error(e);
+    console.error("錯誤:", e);
     alert("❌ 上傳失敗：" + e.message);
   }
   setTimeout(()=>progress.style.width=0,600);
