@@ -290,8 +290,8 @@
 <div class="filter-nav">
   <div class="tab-group media-tabs">
     <div class="filter-tab active" data-type="all-media">全部</div>
-    <div class="filter-tab data-type="image">照片</div>
-    <div class="filter-tab data-type="video">影片</div>
+    <div class="filter-tab" data-type="image">照片</div>
+    <div class="filter-tab" data-type="video">影片</div>
   </div>
   <button class="filter-select-btn" id="filterCategoryBtn" onclick="openFilterCategoryModal()">
     <span>篩選分類：全部</span><i class="fa fa-chevron-down"></i>
@@ -306,7 +306,6 @@
     <button class="upload-btn" id="uploadBtn" onclick="triggerFile()">
       <i class="fa fa-plus"></i> 批量上傳作品（多圖/多影片）
     </button>
-    <!-- ✅ 支持多文件上传 -->
     <input type="file" id="file-input" accept="image/*,video/*" multiple>
   </div>
 </div>
@@ -379,7 +378,10 @@ const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
-// ✅ 绝对稳定的视频封面（永久显示，绝不空白）
+// 分类映射
+const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
+
+// 绝对稳定的视频封面
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
 // 图片压缩
@@ -442,12 +444,11 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
 // 触发文件选择
 function triggerFile() { document.getElementById('file-input').click(); }
 
-// ✅ 批量上传核心（支持多图/多视频）
+// 批量上传核心
 document.getElementById('file-input').onchange = async function(e) {
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
 
-  // 过滤超大视频
   const validFiles = files.filter(file => {
     if (file.type.startsWith('video/') && file.size > MAX_VIDEO_SIZE) {
       alert(`❌ ${file.name} 超過50MB，已跳過`);
@@ -461,8 +462,9 @@ document.getElementById('file-input').onchange = async function(e) {
   try {
     showLoading();
     let successCount = 0;
+    // 获取当前选中的分类名称
+    const categoryName = categoryMap[selectedCategory] || '未分類';
 
-    // 循环上传每个文件
     for (let file of validFiles) {
       let uploadFile = file;
       if (file.type.startsWith('image/')) {
@@ -481,7 +483,8 @@ document.getElementById('file-input').onchange = async function(e) {
                 action: "upload",
                 type: selectedCategory,
                 mediaType: file.type.startsWith('image/') ? "image" : "video",
-                title: "作品",
+                // 🔥 核心修改：名称改为 分类+作品
+                title: `${categoryName} - 作品`,
                 url: reader.result,
                 cover: DEFAULT_VIDEO_COVER
               })
@@ -524,15 +527,13 @@ function saveSortOrder(idList) {
   localStorage.setItem('works_sort', JSON.stringify(idList));
 }
 
-// ✅ 渲染作品（视频100%显示封面）
+// 渲染作品
 function renderWorks() {
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
 
   if (filterData.length === 0) { listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; return; }
-
-  const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
 
   listDom.innerHTML = filterData.filter(i => i?.url).map((item, index) => `
     <div class="work-card" data-id="${item.id}">
