@@ -121,7 +121,6 @@
       opacity: 0;
       animation: fadeIn 1s 1s forwards;
     }
-    /* 筛选标签居中 */
     .tab-group {
       display: flex;
       justify-content: center;
@@ -232,7 +231,6 @@
       opacity: 0;
       transform: translateY(30px);
     }
-    /* 卡片逐个入场动画，感动感拉满 */
     .work-card.show {
       opacity: 1;
       transform: translateY(0);
@@ -297,14 +295,31 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* ✅ 修复：所有弹窗完美居中（核心修改） */
     .modal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.88); z-index: 1000; display: none;
-      align-items: center; justify-content: center; padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.88);
+      z-index: 1000;
+      display: none;
+      /* 强制垂直+水平居中，兼容所有设备 */
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px;
+      box-sizing: border-box;
     }
     .modal-content {
-      background: #fff; width: 100%; max-width: 320px;
-      border-radius: 28px; padding: 30px; text-align: center;
+      background: #fff;
+      width: 100%;
+      max-width: 320px;
+      border-radius: 28px;
+      padding: 30px;
+      text-align: center;
+      /* 兜底居中 */
+      margin: 0 auto;
     }
     .category-item {
       padding: 15px; margin: 8px 0; border-radius: 18px;
@@ -321,7 +336,7 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     #carouselModal { background: rgba(0,0,0,0.95); }
-    .carousel-content { position: relative; width: 92%; max-width: 500px; text-align: center; }
+    .carousel-content { position: relative; width: 92%; max-width: 500px; text-align: center; margin:0 auto; }
     .carousel-media { width: 100%; max-height: 80vh; object-fit: contain; }
     .carousel-btn {
       position: absolute; top: 50%; transform: translateY(-50%);
@@ -368,7 +383,7 @@
 <div class="loader-overlay" id="loaderOverlay">
   <div class="loader-container">
     <div class="loader-ring"></div>
-    <div class="loader-text">作品即將呈現 ✨</div>
+    <div class="loader-text">作品加載中 ✨</div>
   </div>
 </div>
 
@@ -497,7 +512,7 @@ function hideLoading() { document.getElementById("loadingModal").style.display =
 
 // 分类选择
 function openCategoryModal() { 
-  if(isDelaying) return alert('請等待載入完成後操作');
+  if(isDelaying) return;
   document.getElementById("categoryModal").style.display = "flex"; 
 }
 document.querySelectorAll('#categoryModal .category-item').forEach(item => {
@@ -512,7 +527,7 @@ document.querySelectorAll('#categoryModal .category-item').forEach(item => {
 
 // 筛选分类
 function openFilterCategoryModal() { 
-  if(isDelaying) return alert('請等待載入完成後操作');
+  if(isDelaying) return;
   document.getElementById("filterCategoryModal").style.display = "flex"; 
 }
 document.querySelectorAll('#filterCategoryModal .category-item').forEach(item => {
@@ -529,7 +544,7 @@ document.querySelectorAll('#filterCategoryModal .category-item').forEach(item =>
 // 媒体筛选
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    if(isDelaying) return alert('請等待載入完成後操作');
+    if(isDelaying) return;
     document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentMediaFilter = tab.dataset.type;
@@ -539,7 +554,7 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
 
 // 触发文件选择
 function triggerFile() { 
-  if(isDelaying) return alert('請等待載入完成後操作');
+  if(isDelaying) return;
   document.getElementById('file-input').click(); 
 }
 
@@ -696,7 +711,7 @@ function nextSlide() { currentSlideIndex = (currentSlideIndex +1) % allWorksData
 
 // 删除
 async function deleteWork(id) {
-  if(isDelaying) return alert('請等待載入完成後操作');
+  if(isDelaying) return;
   if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
     method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -721,19 +736,15 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// 🔥 延长至8秒加载 + 平滑隐藏浮窗
-window.addEventListener('load', () => {
+// ✅ 修复：取消强制8秒延迟，打开网页立即加载作品（核心修改）
+window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
-  
-  // 核心：延长加载时长为 8000ms = 8秒
-  setTimeout(async () => {
-    isDelaying = false;
-    uploadBtn.disabled = false;
-    // 平滑隐藏加载浮窗
-    loaderOverlay.classList.add('hidden');
-    await loadAllWorks();
-    renderWorks();
-  }, 8000);
+  // 立即加载作品，加载完成后隐藏加载遮罩
+  await loadAllWorks();
+  isDelaying = false;
+  uploadBtn.disabled = false;
+  loaderOverlay.classList.add('hidden');
+  renderWorks();
 });
 </script>
 </body>
