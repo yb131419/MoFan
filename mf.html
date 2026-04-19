@@ -17,7 +17,8 @@
     body {
       background: #fdfbfc;
       font-family: 'PingFang SC', 'Helvetica Neue', 'Noto Sans TC', sans-serif;
-      padding-bottom: 60px;
+      /* 加大底部內邊距，避免內容被底部固定導航欄遮擋 */
+      padding-bottom: 120px;
       color: #2a2a2a;
     }
     /* 顶部进度条 */
@@ -295,6 +296,48 @@
       font-size: 36px;
       cursor: pointer;
     }
+
+    /* ====================== 【新增】底部固定導航欄 完全參考Linote介面風格 ====================== */
+    .bottom-nav {
+      /* 固定在頁面最底部，懸浮不隨頁面滾動 */
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 92%;
+      max-width: 500px;
+      /* 參考圖白色大圓角外框 */
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 12px 8px;
+      display: flex;
+      z-index: 99; /* 層級在內容上方，彈窗下方 */
+    }
+    /* 三個均分按鈕 */
+    .bottom-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #777;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 16px;
+      padding: 8px 0;
+    }
+    /* 按鈕點擊激活樣式（融合網站原生粉棕主色） */
+    .bottom-nav-item.active {
+      color: #d4b2b8;
+      background: linear-gradient(135deg, rgba(212,178,184,0.12), rgba(184,162,168,0.12));
+    }
+    /* 按鈕圖標大小 */
+    .bottom-nav-item i {
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
@@ -368,6 +411,22 @@
     <video id="carouselVideo" class="carousel-media" controls style="display:none;"></video>
   </div>
   <button class="carousel-btn carousel-next" onclick="nextSlide()"><i class="fa fa-chevron-right"></i></button>
+</div>
+
+<!-- ====================== 【新增】底部固定三選項導航欄 HTML ====================== -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item active" id="navReserve">
+    <i class="fa fa-calendar-check-o"></i>
+    <span>預約</span>
+  </div>
+  <div class="bottom-nav-item" id="navAddress">
+    <i class="fa fa-map-marker"></i>
+    <span>地址</span>
+  </div>
+  <div class="bottom-nav-item" id="navShare">
+    <i class="fa fa-share-alt"></i>
+    <span>分享</span>
+  </div>
 </div>
 
 <script>
@@ -630,6 +689,39 @@ async function deleteWork(id) {
     alert("❌ 刪除失敗：未找到作品");
   }
 }
+
+// ====================== 【新增】底部導航欄 點擊交互功能 ======================
+const navItems = document.querySelectorAll('.bottom-nav-item');
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    // 移除全部按鈕激活狀態
+    navItems.forEach(nav => nav.classList.remove('active'));
+    // 當前點擊按鈕高亮激活
+    item.classList.add('active');
+
+    // 每個按鈕對應獨立功能
+    const navText = item.querySelector('span').innerText;
+    switch(navText) {
+      case '預約':
+        alert("📅 預約功能即將開啟，後續可綁定預約表單");
+        break;
+      case '地址':
+        alert("📍 店家地址：台灣新北市南勢角");
+        break;
+      case '分享':
+        // 手機原生系統分享功能（支援IG/Line/Facebook/WhatsApp分享）
+        if (navigator.share) {
+          navigator.share({
+            title: '莫凡韓式皮膚管理',
+            url: window.location.href
+          }).catch(err => console.log('使用者取消分享'));
+        } else {
+          alert("🔗 複製網址連結，分享給好友");
+        }
+        break;
+    }
+  });
+});
 
 // 初始化
 loadAllWorks().then(renderWorks);
