@@ -32,23 +32,53 @@
       z-index: 999;
       width: 0;
     }
-    /* 页面标题 - 韩式轻奢极简 */
+    /* 全新升级：页面标题 - 韩式轻奢高级设计 */
     .page-header {
-      padding: 50px 20px 30px;
+      padding: 60px 20px 40px;
       text-align: center;
+      position: relative;
+    }
+    /* 标题装饰线条 */
+    .page-header::before,
+    .page-header::after {
+      content: "";
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, #d4b2b8, #e8c8d0);
+      margin: 0 auto 12px;
+      opacity: 0.8;
     }
     .page-title {
-      font-size: 28px;
-      font-weight: 500;
-      color: #3d3d3d;
-      margin-bottom: 8px;
-      letter-spacing: 2px;
+      font-size: 32px;
+      font-weight: 600;
+      /* 渐变文字，轻奢高级感 */
+      background: linear-gradient(135deg, #b8929a, #d4b2b8, #a88890);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: 3px;
+      text-shadow: 0 2px 4px rgba(212,178,184,0.1);
     }
     .page-subtitle {
-      font-size: 12px;
+      font-size: 13px;
       color: #b0b0b0;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
+      font-weight: 300;
+      position: relative;
+      padding: 0 15px;
     }
+    /* 副标题装饰 */
+    .page-subtitle::before,
+    .page-subtitle::after {
+      content: "·";
+      position: absolute;
+      top: 0;
+      color: #d4b2b8;
+    }
+    .page-subtitle::before { left: 0; }
+    .page-subtitle::after { right: 0; }
 
     /* ====================== 高級美業分類導航 ====================== */
     .filter-nav {
@@ -274,7 +304,7 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,250.1);
       color: #fff;
       border: none;
       width: 48px;
@@ -343,10 +373,10 @@
 <body>
 <div class="progress" id="progress"></div>
 
-<!-- 標題 -->
+<!-- 全新升级标题区域 -->
 <div class="page-header">
-  <h1 class="page-title"> 莫凡韓式皮膚管理 </h1>
-  <p class="page-subtitle"> Beauty Portfolio </p>
+  <h1 class="page-title">莫凡韓式皮膚管理</h1>
+  <p class="page-subtitle">KOREAN SKIN CARE & BEAUTY</p>
 </div>
 
 <!-- ====================== 高級分類導航 ====================== -->
@@ -703,10 +733,12 @@ navItems.forEach(item => {
     const navText = item.querySelector('span').innerText;
     switch(navText) {
       case '預約':
-        alert("📅 預約功能即將開啟，後續可綁定預約表單");
+        // 跳轉LINE預約鏈接
+        window.open('https://liff.line.me/2009598216-ZsS47DM8', '_blank');
         break;
       case '地址':
-        alert("📍 店家地址：台灣新北市南勢角");
+        // 跳轉地圖定位鏈接
+        window.open('https://share.google/L5vzxJrpotDQnkWAx', '_blank');
         break;
       case '分享':
         // 手機原生系統分享功能（支援IG/Line/Facebook/WhatsApp分享）
