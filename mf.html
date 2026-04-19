@@ -6,7 +6,6 @@
 <title>莫凡韓式皮膚管理 | 作品集</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -206,22 +205,13 @@
       gap: 20px;
       padding: 0 20px;
     }
-    .works-grid .sortable-ghost {
-      opacity: 0.4;
-      background: #f0e9eb;
-      border-radius: 20px;
-    }
     .work-card {
       background: #fff;
       border-radius: 22px;
       overflow: hidden;
       box-shadow: 0 3px 18px rgba(0,0,0,0.03);
       transition: all 0.3s ease;
-      cursor: grab;
-    }
-    .work-card:active {
-      cursor: grabbing;
-      transform: scale(1.02);
+      cursor: default; /* 取消拖拽光标 */
     }
     .media-box {
       width: 100%;
@@ -427,11 +417,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukS
 let currentMediaFilter = "all-media";
 let currentCategoryFilter = "all";
 let allWorksData = [];
+// 存储筛选后的作品数据，用于轮播
+let filteredWorksData = [];
 let selectedCategory = "nail";
 let currentSlideIndex = 0;
-let sortable = null;
-// ✅ 修复：取消延迟限制，立即操作
-let isDelaying = false;
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
 const loaderOverlay = document.getElementById('loaderOverlay');
@@ -570,33 +559,35 @@ document.getElementById('file-input').onchange = async function(e) {
   this.value = '';
 };
 
-// 加载作品
+// 加载作品 + 最新数据排在最上面
 async function loadAllWorks() {
   localStorage.removeItem('works_sort');
   try {
     const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
     const data = await res.json();
     allWorksData = Array.isArray(data.list) ? data.list : [];
+    // 核心：倒序排列，最新的在最上面
+    allWorksData.reverse();
   } catch (e) { 
     allWorksData = []; 
     alert('❌ 作品加載失敗，請重新整理頁面');
   }
 }
 
-// 保存排序
-function saveSortOrder(idList) {
-  localStorage.setItem('works_sort', JSON.stringify(idList));
-}
-
 // 渲染作品
 function renderWorks() {
-  let filterData = [...allWorksData];
-  if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
-  if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
+  // 筛选数据
+  filteredWorksData = [...allWorksData];
+  if (currentMediaFilter !== "all-media") filteredWorksData = filteredWorksData.filter(i => i?.mediaType === currentMediaFilter);
+  if (currentCategoryFilter !== "all") filteredWorksData = filteredWorksData.filter(i => i?.category === currentCategoryFilter);
 
-  if (filterData.length === 0) { listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; return; }
+  if (filteredWorksData.length === 0) { 
+    listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; 
+    return; 
+  }
 
-  listDom.innerHTML = filterData.filter(i => i?.url).map((item, index) => `
+  // 渲染并绑定正确的索引
+  listDom.innerHTML = filteredWorksData.filter(i => i?.url).map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
         ${item.mediaType==="image" 
@@ -609,41 +600,45 @@ function renderWorks() {
       </div>
     </div>
   `).join("");
-  initSortable();
 }
 
-// 拖拽排序
-function initSortable() {
-  if (sortable) sortable.destroy();
-  sortable = new Sortable(listDom, {
-    animation: 300, ghostClass: 'sortable-ghost',
-    onEnd: () => {
-      const newOrder = Array.from(listDom.children).map(i => i.dataset.id);
-      saveSortOrder(newOrder);
-      allWorksData.sort((a,b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
-    }
-  });
-}
-
-// 轮播
+// 轮播 - 修复点击对应图片
 function openCarousel(index) { 
-  currentSlideIndex = index; showSlide(); document.getElementById("carouselModal").style.display = "flex"; 
+  currentSlideIndex = index; 
+  showSlide(); 
+  document.getElementById("carouselModal").style.display = "flex"; 
 }
 function closeCarousel() { 
   document.getElementById("carouselModal").style.display = "none"; 
   const video = document.getElementById("carouselVideo");
-  video.pause(); video.src = '';
+  video.pause(); 
+  video.src = '';
 }
 function showSlide() {
-  const item = allWorksData[currentSlideIndex];
+  if(filteredWorksData.length === 0) return;
+  const item = filteredWorksData[currentSlideIndex];
   const img = document.getElementById("carouselImg");
   const video = document.getElementById("carouselVideo");
-  img.style.display="none"; video.style.display="none";
-  if (item.mediaType === "image") { img.src=item.url; img.style.display="block"; } 
-  else { video.src=item.url; video.style.display="block"; video.play().catch(()=>{}); }
+  img.style.display="none"; 
+  video.style.display="none";
+  
+  if (item.mediaType === "image") { 
+    img.src=item.url; 
+    img.style.display="block"; 
+  } else { 
+    video.src=item.url; 
+    video.style.display="block"; 
+    video.play().catch(()=>{}); 
+  }
 }
-function prevSlide() { currentSlideIndex = (currentSlideIndex -1 + allWorksData.length) % allWorksData.length; showSlide(); }
-function nextSlide() { currentSlideIndex = (currentSlideIndex +1) % allWorksData.length; showSlide(); }
+function prevSlide() { 
+  currentSlideIndex = (currentSlideIndex -1 + filteredWorksData.length) % filteredWorksData.length; 
+  showSlide(); 
+}
+function nextSlide() { 
+  currentSlideIndex = (currentSlideIndex +1) % filteredWorksData.length; 
+  showSlide(); 
+}
 
 // 删除
 async function deleteWork(id) {
@@ -653,8 +648,13 @@ async function deleteWork(id) {
     body: new URLSearchParams({ action: "delete", id })
   });
   const result = await res.json();
-  if (result.ok) { alert("✅ 刪除成功！"); localStorage.removeItem('works_sort'); await loadAllWorks(); renderWorks(); }
-  else alert("❌ 刪除失敗");
+  if (result.ok) { 
+    alert("✅ 刪除成功！"); 
+    await loadAllWorks(); 
+    renderWorks(); 
+  } else {
+    alert("❌ 刪除失敗");
+  }
 }
 
 // 底部导航
@@ -671,13 +671,11 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// ✅ 修复：页面加载后立即加载作品，无任何延迟
+// 页面加载
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
-  // 立即加载数据
   await loadAllWorks();
   uploadBtn.disabled = false;
-  // 隐藏加载浮窗
   loaderOverlay.classList.add('hidden');
   renderWorks();
 });
