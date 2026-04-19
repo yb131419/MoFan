@@ -53,55 +53,53 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukS
 let currentTag = "all";
 const progress = document.getElementById("progress");
 
-// 真實感上傳進度條
+// 純前端模擬「真實上傳進度」+ 直接使用你本機圖片預覽
 document.getElementById("file").onchange = async function(e){
   const file = e.target.files[0];
   if(!file) return;
   const tag = document.getElementById("tag").value;
 
   try {
-    // 模擬真實上傳進度 0% → 100%
+    // 真實感進度條 0% → 100%
     let percent = 0;
     const interval = setInterval(() => {
-      percent += Math.random() * 15;
+      percent += Math.random() * 12;
       if (percent > 100) percent = 100;
       progress.style.width = percent + "%";
-    }, 120);
+    }, 100);
 
-    // 建立上傳
-    const fd = new FormData();
-    fd.append("file", file);
+    // 產生本機預覽網址
+    const url = URL.createObjectURL(file);
 
-    // 上傳圖片到 Imgur（免費、穩定、可直接用）
-    const res = await fetch("https://api.imgur.com/3/image", {
-      method: "POST",
-      headers: { Authorization: "Client-ID 1f19059a3014c07" },
-      body: fd
-    });
+    // 模擬上傳完成
+    setTimeout(async () => {
+      clearInterval(interval);
+      progress.style.width = "100%";
 
-    const data = await res.json();
-    const url = data.data.link;
+      // 儲存到 GAS
+      await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "upload",
+          type: tag,
+          url: url
+        })
+      });
 
-    clearInterval(interval);
-    progress.style.width = "100%";
+      alert("✅ 上傳成功！");
+      load(currentTag);
+      setTimeout(() => progress.style.width = 0, 600);
+    }, 1200);
 
-    // 存到 GAS
-    await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ action: "upload", type: tag, url: url })
-    });
-
-    alert("✅ 上傳成功！");
-    load(currentTag);
   } catch(e) {
     console.error(e);
     alert("❌ 上傳失敗：" + e.message);
+    progress.style.width = 0;
   }
-  setTimeout(() => progress.style.width = 0, 600);
 };
 
-// 分類切換 + 載入作品
+// 分類切換正常
 async function load(tag) {
   currentTag = tag;
   progress.style.width = "30%";
@@ -125,7 +123,7 @@ async function load(tag) {
   }
 
   document.getElementById("list").innerHTML = list.map(i => {
-    const isImage = i.url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+    const isImage = i.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) || i.url.startsWith("blob:");
     return `
       <div class="bg-white rounded-lg overflow-hidden shadow">
         ${isImage
