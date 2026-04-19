@@ -16,6 +16,7 @@
       background: #fdf2f8;
       font-family: system-ui, -apple-system, sans-serif;
     }
+    /* 进度条 */
     .progress {
       height: 3px;
       background: linear-gradient(90deg, #f472b6, #ec4899);
@@ -25,11 +26,15 @@
       left: 0;
       z-index: 999;
     }
+    /* 手机端一行两列网格 */
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
+      padding: 0 20px;
+      padding-bottom: 60px;
     }
+    /* 高级卡片样式 */
     .card {
       background: white;
       border-radius: 16px;
@@ -46,52 +51,93 @@
       aspect-ratio: 1/1;
       object-fit: cover;
     }
+    /* 按钮样式 */
+    .btn-primary {
+      background: #ec4899;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn-upload {
+      width: 100%;
+      padding: 12px;
+      background: #ec4899;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-delete {
+      width: 100%;
+      padding: 8px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    /* 布局 */
+    .container {
+      padding: 0 20px;
+      margin-bottom: 24px;
+    }
   </style>
 </head>
 <body>
 
+<!-- 进度条 -->
 <div class="progress" id="progress" style="width:0"></div>
 
+<!-- 标题 -->
 <div style="padding: 32px 0 12px; text-align: center;">
   <h1 style="font-size: 22px; font-weight: 700; color: #db2777;">莫凡美業 作品集</h1>
   <p style="font-size:12px; color: #f9a8d4; margin-top:4px;">Beauty Portfolio</p>
 </div>
 
+<!-- 分类按钮 -->
 <div style="display: flex; justify-content: center; gap: 8px; padding: 0 16px; margin-bottom: 20px;">
-  <button onclick="load('all')" style="padding:8px 14px; background:#ec4899; color:white; border:none; border-radius:999px; font-size:12px;">全部</button>
-  <button onclick="load('美甲')" style="padding:8px 14px; background:#ec4899; color:white; border:none; border-radius:999px; font-size:12px;">美甲</button>
-  <button onclick="load('美容')" style="padding:8px 14px; background:#ec4899; color:white; border:none; border-radius:999px; font-size:12px;">美容</button>
-  <button onclick="load('美睫')" style="padding:8px 14px; background:#ec4899; color:white; border:none; border-radius:999px; font-size:12px;">美睫</button>
+  <button onclick="load('all')" class="btn-primary">全部</button>
+  <button onclick="load('美甲')" class="btn-primary">美甲</button>
+  <button onclick="load('美容')" class="btn-primary">美容</button>
+  <button onclick="load('美睫')" class="btn-primary">美睫</button>
 </div>
 
-<div style="padding:0 20px; margin-bottom:24px;">
+<!-- 上传区域 -->
+<div class="container">
   <div style="background:white; padding:16px; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
     <select id="tag" style="width:100%; padding:10px; border:1px solid #fce7f3; border-radius:12px; background:#fdf4f8; margin-bottom:10px;">
       <option value="美甲">美甲</option>
       <option value="美容">美容</option>
       <option value="美睫">美睫</option>
     </select>
-    <button onclick="document.getElementById('file').click()" style="width:100%; padding:12px; background:#ec4899; color:white; border:none; border-radius:12px; font-weight:500;">
+    <button onclick="document.getElementById('file').click()" class="btn-upload">
       <i class="fa fa-upload"></i> 上傳圖片
     </button>
     <input type="file" id="file" accept="image/*" hidden>
   </div>
 </div>
 
-<div id="list" class="grid" style="padding:0 20px; padding-bottom:60px;"></div>
+<!-- 作品列表 -->
+<div id="list" class="grid"></div>
 
 <script>
+// 你的GAS地址（保持不变）
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
 let currentTag = "all";
 const progress = document.getElementById("progress");
 
-// 上傳（不依賴任何外部圖床 / R2 / Worker）
+// ============== 上传功能（真写入表格，无假成功） ==============
 document.getElementById("file").onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
   const tag = document.getElementById("tag").value;
 
   try {
+    // 进度条动画
     let per = 0;
     const itv = setInterval(() => {
       per += Math.random() * 9;
@@ -99,70 +145,95 @@ document.getElementById("file").onchange = async function(e) {
       progress.style.width = per + "%";
     }, 90);
 
+    // 转Base64（纯GAS存储，无第三方依赖）
     const reader = new FileReader();
     reader.readAsDataURL(file);
+    
     reader.onload = async function() {
       const url = reader.result;
       clearInterval(itv);
       progress.style.width = "100%";
 
-      await fetch(GAS_URL, {
+      // 真实请求GAS，写入表格
+      const response = await fetch(GAS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ action: "upload", type: tag, url: url })
+        body: new URLSearchParams({ 
+          action: "upload", 
+          type: tag, 
+          url: url 
+        })
       });
 
-      alert("✅ 上傳成功！永久保存！");
-      load(currentTag);
+      const result = await response.json();
+      
+      // 只有真的成功才提示
+      if (result.ok) {
+        alert("✅ 上傳成功！已儲存至試算表");
+        load(currentTag); // 强制刷新前端
+      } else {
+        alert("❌ 上傳失敗：" + (result.error || "未知錯誤"));
+      }
+
       setTimeout(() => progress.style.width = 0, 600);
     };
+
   } catch (e) {
-    alert("❌ 上傳失敗");
+    console.error(e);
+    alert("❌ 上傳失敗：" + e.message);
     progress.style.width = 0;
   }
 };
 
-// 載入 + 分類
+// ============== 加载+分类功能 ==============
 async function load(tag) {
   currentTag = tag;
   progress.style.width = "30%";
-  const res = await fetch(GAS_URL + "?action=load");
-  const data = await res.json();
-  progress.style.width = "100%";
+  
+  try {
+    const res = await fetch(GAS_URL + "?action=load");
+    const data = await res.json();
+    progress.style.width = "100%";
 
-  const map = { "美甲": "photos", "美容": "beautys", "美睫": "eyelashes" };
-  let list = [];
+    const map = { "美甲": "photos", "美容": "beautys", "美睫": "eyelashes" };
+    let list = [];
 
-  if (tag === "all") {
-    list = [
-      ...(data.photos ? JSON.parse(data.photos) : []),
-      ...(data.beautys ? JSON.parse(data.beautys) : []),
-      ...(data.eyelashes ? JSON.parse(data.eyelashes) : [])
-    ];
-  } else {
-    list = data[map[tag]] ? JSON.parse(data[map[tag]]) : [];
-  }
+    if (tag === "all") {
+      list = [
+        ...(data.photos ? JSON.parse(data.photos) : []),
+        ...(data.beautys ? JSON.parse(data.beautys) : []),
+        ...(data.eyelashes ? JSON.parse(data.eyelashes) : [])
+      ];
+    } else {
+      list = data[map[tag]] ? JSON.parse(data[map[tag]]) : [];
+    }
 
-  document.getElementById("list").innerHTML = list.map(i => `
-    <div class="card">
-      <img src="${i.url}" />
-      <div style="padding:10px; text-align:center;">
-        <p style="font-size:12px; color:#6b7280;">${i.title}</p>
+    // 渲染前端
+    document.getElementById("list").innerHTML = list.map(i => `
+      <div class="card">
+        <img src="${i.url}" alt="作品">
+        <div style="padding:10px; text-align:center;">
+          <p style="font-size:12px; color:#6b7280;">${i.title}</p>
+        </div>
+        <button onclick="del('${i.type}','${i.id}')" class="btn-delete">刪除</button>
       </div>
-      <button onclick="del('${i.type}','${i.id}')" style="width:100%; padding:8px; background:#ef4444; color:white; border:none; font-size:12px;">刪除</button>
-    </div>
-  `).join("");
+    `).join("");
 
+  } catch (e) {
+    alert("❌ 載入失敗");
+  }
+  
   setTimeout(() => progress.style.width = 0, 300);
 }
 
-// 刪除
+// ============== 删除功能 ==============
 async function del(type, id) {
   if (!confirm("確定刪除？")) return;
   await fetch(GAS_URL + `?action=delete&type=${type}&id=${id}`);
   load(currentTag);
 }
 
+// 初始化加载
 load("all");
 </script>
 </body>
