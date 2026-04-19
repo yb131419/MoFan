@@ -15,9 +15,9 @@
     body {
       background: #f7f8fa;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      padding-bottom: 90px; /* 預留底部功能欄空間 */
+      padding-bottom: 90px;
     }
-    /* 頂部上傳進度條 */
+    /* 頂部進度條 */
     .progress {
       height: 3px;
       background: linear-gradient(90deg, #e8a8b8, #d96b8c);
@@ -28,7 +28,7 @@
       z-index: 999;
       width: 0;
     }
-    /* 頁面頂部標題區 */
+    /* 頁面標題 */
     .page-header {
       padding: 36px 20px 16px;
       text-align: center;
@@ -43,7 +43,7 @@
       font-size: 12px;
       color: #999999;
     }
-    /* 第一層標籤欄：媒體類型 (全部/照片/影片) 完全還原Linote */
+    /* 第一層標籤：全部 / 照片 / 影片 */
     .tab-layer-1 {
       display: flex;
       border-bottom: 1px solid #eeeeee;
@@ -75,7 +75,7 @@
       background: #222;
       border-radius: 3px 3px 0 0;
     }
-    /* 第二層標籤欄：業務分類 (全部/皮膚管理/美甲/美睫/美容) */
+    /* 第二層標籤：業務分類 */
     .tab-layer-2 {
       display: flex;
       padding: 16px 20px;
@@ -97,7 +97,7 @@
       background: #d96b8c;
       color: #ffffff;
     }
-    /* 上傳新增區域 */
+    /* 上傳區域 */
     .upload-area {
       padding: 0 20px 20px;
     }
@@ -126,15 +126,11 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s;
-    }
-    .upload-btn:hover {
-      background: #c85a7b;
     }
     #file-input {
       display: none;
     }
-    /* 作品網格卡片區 完全還原Linote卡片風格 */
+    /* 作品網格 */
     .works-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -205,7 +201,7 @@
       font-size: 11px;
       cursor: pointer;
     }
-    /* 底部固定功能欄 1:1 還原Linote底部(排序/批量/搜尋) */
+    /* 底部固定欄 1:1 還原Linote */
     .bottom-bar {
       position: fixed;
       bottom: 20px;
@@ -233,9 +229,6 @@
       gap: 6px;
       border-radius: 10px;
       cursor: pointer;
-    }
-    .bottom-btn:hover {
-      background: #f5f5f5;
     }
     /* 編輯彈窗 */
     .modal-mask {
@@ -318,7 +311,6 @@
   </style>
 </head>
 <body>
-<!-- 頂部進度條 -->
 <div class="progress" id="progress"></div>
 
 <!-- 頁面標題 -->
@@ -327,27 +319,27 @@
   <p class="page-subtitle">Beauty Skin Management Portfolio</p>
 </div>
 
-<!-- 第一層標籤：媒體類型 全部 / 照片 / 影片 -->
+<!-- 第一層標籤：全部 / 照片 / 影片 -->
 <div class="tab-layer-1">
   <button class="tab-item-1 active" data-type="all-media">全部</button>
   <button class="tab-item-1" data-type="image">照片</button>
   <button class="tab-item-1" data-type="video">影片</button>
 </div>
 
-<!-- 第二層標籤：業務分類 全部 / 皮膚管理 / 美甲 / 美睫 / 美容 -->
+<!-- 第二層標籤：業務分類 -->
 <div class="tab-layer-2">
   <button class="tag-btn active" data-category="all">全部</button>
-  <button class="tag-btn" data-category="skin">皮膚管理</button>
+  <button class="tag-btn" data-category="skin">韓式皮膚管理</button>
   <button class="tag-btn" data-category="nail">美甲</button>
   <button class="tag-btn" data-category="eyelash">美睫</button>
   <button class="tag-btn" data-category="beauty">美容</button>
 </div>
 
-<!-- 上傳新增區域 -->
+<!-- 上傳區域 -->
 <div class="upload-area">
   <div class="upload-card">
     <select class="upload-select" id="workCategory">
-      <option value="skin">皮膚管理</option>
+      <option value="skin">韓式皮膚管理</option>
       <option value="nail">美甲</option>
       <option value="eyelash">美睫</option>
       <option value="beauty">美容</option>
@@ -359,10 +351,10 @@
   </div>
 </div>
 
-<!-- 作品網格展示區 -->
+<!-- 作品展示區 -->
 <div class="works-grid" id="worksList"></div>
 
-<!-- 底部固定功能欄：排序 / 搜尋 / 批量管理 完全還原參考UI -->
+<!-- 底部固定功能欄 -->
 <div class="bottom-bar">
   <button class="bottom-btn" id="sortBtn">
     <i class="fa fa-sort"></i> 排序
@@ -375,7 +367,7 @@
   </button>
 </div>
 
-<!-- 作品編輯彈窗 -->
+<!-- 編輯彈窗 -->
 <div class="modal-mask" id="editModal">
   <div class="modal-box">
     <h3 class="modal-title">編輯作品</h3>
@@ -386,7 +378,7 @@
     <div class="modal-item">
       <label class="modal-label">作品分類</label>
       <select class="modal-select" id="editCategory">
-        <option value="skin">皮膚管理</option>
+        <option value="skin">韓式皮膚管理</option>
         <option value="nail">美甲</option>
         <option value="eyelash">美睫</option>
         <option value="beauty">美容</option>
@@ -401,15 +393,15 @@
 </div>
 
 <script>
-// 你的穩定GAS後端網址（完全保留原本連結）
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-// 全域狀態
-let currentMediaFilter = "all-media"; // 第一層：媒體篩選 all-media / image / video
-let currentCategoryFilter = "all";    // 第二層：業務分類篩選
-let allWorksData = [];                // 所有作品完整數據
+
+// 全域變數
+let currentMediaFilter = "all-media";
+let currentCategoryFilter = "all";
+let allWorksData = [];
 const progress = document.getElementById("progress");
 
-// ====================== 圖片自動壓縮函式（延用穩定版，解決GAS超長問題）======================
+// ====================== 圖片壓縮（僅圖片壓縮，影片不處理）======================
 function compressImage(file) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -428,7 +420,7 @@ function compressImage(file) {
   });
 }
 
-// ====================== 頂部第一層媒體標籤切換 ======================
+// ====================== 標籤切換事件 ======================
 document.querySelectorAll('.tab-item-1').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab-item-1').forEach(t => t.classList.remove('active'));
@@ -438,7 +430,6 @@ document.querySelectorAll('.tab-item-1').forEach(tab => {
   });
 });
 
-// ====================== 第二層業務分類標籤切換 ======================
 document.querySelectorAll('.tag-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
@@ -448,14 +439,13 @@ document.querySelectorAll('.tag-btn').forEach(btn => {
   });
 });
 
-// ====================== 上傳新增作品（完整真實進度條）======================
+// ====================== 上傳新增作品 ======================
 document.getElementById('file-input').onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
   const selectCategory = document.getElementById('workCategory').value;
 
   try {
-    // 真實感進度條動畫
     let per = 0;
     const progressInterval = setInterval(() => {
       per += 11;
@@ -464,12 +454,10 @@ document.getElementById('file-input').onchange = async function(e) {
     }, 100);
 
     let uploadFile = file;
-    // 只有圖片自動壓縮，影片不做壓縮保留原生
     if (file.type.startsWith('image/')) {
       uploadFile = await compressImage(file);
     }
 
-    // 轉Base64 存入GAS雲端（全設備永久可訪問）
     const reader = new FileReader();
     reader.readAsDataURL(uploadFile);
     
@@ -477,19 +465,17 @@ document.getElementById('file-input').onchange = async function(e) {
       clearInterval(progressInterval);
       progress.style.width = "100%";
       const fileUrl = reader.result;
-      // 判斷媒體類型
       const mediaType = file.type.startsWith('image/') ? "image" : "video";
 
-      // 發送請求到GAS 新增作品
       const res = await fetch(GAS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "add",
-          category: selectCategory,
+        body: new URLSearchParams({ 
+          action: "upload", 
+          type: selectCategory, 
           mediaType: mediaType,
-          title: file.name,
-          url: fileUrl
+          title: file.name, 
+          url: fileUrl 
         })
       });
 
@@ -510,49 +496,49 @@ document.getElementById('file-input').onchange = async function(e) {
   }
 };
 
-// ====================== 讀取全部作品數據 ======================
+// ====================== 讀取全部數據（先讀完再渲染，根治undefined報錯）======================
 async function loadAllWorks() {
   progress.style.width = "30%";
-  const res = await fetch(GAS_URL + "?action=list");
+  const res = await fetch(GAS_URL + "?action=load");
   const data = await res.json();
   progress.style.width = "100%";
-  allWorksData = data.list || [];
+
+  // 強制判斷數據格式，空值保護
+  allWorksData = Array.isArray(data.list) ? data.list : [];
   setTimeout(() => progress.style.width = 0, 300);
 }
 
-// ====================== 作品篩選 + 渲染頁面（雙層篩選+圖片影片自動渲染）======================
+// ====================== 渲染作品（每處全部加空值防護，絕對不會出現undefined）======================
 function renderWorks() {
-  let filterData = allWorksData;
+  let filterData = [...allWorksData];
 
-  // 第一層：媒體類型篩選（全部/圖片/影片）
+  // 媒體類型篩選
   if (currentMediaFilter !== "all-media") {
-    filterData = filterData.filter(item => item.mediaType === currentMediaFilter);
+    filterData = filterData.filter(item => item && item.mediaType === currentMediaFilter);
   }
-  // 第二層：業務分類篩選（全部/皮膚管理/美甲/美睫/美容）
+  // 分類篩選
   if (currentCategoryFilter !== "all") {
-    filterData = filterData.filter(item => item.category === currentCategoryFilter);
+    filterData = filterData.filter(item => item && item.category === currentCategoryFilter);
   }
 
   const listDom = document.getElementById('worksList');
-  // 空內容判斷
   if (filterData.length === 0) {
     listDom.innerHTML = `<div class="empty-tip">暫無對應作品</div>`;
     return;
   }
 
-  // 渲染卡片 1:1 還原Linote卡片風格
-  listDom.innerHTML = filterData.map(item => {
-    // 分類文字對照
-    const categoryMap = {
-      skin: "皮膚管理",
-      nail: "美甲",
-      eyelash: "美睫",
-      beauty: "美容"
-    };
-    // 自動渲染圖片/影片
+  const categoryMap = {
+    skin: "韓式皮膚管理",
+    nail: "美甲",
+    eyelash: "美睫",
+    beauty: "美容"
+  };
+
+  // 逐個空值判斷，杜絕 src=undefined
+  listDom.innerHTML = filterData.filter(item => item && item.url).map(item => {
     let mediaHtml = "";
     if (item.mediaType === "image") {
-      mediaHtml = `<img src="${item.url}" class="work-img" alt="${item.title}">`;
+      mediaHtml = `<img src="${item.url}" class="work-img" alt="${item.title||'作品'}">`;
     } else {
       mediaHtml = `<video src="${item.url}" class="work-video" muted controls></video>`;
     }
@@ -561,10 +547,10 @@ function renderWorks() {
       <div class="work-card">
         <div class="media-box">${mediaHtml}</div>
         <div class="work-info">
-          <div class="work-title">${item.title}</div>
-          <div class="work-tag">${categoryMap[item.category]}</div>
+          <div class="work-title">${item.title||'無標題'}</div>
+          <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
           <div class="work-operate">
-            <button class="edit-btn" onclick="openEditModal('${item.id}','${item.title}','${item.category}')">
+            <button class="edit-btn" onclick="openEditModal('${item.id}','${item.title||''}','${item.category||''}')">
               <i class="fa fa-pencil"></i> 編輯
             </button>
             <button class="delete-btn" onclick="deleteWork('${item.id}')">
@@ -577,7 +563,7 @@ function renderWorks() {
   }).join("");
 }
 
-// ====================== 編輯功能（開啟彈窗）======================
+// ====================== 編輯功能 ======================
 function openEditModal(id, title, category) {
   document.getElementById('editId').value = id;
   document.getElementById('editTitle').value = title;
@@ -588,7 +574,6 @@ function closeEditModal() {
   document.getElementById('editModal').style.display = 'none';
 }
 
-// ====================== 儲存修改（UPDATE 修改接口）======================
 async function saveEdit() {
   const id = document.getElementById('editId').value;
   const title = document.getElementById('editTitle').value;
@@ -601,12 +586,7 @@ async function saveEdit() {
   const res = await fetch(GAS_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      action: "edit",
-      id: id,
-      title: title,
-      category: category
-    })
+    body: new URLSearchParams({ action: "edit", id: id, title: title, type: category })
   });
   const result = await res.json();
   if (result.ok) {
@@ -619,13 +599,13 @@ async function saveEdit() {
   }
 }
 
-// ====================== 刪除功能（DELETE）======================
+// ====================== 刪除功能 ======================
 async function deleteWork(id) {
   if (!confirm("確定要刪除此作品？刪除後無法復原")) return;
   const res = await fetch(GAS_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "delete", id: id })
+    body: new URLSearchParams({ action: "delete", type: id })
   });
   const result = await res.json();
   if (result.ok) {
@@ -637,31 +617,31 @@ async function deleteWork(id) {
   }
 }
 
-// ====================== 底部功能按鈕（排序/搜尋/批量）======================
-// 排序功能：最新上傳優先
+// ====================== 底部功能按鈕 ======================
+// 最新排序
 document.getElementById('sortBtn').onclick = function() {
   allWorksData.sort((a,b) => Number(b.id) - Number(a.id));
   renderWorks();
   alert("已依照最新上傳排序");
 };
-// 搜尋功能：標題關鍵字搜尋
+// 標題關鍵字搜尋
 document.getElementById('searchBtn').onclick = function() {
   const keyword = prompt("請輸入要搜尋的作品關鍵字");
   if (!keyword) return;
-  const searchResult = allWorksData.filter(item => item.title.includes(keyword));
-  document.getElementById('worksList').innerHTML = searchResult.length === 0 
+  const result = allWorksData.filter(item => item.title && item.title.includes(keyword));
+  document.getElementById('worksList').innerHTML = result.length === 0 
     ? `<div class="empty-tip">無搜尋結果</div>`
-    : searchResult.map(item => {
-        const categoryMap = {skin:"皮膚管理",nail:"美甲",eyelash:"美睫",beauty:"美容"};
-        let mediaHtml = item.mediaType==="image" 
-          ? `<img src="${item.url}" class="work-img">`
-          : `<video src="${item.url}" class="work-video" muted controls></video>`;
+    : result.filter(item=>item.url).map(item => {
+        const map = {skin:"韓式皮膚管理",nail:"美甲",eyelash:"美睫",beauty:"美容"};
+        let m = item.mediaType==="image" 
+          ?`<img src="${item.url}" class="work-img">`
+          :`<video src="${item.url}" class="work-video" muted controls></video>`;
         return `
           <div class="work-card">
-            <div class="media-box">${mediaHtml}</div>
+            <div class="media-box">${m}</div>
             <div class="work-info">
               <div class="work-title">${item.title}</div>
-              <div class="work-tag">${categoryMap[item.category]}</div>
+              <div class="work-tag">${map[item.category]}</div>
               <div class="work-operate">
                 <button class="edit-btn" onclick="openEditModal('${item.id}','${item.title}','${item.category}')">編輯</button>
                 <button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button>
@@ -670,13 +650,15 @@ document.getElementById('searchBtn').onclick = function() {
           </div>`;
       }).join("");
 };
-// 批量管理（批量刪除擴充功能）
+// 批量功能
 document.getElementById('batchBtn').onclick = function() {
-  alert("批量管理功能已開啟，後續可擴充多選批量刪除");
+  alert("批量管理功能已啟用框架");
 };
 
-// 頁面初始化載入
-loadAllWorks().then(() => renderWorks());
+// ====================== 頁面初始化（嚴格順序：先讀數據 → 再渲染）======================
+loadAllWorks().then(() => {
+  renderWorks();
+});
 </script>
 </body>
 </html>
