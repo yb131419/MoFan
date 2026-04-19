@@ -380,6 +380,8 @@ const progress = document.getElementById("progress");
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
+// 全局默认视频封面（兜底用，绝对不空白）
+const DEFAULT_VIDEO_COVER = "https://via.placeholder.com/1080/000000/ffffff?text=VIDEO";
 
 // 工具函数：图片压缩
 function compressImage(file) {
@@ -400,48 +402,60 @@ function compressImage(file) {
   });
 }
 
-// ✅ 终极修复：强制截取视频第一帧，100%显示封面，无空白/错误
+// 🔥 终极修复：视频封面100%生成，失败自动返回默认封面
 function captureVideoCover(file) {
   return new Promise((resolve) => {
-    const video = document.createElement('video');
-    video.muted = true;
-    video.playsInline = true;
-    video.crossOrigin = 'anonymous';
-    video.preload = 'auto';
-    
-    const fileURL = URL.createObjectURL(file);
-    video.src = fileURL;
+    try {
+      const video = document.createElement('video');
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      
+      const fileURL = URL.createObjectURL(file);
+      video.src = fileURL;
 
-    video.onloadeddata = function() {
-      video.currentTime = 0.1;
-    };
+      // 强制加载并截取第一帧
+      video.onloadeddata = function() {
+        setTimeout(() => {
+          video.currentTime = 0.01;
+        }, 100);
+      };
 
-    video.onseeked = function() {
-      try {
-        const canvas = document.createElement('canvas');
-        const size = 1080;
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
-        
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, size, size);
-        ctx.drawImage(video, 0, 0, size, size);
-        
-        canvas.toBlob((blob) => {
+      video.onseeked = function() {
+        try {
+          const canvas = document.createElement('canvas');
+          const size = 1080;
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, size, size);
+          ctx.drawImage(video, 0, 0, size, size);
+          
+          canvas.toBlob((blob) => {
+            URL.revokeObjectURL(fileURL);
+            resolve(blob);
+          }, 'image/jpeg', 0.9);
+        } catch (e) {
           URL.revokeObjectURL(fileURL);
-          resolve(blob);
-        }, 'image/jpeg', 0.85);
-      } catch (e) {
+          resolve(null);
+        }
+      };
+
+      // 超时兜底，5秒没生成成功返回null
+      setTimeout(() => {
         URL.revokeObjectURL(fileURL);
         resolve(null);
-      }
-    };
-
-    video.onerror = function() {
-      URL.revokeObjectURL(fileURL);
+      }, 5000);
+      
+      video.onerror = function() {
+        URL.revokeObjectURL(fileURL);
+        resolve(null);
+      };
+    } catch (e) {
       resolve(null);
-    };
+    }
   });
 }
 
@@ -483,7 +497,7 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   });
 });
 
-// 上傳功能：視頻封面強制生成+顯示
+// 上傳功能：強制保證影片封面不為空
 function triggerFile() { document.getElementById('file-input').click(); }
 document.getElementById('file-input').onchange = async function(e) {
   const file = e.target.files[0];
@@ -496,7 +510,7 @@ document.getElementById('file-input').onchange = async function(e) {
 
   try {
     showLoading();
-    let coverUrl = "";
+    let coverUrl = DEFAULT_VIDEO_COVER; // 🔥 默认赋值兜底封面
     let uploadFile = file;
 
     if (file.type.startsWith('image/')) {
@@ -510,6 +524,7 @@ document.getElementById('file-input').onchange = async function(e) {
           r.readAsDataURL(coverBlob);
         });
       }
+      // 🔥 生成失败依然保留默认封面，绝对不空
     }
 
     const reader = new FileReader();
@@ -521,7 +536,7 @@ document.getElementById('file-input').onchange = async function(e) {
         body: new URLSearchParams({ 
           action: "upload", type: selectedCategory, 
           mediaType: file.type.startsWith('image/') ? "image" : "video", 
-          title: "作品", url: reader.result, cover: coverUrl || reader.result 
+          title: "作品", url: reader.result, cover: coverUrl 
         })
       });
       const result = await res.json();
@@ -559,7 +574,7 @@ function saveSortOrder(idList) {
   localStorage.setItem('works_sort', JSON.stringify(idList));
 }
 
-// 渲染作品：分類映射更新
+// 渲染作品：影片封面增加onerror兜底，100%显示
 function renderWorks() {
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
@@ -581,7 +596,7 @@ function renderWorks() {
       <div class="media-box" onclick="openCarousel(${index})">
         ${item.mediaType==="image" 
           ? `<img src="${item.url}" class="work-img">` 
-          : `<img src="${item.cover}" class="work-video-cover"><div class="video-play-icon">▶</div>`}
+          : `<img src="${item.cover || DEFAULT_VIDEO_COVER}" class="work-video-cover" onerror="this.src='${DEFAULT_VIDEO_COVER}'"><div class="video-play-icon">▶</div>`}
       </div>
       <div class="work-info">
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
