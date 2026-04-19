@@ -175,23 +175,13 @@
       font-weight: 500;
       letter-spacing: 0.5px;
     }
+    /* 单按钮样式优化 */
     .work-operate {
       display: flex;
-      gap: 8px;
       margin-top: 10px;
     }
-    .edit-btn {
-      flex: 1;
-      padding: 6px 0;
-      border-radius: 8px;
-      border: 1px solid #d4b2b8;
-      background: #fff;
-      color: #d4b2b8;
-      font-size: 11px;
-      cursor: pointer;
-    }
     .delete-btn {
-      flex: 1;
+      width: 100%;
       padding: 6px 0;
       border-radius: 8px;
       border: none;
@@ -262,45 +252,6 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
-    }
-    /* 编辑弹窗 */
-    .modal-item {
-      margin-bottom: 18px;
-      text-align: left;
-    }
-    .modal-label {
-      display: block;
-      font-size: 13px;
-      color: #555;
-      margin-bottom: 8px;
-    }
-    .modal-input {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid #f0e9eb;
-      border-radius: 16px;
-      font-size: 14px;
-    }
-    .modal-btn-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
-    .modal-cancel, .modal-save {
-      flex: 1;
-      padding: 14px;
-      border-radius: 16px;
-      font-size: 14px;
-    }
-    .modal-cancel {
-      border: 1px solid #eee;
-      background: #fff;
-      color: #666;
-    }
-    .modal-save {
-      border: none;
-      background: linear-gradient(135deg, #d4b2b8, #b8a2a8);
-      color: #fff;
     }
 
     /* 圖片輪播 - 全屏高级 */
@@ -386,7 +337,6 @@
   </div>
 </div>
 
-<!-- ✅ 核心修改：添加居中样式 + 优化间距 -->
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
 
 <!-- 作品展示 + 拖拽排序 -->
@@ -406,21 +356,6 @@
   <div class="modal-content">
     <div class="loader"></div>
     <div class="loading-text">上傳中，請稍候...</div>
-  </div>
-</div>
-
-<div class="modal" id="editModal">
-  <div class="modal-content">
-    <h3 style="text-align:left; margin-bottom:20px;">編輯作品</h3>
-    <div class="modal-item">
-      <label class="modal-label">作品標題</label>
-      <input type="text" class="modal-input" id="editTitle">
-    </div>
-    <input type="hidden" id="editId">
-    <div class="modal-btn-group">
-      <button class="modal-cancel" onclick="closeEditModal()">取消</button>
-      <button class="modal-save" onclick="saveEdit()">儲存</button>
-    </div>
   </div>
 </div>
 
@@ -444,7 +379,7 @@ let currentCategoryFilter = "all";
 let allWorksData = [];
 let selectedCategory = "nail";
 let currentSlideIndex = 0;
-let sortable = null; // 拖拽实例
+let sortable = null;
 const progress = document.getElementById("progress");
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
@@ -490,7 +425,7 @@ document.querySelectorAll('.category-item').forEach(item => {
   });
 });
 
-// ====================== 分類切換事件 ======================
+// 分類切換
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
@@ -568,7 +503,29 @@ async function loadAllWorks() {
   setTimeout(() => progress.style.width = 0, 300);
 }
 
-// ====================== 渲染作品 + 拖拽排序 ======================
+// ====================== 保存拖拽排序到服务器 ======================
+async function saveSortOrder(idList) {
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ 
+        action: "saveOrder", 
+        ids: JSON.stringify(idList) 
+      })
+    });
+    const result = await res.json();
+    if (result.ok) {
+      console.log("✅ 排序保存成功");
+      await loadAllWorks();
+      renderWorks();
+    }
+  } catch (err) {
+    alert("❌ 排序保存失敗");
+  }
+}
+
+// 渲染作品（删除编辑按钮）
 function renderWorks() {
   let filterData = [...allWorksData];
 
@@ -596,7 +553,7 @@ function renderWorks() {
         <div class="work-info">
           <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
           <div class="work-operate">
-            <button class="edit-btn" onclick="openEditModal('${item.id}')">編輯</button>
+            <!-- 仅保留删除按钮 -->
             <button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button>
           </div>
         </div>
@@ -604,11 +561,10 @@ function renderWorks() {
     `;
   }).join("");
 
-  // 初始化拖拽排序
   initSortable();
 }
 
-// 初始化拖拽功能
+// 初始化拖拽（拖拽结束自动保存）
 function initSortable() {
   if (sortable) sortable.destroy();
   sortable = new Sortable(listDom, {
@@ -616,9 +572,9 @@ function initSortable() {
     ghostClass: 'sortable-ghost',
     dragClass: 'sortable-drag',
     onEnd: function (evt) {
-      // 拖拽结束后同步数据顺序
+      // 拖拽完成 → 保存新顺序
       const newOrder = Array.from(listDom.children).map(item => item.dataset.id);
-      console.log("最新排序：", newOrder);
+      saveSortOrder(newOrder);
     }
   });
 }
@@ -656,36 +612,6 @@ function prevSlide() {
 function nextSlide() {
   currentSlideIndex = (currentSlideIndex + 1) % allWorksData.length;
   showSlide();
-}
-
-// 编辑功能
-function openEditModal(id) {
-  document.getElementById('editId').value = id;
-  document.getElementById('editTitle').value = "作品";
-  document.getElementById('editModal').style.display = "flex";
-}
-function closeEditModal() {
-  document.getElementById('editModal').style.display = "none";
-}
-async function saveEdit() {
-  const id = document.getElementById('editId').value;
-  const title = document.getElementById('editTitle').value.trim();
-  if (!title) { alert("請輸入標題"); return; }
-
-  const res = await fetch(GAS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "edit", id: id, title: title })
-  });
-  
-  const result = await res.json();
-  if (result.ok) {
-    alert("✅ 修改成功！");
-    closeEditModal();
-    loadAllWorks().then(renderWorks);
-  } else {
-    alert("❌ 修改失敗");
-  }
 }
 
 // 删除功能
