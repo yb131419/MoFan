@@ -119,59 +119,85 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukS
 let currentTag = "all";
 const progress = document.getElementById("progress");
 
-// 修复上传：弃用Base64（超长报错），改用图床，GAS只存URL
+// 壓縮圖片（解決GAS字符超長報錯）
+function compressImage(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.src = url;
+    img.onload = function() {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const size = 800; // 限制尺寸，極大縮減體積
+      canvas.width = size;
+      canvas.height = size;
+      ctx.drawImage(img, 0, 0, size, size);
+      canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.6);
+    };
+  });
+}
+
+// 上傳功能（無第三方、純GAS、自帶壓縮、完整報錯）
 document.getElementById("file").onchange = async function(e) {
   const file = e.target.files[0];
-  if (!file) return;
-  const tag = document.getElementById("tag").value;
+  if (!file) {
+    alert("⚠️ 請選擇圖片");
+    return;
+  }
 
   try {
+    // 進度條
     let per = 0;
     const itv = setInterval(() => {
-      per += Math.random() * 9;
-      if (per > 95) per = 95;
+      per += 10;
+      if (per > 90) per = 90;
       progress.style.width = per + "%";
-    }, 90);
+    }, 100);
 
-    // 上传到免费图床（无长度限制，解决GAS报错）
-    const formData = new FormData();
-    formData.append("image", file);
-    const res = await fetch("https://api.imgbb.com/1/upload?key=2d6d7c2427a9555d30a80f0a462f2c2f", {
-      method: "POST",
-      body: formData
-    });
+    // 壓縮圖片 → 關鍵修復！
+    const compressedFile = await compressImage(file);
+    const tag = document.getElementById("tag").value;
 
-    const data = await res.json();
-    if (!data.data || !data.data.url) throw new Error("圖床上傳失敗");
-    const imageUrl = data.data.url;
+    // 轉Base64
+    const reader = new FileReader();
+    reader.readAsDataURL(compressedFile);
+    
+    reader.onload = async function() {
+      try {
+        const url = reader.result;
+        clearInterval(itv);
+        progress.style.width = "100%";
 
-    clearInterval(itv);
-    progress.style.width = "100%";
+        // 請求GAS
+        const response = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "upload", type: tag, url: url })
+        });
 
-    // 保存URL到GAS（极短字符，永不报错）
-    const gasRes = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ action: "upload", type: tag, url: imageUrl })
-    });
-
-    const result = await gasRes.json();
-    if (result.ok) {
-      alert("✅ 上傳成功！試算表已記錄");
-      load(currentTag);
-    } else {
-      alert("❌ GAS寫入失敗：" + result.error);
-    }
+        const result = await response.json();
+        
+        if (result.ok) {
+          alert("✅ 上傳成功！已儲存至試算表");
+          load(currentTag);
+        } else {
+          alert("❌ GAS 失敗：" + (result.error || "未知錯誤"));
+        }
+      } catch (err) {
+        alert("❌ 存檔失敗：" + err.message);
+      } finally {
+        setTimeout(() => progress.style.width = 0, 600);
+      }
+    };
 
   } catch (e) {
     console.error(e);
-    alert("❌ 上傳失敗：" + e.message);
-  } finally {
-    setTimeout(() => progress.style.width = 0, 600);
+    alert("❌ 預處理失敗：" + e.message);
+    progress.style.width = 0;
   }
 };
 
-// 加载功能（带报错）
+// 載入功能
 async function load(tag) {
   currentTag = tag;
   progress.style.width = "30%";
@@ -209,7 +235,7 @@ async function load(tag) {
   }
 }
 
-// 删除功能
+// 刪除功能
 async function del(type, id) {
   if (!confirm("確定刪除？")) return;
   try {
