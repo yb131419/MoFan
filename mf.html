@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>莫凡韓式皮膚管理 | 作品集</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+  <!-- 亞太高速 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
     * {
       margin: 0;
@@ -20,7 +21,6 @@
       color: #2a2a2a;
     }
 
-    /* 🔥 高级感全屏加载浮窗（替换原进度条） */
     .loader-overlay {
       position: fixed;
       top: 0;
@@ -114,7 +114,6 @@
       flex-direction: column;
       gap: 12px;
     }
-    /* 筛选标签居中 */
     .tab-group {
       display: flex;
       justify-content: center;
@@ -211,7 +210,7 @@
       overflow: hidden;
       box-shadow: 0 3px 18px rgba(0,0,0,0.03);
       transition: all 0.3s ease;
-      cursor: default; /* 取消拖拽光标 */
+      cursor: default;
     }
     .media-box {
       width: 100%;
@@ -251,7 +250,6 @@
     }
     .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
 
-    /* ✅ 修复：所有弹窗强制居中（兼容全设备） */
     .modal {
       position: fixed;
       top: 0;
@@ -321,7 +319,7 @@
   </style>
 </head>
 <body>
-<!-- 🔥 高级加载浮窗 -->
+
 <div class="loader-overlay" id="loaderOverlay">
   <div class="loader-container">
     <div class="loader-ring"></div>
@@ -360,7 +358,6 @@
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
 <div class="works-grid" id="worksList"></div>
 
-<!-- 分类弹窗 -->
 <div class="modal" id="categoryModal">
   <div class="modal-content">
     <h3 style="margin-bottom:16px; font-size:16px;">選擇作品分類</h3>
@@ -417,7 +414,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukS
 let currentMediaFilter = "all-media";
 let currentCategoryFilter = "all";
 let allWorksData = [];
-// 存储筛选后的作品数据，用于轮播
 let filteredWorksData = [];
 let selectedCategory = "nail";
 let currentSlideIndex = 0;
@@ -426,11 +422,9 @@ const listDom = document.getElementById('worksList');
 const loaderOverlay = document.getElementById('loaderOverlay');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
-// 分类映射
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
-// 图片压缩
 function compressImage(file) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -452,7 +446,6 @@ function compressImage(file) {
 function showLoading() { document.getElementById("loadingModal").style.display = "flex"; uploadBtn.disabled = true; }
 function hideLoading() { document.getElementById("loadingModal").style.display = "none"; uploadBtn.disabled = false; }
 
-// 分类选择
 function openCategoryModal() { 
   document.getElementById("categoryModal").style.display = "flex"; 
 }
@@ -466,7 +459,6 @@ document.querySelectorAll('#categoryModal .category-item').forEach(item => {
   });
 });
 
-// 筛选分类
 function openFilterCategoryModal() { 
   document.getElementById("filterCategoryModal").style.display = "flex"; 
 }
@@ -481,7 +473,6 @@ document.querySelectorAll('#filterCategoryModal .category-item').forEach(item =>
   });
 });
 
-// 媒体筛选
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
@@ -491,12 +482,10 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   });
 });
 
-// 触发文件选择
 function triggerFile() { 
   document.getElementById('file-input').click(); 
 }
 
-// 批量上传核心
 document.getElementById('file-input').onchange = async function(e) {
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
@@ -559,24 +548,19 @@ document.getElementById('file-input').onchange = async function(e) {
   this.value = '';
 };
 
-// 加载作品 + 最新数据排在最上面
 async function loadAllWorks() {
   localStorage.removeItem('works_sort');
   try {
     const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
     const data = await res.json();
     allWorksData = Array.isArray(data.list) ? data.list : [];
-    // 核心：倒序排列，最新的在最上面
     allWorksData.reverse();
   } catch (e) { 
     allWorksData = []; 
-    alert('❌ 作品加載失敗，請重新整理頁面');
   }
 }
 
-// 渲染作品
 function renderWorks() {
-  // 筛选数据
   filteredWorksData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filteredWorksData = filteredWorksData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filteredWorksData = filteredWorksData.filter(i => i?.category === currentCategoryFilter);
@@ -586,12 +570,11 @@ function renderWorks() {
     return; 
   }
 
-  // 渲染并绑定正确的索引
   listDom.innerHTML = filteredWorksData.filter(i => i?.url).map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
         ${item.mediaType==="image" 
-          ? `<img src="${item.url}" class="work-img">` 
+          ? `<img src="${item.url}" class="work-img" loading="lazy">` 
           : `<img src="${DEFAULT_VIDEO_COVER}" class="work-video-cover"><div class="video-play-icon">▶</div>`}
       </div>
       <div class="work-info">
@@ -602,7 +585,6 @@ function renderWorks() {
   `).join("");
 }
 
-// 轮播 - 修复点击对应图片
 function openCarousel(index) { 
   currentSlideIndex = index; 
   showSlide(); 
@@ -640,7 +622,6 @@ function nextSlide() {
   showSlide(); 
 }
 
-// 删除
 async function deleteWork(id) {
   if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
@@ -657,7 +638,6 @@ async function deleteWork(id) {
   }
 }
 
-// 底部导航
 document.querySelectorAll('.bottom-nav-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.bottom-nav-item').forEach(nav => nav.classList.remove('active'));
@@ -671,7 +651,6 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// 页面加载
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
   await loadAllWorks();
