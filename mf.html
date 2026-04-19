@@ -56,13 +56,13 @@
       <option value="美睫">美睫</option>
     </select>
     <button onclick="document.getElementById('file').click()" class="w-full bg-gradient-to-r from-pink-400 to-pink-600 text-white py-2.5 rounded-lg text-sm font-medium shadow hover:shadow-lg transition-all">
-      <i class="fa fa-upload mr-1"></i> 上傳圖片 / 影片
+      <i class="fa fa-upload mr-1"></i> 上傳圖片
     </button>
     <input type="file" id="file" accept="image/*" hidden>
   </div>
 </div>
 
-<!-- 作品 grid 手機兩列 -->
+<!-- 手機兩列高質感網格 -->
 <div id="list" class="px-5 grid grid-cols-2 gap-4 pb-20"></div>
 
 <script>
@@ -71,7 +71,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukS
 let currentTag = "all";
 const progress = document.getElementById("progress");
 
-// 上傳 + 真實進度 + 永久圖床 (別人也看得到)
+// ========== 上傳 + 真實進度 + 永久保存 (全世界可看) ==========
 document.getElementById("file").onchange = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -86,38 +86,40 @@ document.getElementById("file").onchange = async function(e) {
       progress.style.width = percent + "%";
     }, 100);
 
-    // 上傳到免費永久圖床 (穩定、全世界可看)
-    const fd = new FormData();
-    fd.append("image", file);
+    // 轉成 Base64 直接存 GAS → 永久有效
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    
+    reader.onload = async function() {
+      const url = reader.result;
 
-    const res = await fetch("https://api.imgbb.com/1/upload?key=2d6d7c2427a9555d30a80f0a462f2c2f", {
-      method: "POST",
-      body: fd
-    });
+      clearInterval(interval);
+      progress.style.width = "100%";
 
-    const data = await res.json();
-    const url = data.data.url;
+      // 存到 GAS
+      await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "upload",
+          type: tag,
+          url: url
+        })
+      });
 
-    clearInterval(interval);
-    progress.style.width = "100%";
+      alert("✅ 上傳成功！永久顯示！");
+      load(currentTag);
+      setTimeout(() => progress.style.width = 0, 600);
+    };
 
-    // 存到 GAS
-    await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ action: "upload", type: tag, url: url })
-    });
-
-    alert("✅ 上傳成功！永久顯示！");
-    load(currentTag);
   } catch (e) {
     console.error(e);
     alert("❌ 上傳失敗");
+    progress.style.width = 0;
   }
-  setTimeout(() => progress.style.width = 0, 600);
 };
 
-// 分類 + 高質感排版
+// ========== 分類切換 + 高質感排版 ==========
 async function load(tag) {
   currentTag = tag;
   progress.style.width = "30%";
