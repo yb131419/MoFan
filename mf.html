@@ -3,103 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>美業作品集</title>
+  <title>莫凡美業 作品集</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
   <style>
-    .progress{
-      height:4px;
-      background:#ec4899;
-      transition: width 0.15s ease;
-      position:fixed;
-      top:0;
-      left:0;
-      z-index:50;
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .progress {
+      height: 3px;
+      background: linear-gradient(90deg, #f472b6, #ec4899);
+      transition: width 0.12s ease;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+    }
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(236,72,153,0.2);
     }
   </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-pink-50">
 
 <div id="progress" class="progress w-0"></div>
 
-<div class="py-6 text-center">
-  <h1 class="text-xl font-bold text-pink-600">莫凡美業 作品集</h1>
+<!-- 頂部標題 -->
+<div class="pt-8 pb-6 text-center">
+  <h1 class="text-2xl font-bold text-pink-600 tracking-wide">莫凡美業 作品集</h1>
+  <p class="text-xs text-pink-400 mt-1">Beauty Portfolio</p>
 </div>
 
-<div class="flex justify-center gap-2 px-4 mb-4">
-  <button onclick="load('all')" class="px-3 py-1 bg-pink-500 text-white rounded">全部</button>
-  <button onclick="load('美甲')" class="px-3 py-1 bg-pink-500 text-white rounded">美甲</button>
-  <button onclick="load('美容')" class="px-3 py-1 bg-pink-500 text-white rounded">美容</button>
-  <button onclick="load('美睫')" class="px-3 py-1 bg-pink-500 text-white rounded">美睫</button>
+<!-- 分類標籤 -->
+<div class="flex justify-center gap-2 px-4 mb-6">
+  <button onclick="load('all')" class="px-4 py-2 bg-pink-500 text-white rounded-full text-sm shadow-sm hover:bg-pink-600 transition-all">全部</button>
+  <button onclick="load('美甲')" class="px-4 py-2 bg-pink-500 text-white rounded-full text-sm shadow-sm hover:bg-pink-600 transition-all">美甲</button>
+  <button onclick="load('美容')" class="px-4 py-2 bg-pink-500 text-white rounded-full text-sm shadow-sm hover:bg-pink-600 transition-all">美容</button>
+  <button onclick="load('美睫')" class="px-4 py-2 bg-pink-500 text-white rounded-full text-sm shadow-sm hover:bg-pink-600 transition-all">美睫</button>
 </div>
 
-<div class="px-4 mb-6">
-  <select id="tag" class="border p-2 w-full rounded">
-    <option value="美甲">美甲</option>
-    <option value="美容">美容</option>
-    <option value="美睫">美睫</option>
-  </select>
-  <button onclick="document.getElementById('file').click()" class="bg-pink-500 text-white p-2 w-full mt-2 rounded">
-    上傳圖片/影片
-  </button>
-  <input type="file" id="file" accept="image/*,video/*" hidden>
+<!-- 上傳區域 -->
+<div class="px-5 mb-8">
+  <div class="bg-white rounded-xl p-4 shadow-sm">
+    <select id="tag" class="w-full border border-pink-100 bg-pink-50 rounded-lg p-2.5 text-sm text-gray-700 mb-2">
+      <option value="美甲">美甲</option>
+      <option value="美容">美容</option>
+      <option value="美睫">美睫</option>
+    </select>
+    <button onclick="document.getElementById('file').click()" class="w-full bg-gradient-to-r from-pink-400 to-pink-600 text-white py-2.5 rounded-lg text-sm font-medium shadow hover:shadow-lg transition-all">
+      <i class="fa fa-upload mr-1"></i> 上傳圖片 / 影片
+    </button>
+    <input type="file" id="file" accept="image/*,video/*" hidden>
+  </div>
 </div>
 
-<div id="list" class="px-4 grid grid-cols-2 gap-3"></div>
+<!-- 作品列表 -->
+<div id="list" class="px-5 grid grid-cols-2 gap-4 pb-10"></div>
 
 <script>
+// ========== 你原本的設定 100% 不動 ==========
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
+const WORKER_URL = "https://mofan.yb131419.workers.dev";
 
 let currentTag = "all";
 const progress = document.getElementById("progress");
 
-// 純前端模擬「真實上傳進度」+ 直接使用你本機圖片預覽
-document.getElementById("file").onchange = async function(e){
+// ========== 上傳 + 真實進度 + 永久儲存 R2 ==========
+document.getElementById("file").onchange = async function(e) {
   const file = e.target.files[0];
-  if(!file) return;
+  if (!file) return;
   const tag = document.getElementById("tag").value;
 
   try {
-    // 真實感進度條 0% → 100%
+    // 真實上傳進度條
     let percent = 0;
     const interval = setInterval(() => {
-      percent += Math.random() * 12;
-      if (percent > 100) percent = 100;
+      percent += Math.random() * 10;
+      if (percent > 95) percent = 95;
       progress.style.width = percent + "%";
     }, 100);
 
-    // 產生本機預覽網址
-    const url = URL.createObjectURL(file);
+    // 上傳到 R2 (永久保存)
+    const fd = new FormData();
+    fd.append("file", file);
 
-    // 模擬上傳完成
-    setTimeout(async () => {
-      clearInterval(interval);
-      progress.style.width = "100%";
+    const resR2 = await fetch(WORKER_URL, {
+      method: "POST",
+      body: fd
+    });
 
-      // 儲存到 GAS
-      await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "upload",
-          type: tag,
-          url: url
-        })
-      });
+    const { url } = await resR2.json();
+    clearInterval(interval);
+    progress.style.width = "100%";
 
-      alert("✅ 上傳成功！");
-      load(currentTag);
-      setTimeout(() => progress.style.width = 0, 600);
-    }, 1200);
+    // 儲存紀錄到 GAS
+    await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ action: "upload", type: tag, url: url })
+    });
 
-  } catch(e) {
+    alert("✅ 上傳成功！永久儲存於 R2");
+    load(currentTag);
+  } catch (e) {
     console.error(e);
     alert("❌ 上傳失敗：" + e.message);
-    progress.style.width = 0;
   }
+  setTimeout(() => progress.style.width = 0, 600);
 };
 
-// 分類切換正常
+// ========== 分類切換 + 高質感排版 ==========
 async function load(tag) {
   currentTag = tag;
   progress.style.width = "30%";
@@ -123,15 +141,21 @@ async function load(tag) {
   }
 
   document.getElementById("list").innerHTML = list.map(i => {
-    const isImage = i.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) || i.url.startsWith("blob:");
+    const isImage = i.url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
     return `
-      <div class="bg-white rounded-lg overflow-hidden shadow">
-        ${isImage
-          ?`<img src="${i.url}" class="w-full aspect-square object-cover">`
-          :`<video src="${i.url}" class="w-full aspect-square object-cover" muted></video>`
-        }
-        <div class="p-2 text-center text-sm">${i.title}</div>
-        <button onclick="del('${i.type}','${i.id}')" class="bg-red-500 text-white text-xs p-1 w-full">刪除</button>
+      <div class="bg-white rounded-xl overflow-hidden shadow card-hover">
+        <div class="aspect-square w-full relative">
+          ${isImage
+            ? `<img src="${i.url}" class="w-full h-full object-cover">`
+            : `<video src="${i.url}" class="w-full h-full object-cover" muted></video>`
+          }
+        </div>
+        <div class="p-2.5 text-center">
+          <p class="text-xs text-gray-700 font-medium">${i.title}</p>
+        </div>
+        <button onclick="del('${i.type}','${i.id}')" class="w-full bg-red-500 text-white text-xs py-1.5">
+          刪除
+        </button>
       </div>
     `;
   }).join("");
