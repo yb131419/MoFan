@@ -20,16 +20,51 @@
       padding-bottom: 120px;
       color: #2a2a2a;
     }
-    .progress {
-      height: 3px;
-      background: linear-gradient(90deg, #e8c8d0, #d4b2b8);
-      transition: width 0.2s ease;
+
+    /* 🔥 高级感全屏加载浮窗（替换原进度条） */
+    .loader-overlay {
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 999;
-      width: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(253, 251, 252, 0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
     }
+    .loader-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .loader-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .loader-ring {
+      width: 50px;
+      height: 50px;
+      border: 2px solid transparent;
+      border-top: 2px solid #d4b2b8;
+      border-right: 2px solid #b8929a;
+      border-radius: 50%;
+      animation: loader-spin 1.2s linear infinite;
+    }
+    .loader-text {
+      font-size: 15px;
+      color: #b8929a;
+      letter-spacing: 2px;
+      font-weight: 300;
+    }
+    @keyframes loader-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .page-header {
       padding: 60px 20px 40px;
       text-align: center;
@@ -80,10 +115,10 @@
       flex-direction: column;
       gap: 12px;
     }
-    /* 🔥 核心修改：筛选标签居中 */
+    /* 筛选标签居中 */
     .tab-group {
       display: flex;
-      justify-content: center; /* 水平居中 */
+      justify-content: center;
       gap: 10px;
       overflow-x: auto;
       padding: 4px;
@@ -253,7 +288,7 @@
     .carousel-media { width: 100%; max-height: 80vh; object-fit: contain; }
     .carousel-btn {
       position: absolute; top: 50%; transform: translateY(-50%);
-      background: rgba(255,255,255,0.1); color: #fff; border: none;
+      background: rgba(255,255,250,0.1); color: #fff; border: none;
       width: 48px; height: 48px; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 1001;
     }
     .carousel-prev { left: 10px; }
@@ -282,7 +317,13 @@
   </style>
 </head>
 <body>
-<div class="progress" id="progress"></div>
+<!-- 🔥 高级加载浮窗 -->
+<div class="loader-overlay" id="loaderOverlay">
+  <div class="loader-container">
+    <div class="loader-ring"></div>
+    <div class="loader-text">作品載入中</div>
+  </div>
+</div>
 
 <div class="page-header">
   <h1 class="page-title">莫凡韓式皮膚管理</h1>
@@ -313,7 +354,6 @@
 </div>
 
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
-<!-- 初始加载提示 -->
 <div class="works-grid" id="worksList">
   <div class="empty-tip" id="delayTip">頁面載入中，5秒後顯示作品...</div>
 </div>
@@ -378,17 +418,15 @@ let allWorksData = [];
 let selectedCategory = "nail";
 let currentSlideIndex = 0;
 let sortable = null;
-let isDelaying = true; // 🔥 防呆：延迟加载状态
-const progress = document.getElementById("progress");
+let isDelaying = true;
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
 const delayTip = document.getElementById('delayTip');
+const loaderOverlay = document.getElementById('loaderOverlay');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 // 分类映射
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
-
-// 绝对稳定的视频封面
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
 // 图片压缩
@@ -415,7 +453,7 @@ function hideLoading() { document.getElementById("loadingModal").style.display =
 
 // 分类选择
 function openCategoryModal() { 
-  if(isDelaying) return alert('請等待5秒載入完成後操作'); // 防呆
+  if(isDelaying) return alert('請等待5秒載入完成後操作');
   document.getElementById("categoryModal").style.display = "flex"; 
 }
 document.querySelectorAll('#categoryModal .category-item').forEach(item => {
@@ -430,7 +468,7 @@ document.querySelectorAll('#categoryModal .category-item').forEach(item => {
 
 // 筛选分类
 function openFilterCategoryModal() { 
-  if(isDelaying) return alert('請等待5秒載入完成後操作'); // 防呆
+  if(isDelaying) return alert('請等待5秒載入完成後操作');
   document.getElementById("filterCategoryModal").style.display = "flex"; 
 }
 document.querySelectorAll('#filterCategoryModal .category-item').forEach(item => {
@@ -447,7 +485,7 @@ document.querySelectorAll('#filterCategoryModal .category-item').forEach(item =>
 // 媒体筛选
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    if(isDelaying) return alert('請等待5秒載入完成後操作'); // 防呆
+    if(isDelaying) return alert('請等待5秒載入完成後操作');
     document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentMediaFilter = tab.dataset.type;
@@ -457,7 +495,7 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
 
 // 触发文件选择
 function triggerFile() { 
-  if(isDelaying) return alert('請等待5秒載入完成後操作'); // 防呆
+  if(isDelaying) return alert('請等待5秒載入完成後操作');
   document.getElementById('file-input').click(); 
 }
 
@@ -527,7 +565,6 @@ document.getElementById('file-input').onchange = async function(e) {
 // 加载作品
 async function loadAllWorks() {
   localStorage.removeItem('works_sort');
-  progress.style.width = "30%";
   try {
     const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
     const data = await res.json();
@@ -536,8 +573,6 @@ async function loadAllWorks() {
     allWorksData = []; 
     alert('❌ 作品加載失敗，請重新整理頁面');
   }
-  progress.style.width = "100%";
-  setTimeout(() => progress.style.width = 0, 300);
 }
 
 // 保存排序
@@ -547,7 +582,7 @@ function saveSortOrder(idList) {
 
 // 渲染作品
 function renderWorks() {
-  if(isDelaying) return; // 防呆：延迟期间不渲染
+  if(isDelaying) return;
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
@@ -585,7 +620,7 @@ function initSortable() {
 
 // 轮播
 function openCarousel(index) { 
-  if(isDelaying) return; // 防呆
+  if(isDelaying) return;
   currentSlideIndex = index; showSlide(); document.getElementById("carouselModal").style.display = "flex"; 
 }
 function closeCarousel() { 
@@ -631,16 +666,16 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// 🔥 核心：延迟5秒加载作品 + 全防呆
+// 5秒延迟加载 + 隐藏高级加载浮窗
 window.addEventListener('load', () => {
-  // 初始禁用上传按钮
   uploadBtn.disabled = true;
   
-  // 5秒延迟执行
   setTimeout(async () => {
     isDelaying = false;
-    uploadBtn.disabled = false; // 恢复上传按钮
-    delayTip.remove(); // 移除加载提示
+    uploadBtn.disabled = false;
+    delayTip.remove();
+    // 隐藏加载浮窗
+    loaderOverlay.classList.add('hidden');
     await loadAllWorks();
     renderWorks();
   }, 5000);
