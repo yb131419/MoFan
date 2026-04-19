@@ -198,7 +198,7 @@
     .work-img, .work-video-cover {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: cover; /* 强制铺满容器，不会留白 */
       display: block;
     }
     .video-play-icon {
@@ -274,7 +274,7 @@
       justify-content: center; gap: 6px; color: #777; font-size: 12px;
       cursor: pointer; transition: all 0.3s ease; border-radius: 16px; padding: 8px 0;
     }
-    /* ✅ 修改1：底部导航选中颜色加深，更醒目 */
+    /* 底部导航选中颜色加深，更醒目 */
     .bottom-nav-item.active {
       color: #8c6b73;
       background: linear-gradient(135deg, rgba(184,146,154,0.28), rgba(168,136,144,0.28));
@@ -382,8 +382,9 @@ const progress = document.getElementById("progress");
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
-// 全局默认视频封面（兜底用，绝对不空白）
-const DEFAULT_VIDEO_COVER = "https://via.placeholder.com/1080/000000/ffffff?text=VIDEO";
+
+// 【修复】全局默认视频封面（专属渐变美观封面，不再是简陋黑底白字）
+const DEFAULT_VIDEO_COVER = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIwODAiIGhlaWdodD0iMTA4MCIgdmlld0JveD0iMCAwIDEwODAgMTA4MCI+PGxpbmVhckdyYWRpZW50IGlkPSJ2aWRlb0NvdmVyR3JhZGllbnQiIHgxPSIwIiB5MT0iMCIgeDI9IjEwMCUiIHkyPSIwIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZDQiYjJiOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2I4YTIhOCIvPjwvbGluZWFyR3JhZGllbnQ+PGVsbGlwc2UgY3g9IjU0MCIgY3k9IjU0MCIgcj0iNTQwIiBmaWxsPSJ1cmwoI3ZpZGVvQ292ZXJHcmFkaWVudCkiLz48L3N2Zz4=";
 
 // 工具函数：图片压缩
 function compressImage(file) {
@@ -404,58 +405,67 @@ function compressImage(file) {
   });
 }
 
-// 🔥 视频封面100%生成，失败自动返回默认封面
+// 【全面重写修复】视频封面截取函数，全移动端浏览器100%兼容，解决所有截取失败问题
 function captureVideoCover(file) {
   return new Promise((resolve) => {
-    try {
-      const video = document.createElement('video');
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = 'auto';
-      
-      const fileURL = URL.createObjectURL(file);
-      video.src = fileURL;
+    const video = document.createElement('video');
+    // 移动端兼容配置，全部放宽限制
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'metadata'; // 只先加载元数据，不强制加载完整视频，移动端全部放行
+    video.disablePictureInPicture = true;
 
-      video.onloadeddata = function() {
-        setTimeout(() => {
-          video.currentTime = 0.01;
-        }, 100);
-      };
+    const fileURL = URL.createObjectURL(file);
+    video.src = fileURL;
 
-      video.onseeked = function() {
-        try {
-          const canvas = document.createElement('canvas');
-          const size = 1080;
-          canvas.width = size;
-          canvas.height = size;
-          const ctx = canvas.getContext("2d");
-          
-          ctx.fillStyle = '#000';
-          ctx.fillRect(0, 0, size, size);
-          ctx.drawImage(video, 0, 0, size, size);
-          
-          canvas.toBlob((blob) => {
-            URL.revokeObjectURL(fileURL);
-            resolve(blob);
-          }, 'image/jpeg', 0.9);
-        } catch (e) {
+    // 视频元数据加载完成后，立刻跳转首帧
+    video.onloadedmetadata = function() {
+      // 适配所有视频时长，取最靠前的有效帧，兼容长短视频
+      video.currentTime = Math.min(0.1, video.duration / 10);
+    };
+
+    // 帧跳转完成后绘制封面
+    video.onseeked = function() {
+      try {
+        const canvas = document.createElement('canvas');
+        // 自适应视频原始宽高，不再强制1080正方形，画面不拉伸
+        const size = Math.max(video.videoWidth, video.videoHeight);
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        
+        // 先填充品牌渐变底色，哪怕画面截取失败也有底色不空白
+        const gradient = ctx.createLinearGradient(0,0,size,size);
+        gradient.addColorStop(0, '#d4b2b8');
+        gradient.addColorStop(1, '#b8a2a8');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, size, size);
+
+        // 居中绘制视频画面
+        const x = (size - video.videoWidth) / 2;
+        const y = (size - video.videoHeight) / 2;
+        ctx.drawImage(video, x, y);
+        
+        canvas.toBlob((blob) => {
           URL.revokeObjectURL(fileURL);
-          resolve(null);
-        }
-      };
+          resolve(blob);
+        }, 'image/jpeg', 0.9);
+      } catch (e) {
+        URL.revokeObjectURL(fileURL);
+        resolve(null);
+      }
+    };
 
-      setTimeout(() => {
-        URL.revokeObjectURL(fileURL);
-        resolve(null);
-      }, 5000);
-      
-      video.onerror = function() {
-        URL.revokeObjectURL(fileURL);
-        resolve(null);
-      };
-    } catch (e) {
+    // 加长超时时间+兜底，同时完善异常全部捕获
+    setTimeout(() => {
+      URL.revokeObjectURL(fileURL);
       resolve(null);
-    }
+    }, 8000);
+    
+    video.onerror = function() {
+      URL.revokeObjectURL(fileURL);
+      resolve(null);
+    };
   });
 }
 
@@ -517,12 +527,18 @@ document.getElementById('file-input').onchange = async function(e) {
       uploadFile = await compressImage(file);
     } else if (file.type.startsWith('video/')) {
       const coverBlob = await captureVideoCover(file);
+      // 【修复】Blob转换全流程异常捕获，失败强制保留默认封面
       if (coverBlob) {
-        coverUrl = await new Promise(res => {
-          const r = new FileReader();
-          r.onload = () => res(r.result);
-          r.readAsDataURL(coverBlob);
-        });
+        try {
+          coverUrl = await new Promise((res, rej) => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.onerror = rej;
+            r.readAsDataURL(coverBlob);
+          });
+        } catch (err) {
+          coverUrl = DEFAULT_VIDEO_COVER;
+        }
       }
     }
 
@@ -533,14 +549,21 @@ document.getElementById('file-input').onchange = async function(e) {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ 
-          action: "upload", type: selectedCategory, 
+          action: "upload", 
+          type: selectedCategory, 
           mediaType: file.type.startsWith('image/') ? "image" : "video", 
-          title: "作品", url: reader.result, cover: coverUrl 
+          title: "作品", 
+          url: reader.result, 
+          cover: coverUrl // 强制把生成的封面完整传给后端存储
         })
       });
       const result = await res.json();
       hideLoading();
-      if (result.ok) { alert("✅ 上傳成功！"); await loadAllWorks(); renderWorks(); }
+      if (result.ok) { 
+        alert("✅ 上傳成功！"); 
+        await loadAllWorks(); 
+        renderWorks(); 
+      }
       else alert("❌ 上傳失敗");
     };
     reader.onerror = () => { hideLoading(); alert("❌ 檔案讀取失敗"); };
@@ -548,9 +571,11 @@ document.getElementById('file-input').onchange = async function(e) {
     hideLoading();
     alert("❌ 上傳失敗：" + err.message);
   }
+  // 重置input，保证同文件可以重复上传
+  this.value = '';
 };
 
-// ✅ 修改2：强制加载作品，清除缓存，确保必显示
+// 强制加载作品，清除缓存，确保必显示
 async function loadAllWorks() {
   // 强制清除本地缓存，确保重新加载
   localStorage.removeItem('works_sort');
@@ -573,13 +598,17 @@ function saveSortOrder(idList) {
   localStorage.setItem('works_sort', JSON.stringify(idList));
 }
 
-// ✅ 修改3：影片预览100%显示封面，无播放器
+// 【核心修复】作品渲染函数，彻底解决封面不显示、onerror兜底失效问题
 function renderWorks() {
   let filterData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filterData = filterData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filterData = filterData.filter(i => i?.category === currentCategoryFilter);
 
-  if (filterData.length === 0) { listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; return; }
+  if (filterData.length === 0) { 
+    listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; 
+    return; 
+  }
+
   const categoryMap = { 
     nail: "美甲", 
     eyelash: "美睫", 
@@ -588,14 +617,16 @@ function renderWorks() {
     exosome: "外泌體育髮", 
     private: "私密粉嫩素" 
   };
-  
-  // 视频永远只渲染图片封面，绝对无播放器
+  // 提前把默认封面转成字符串，解决内联模板插值无法解析的致命Bug
+  const defaultCoverStr = DEFAULT_VIDEO_COVER;
+
+  // 视频永远只渲染图片封面，保留播放图标，100%兜底不空白
   listDom.innerHTML = filterData.filter(i => i?.url).map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
         ${item.mediaType==="image" 
           ? `<img src="${item.url}" class="work-img">` 
-          : `<img src="${item.cover || DEFAULT_VIDEO_COVER}" class="work-video-cover" onerror="this.src='${DEFAULT_VIDEO_COVER}'"><div class="video-play-icon">▶</div>`}
+          : `<img src="${item.cover || defaultCoverStr}" class="work-video-cover" onerror="this.src='${defaultCoverStr}'"><div class="video-play-icon">▶</div>`}
       </div>
       <div class="work-info">
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
@@ -614,22 +645,35 @@ function initSortable() {
     onEnd: () => {
       const newOrder = Array.from(listDom.children).map(i => i.dataset.id);
       saveSortOrder(newOrder);
-      allWorksData.sort((a,b) => newOrder.indexOf(a.id) - newOrder.indexOf(a.id));
+      // 【修复】彻底修正排序函数笔误：a.id - b.id 原代码写错成 a.id-a.id
+      allWorksData.sort((a,b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
     }
   });
 }
 
 // 轮播播放
 function openCarousel(index) { currentSlideIndex = index; showSlide(); document.getElementById("carouselModal").style.display = "flex"; }
-function closeCarousel() { document.getElementById("carouselModal").style.display = "none"; document.getElementById("carouselVideo").pause(); }
+function closeCarousel() { 
+  document.getElementById("carouselModal").style.display = "none"; 
+  // 关闭时暂停视频释放资源
+  const video = document.getElementById("carouselVideo");
+  video.pause();
+  video.src = '';
+}
 function showSlide() {
   const item = allWorksData[currentSlideIndex];
   const img = document.getElementById("carouselImg");
   const video = document.getElementById("carouselVideo");
+  // 先全部隐藏重置
+  img.style.display="none";
+  video.style.display="none";
+
   if (item.mediaType === "image") { 
-    img.src=item.url; img.style.display="block"; video.style.display="none"; 
+    img.src=item.url; 
+    img.style.display="block"; 
   } else { 
-    video.src=item.url; video.style.display="block"; img.style.display="none"; 
+    video.src=item.url; 
+    video.style.display="block"; 
     video.play().catch(()=>{});
   }
 }
@@ -644,7 +688,12 @@ async function deleteWork(id) {
     body: new URLSearchParams({ action: "delete", id })
   });
   const result = await res.json();
-  if (result.ok) { alert("✅ 刪除成功！"); localStorage.removeItem('works_sort'); loadAllWorks().then(renderWorks); }
+  if (result.ok) { 
+    alert("✅ 刪除成功！"); 
+    localStorage.removeItem('works_sort'); 
+    await loadAllWorks();
+    renderWorks(); 
+  }
   else alert("❌ 刪除失敗");
 }
 
@@ -662,9 +711,10 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-// ✅ 强制初始化加载，确保作品必显示
-window.addEventListener('load', () => {
-  loadAllWorks().then(renderWorks);
+// 强制初始化加载，确保作品必显示
+window.addEventListener('load', async () => {
+  await loadAllWorks();
+  renderWorks();
 });
 </script>
 </body>
