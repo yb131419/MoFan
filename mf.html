@@ -15,7 +15,7 @@
 <div id="progress" class="progress w-0"></div>
 
 <div class="py-6 text-center">
-  <h1 class="text-xl font-bold text-pink-600">莫凡美業 作品集</h1>
+  <h1 class="text-xl font-bold text-pink-60">莫凡美業 作品集</h1>
 </div>
 
 <div class="flex justify-center gap-2 px-4 mb-4">
@@ -40,14 +40,13 @@
 <div id="list" class="px-4 grid grid-cols-2 gap-3"></div>
 
 <script>
-// ========== 請填入你的兩個網址 ==========
+// ========== 你只需要改这 2 个 ==========
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-const WORKER_URL = "mofan.subdomain.workers.dev";
+const WORKER_URL = "https://mofan.yb131419.workers.dev/"; 
 
 let currentTag = "all";
 const progress = document.getElementById("progress");
 
-// 上傳文件
 document.getElementById("file").onchange = async function(e){
   const file = e.target.files[0];
   if(!file) return;
@@ -55,8 +54,8 @@ document.getElementById("file").onchange = async function(e){
 
   try {
     progress.style.width = "30%";
-    
-    // 1. 上傳到 R2
+
+    // 上传到 R2
     const fd = new FormData();
     fd.append("file", file);
     const resR2 = await fetch(WORKER_URL, { method: "POST", body: fd });
@@ -64,27 +63,23 @@ document.getElementById("file").onchange = async function(e){
 
     progress.style.width = "70%";
 
-    // 2. 存到 GAS
-    await fetch(GAS_URL, {
+    // 保存到 GAS
+    const resGas = await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        action: "upload",
-        type: tag,
-        url: url
-      })
+      body: new URLSearchParams({ action: "upload", type: tag, url: url })
     });
 
     progress.style.width = "100%";
-    alert("✅ 上傳成功");
+    alert("✅ 上傳成功！");
     load(currentTag);
-  }catch(e){
-    alert("❌ 上傳失敗");
+  } catch(e) {
+    console.error(e);
+    alert("❌ 上傳失敗：" + e.message);
   }
   setTimeout(()=>progress.style.width=0,600);
 };
 
-// 讀取作品
 async function load(tag){
   currentTag = tag;
   progress.style.width = "40%";
@@ -92,19 +87,16 @@ async function load(tag){
   const data = await res.json();
   progress.style.width = "100%";
 
-  const all = [];
-  if(data.photos) all.push(...JSON.parse(data.photos));
-  if(data.beautys) all.push(...JSON.parse(data.beautys));
-  if(data.eyelashes) all.push(...JSON.parse(data.eyelashes));
+  const mapType = { 美甲: "photos", 美容: "beautys", 美睫: "eyelashes" };
+  let list = [];
 
-  const mapType = {
-    美甲: "photos",
-    美容: "beautys",
-    美睫: "eyelashes"
-  };
-
-  let list = all;
-  if(tag!=="all"){
+  if (tag === "all") {
+    list = [
+      ...(data.photos ? JSON.parse(data.photos) : []),
+      ...(data.beautys ? JSON.parse(data.beautys) : []),
+      ...(data.eyelashes ? JSON.parse(data.eyelashes) : [])
+    ];
+  } else {
     const key = mapType[tag];
     list = data[key] ? JSON.parse(data[key]) : [];
   }
@@ -117,7 +109,7 @@ async function load(tag){
           ?`<img src="${i.url}" class="w-full aspect-square object-cover">`
           :`<video src="${i.url}" class="w-full aspect-square object-cover" muted></video>`
         }
-        <div class="p-2 text-center text-sm">${i.title || "作品"}</div>
+        <div class="p-2 text-center text-sm">${i.title}</div>
         <button onclick="del('${i.type}','${i.id}')" class="bg-red-500 text-white text-xs p-1 w-full">刪除</button>
       </div>
     `;
@@ -125,7 +117,6 @@ async function load(tag){
   setTimeout(()=>progress.style.width=0,300);
 }
 
-// 刪除
 async function del(type,id){
   if(!confirm("確定刪除？"))return;
   await fetch(GAS_URL + `?action=delete&type=${type}&id=${id}`);
