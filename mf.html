@@ -17,10 +17,9 @@
       background: #fdfbfc;
       font-family: 'PingFang SC', 'Helvetica Neue', 'Noto Sans TC', sans-serif;
       padding-bottom: 120px;
-      color: #2a2a2;
+      color: #2a2a2a;
     }
 
-    /* 管理員登入成功浮窗 */
     .admin-toast {
       position: fixed;
       top: 20px;
@@ -446,7 +445,7 @@ let isAdmin = false;
 let adminName = "";
 
 // ======================
-// 你自己的管理員資料
+// 你的管理員帳號
 // ======================
 const MY_USER_ID = "admin001";
 const MY_USER_NAME = "管理員";
@@ -461,19 +460,18 @@ const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
-// 顯示管理員浮窗（顯示名稱）
 function showAdminToast() {
-  adminToast.innerText = `✅ 管理員：${adminName}`;
+  adminToast.innerText = `✅ 管理員：${adminName} 驗證成功`;
   adminToast.classList.add("show");
   setTimeout(() => {
     adminToast.classList.remove("show");
   }, 3000);
 }
 
-// 管理員驗證（正確版）
 async function checkAdmin() {
   try {
-    const res = await fetch(GAS_URL + "?action=verifyAdmin&userId=" + MY_USER_ID + "&userName=" + MY_USER_NAME);
+    const url = `${GAS_URL}?action=verifyAdmin&userId=${encodeURIComponent(MY_USER_ID)}&userName=${encodeURIComponent(MY_USER_NAME)}`;
+    const res = await fetch(url, { mode: 'cors' });
     const data = await res.json();
     
     isAdmin = data.isAdmin === true;
@@ -482,8 +480,11 @@ async function checkAdmin() {
     if (isAdmin) {
       uploadArea.style.display = "block";
       showAdminToast();
+    } else {
+      console.log("驗證失敗");
     }
   } catch (e) {
+    console.error("驗證錯誤", e);
     isAdmin = false;
     adminName = "";
   }
