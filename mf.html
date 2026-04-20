@@ -484,7 +484,7 @@ document.querySelectorAll('#filterCategoryModal .category-item').forEach(item =>
 
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.remove('active'));
+    document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentMediaFilter = tab.dataset.type;
     renderWorks();
@@ -690,18 +690,21 @@ window.addEventListener('load', async () => {
     
     const auth = await verifyAdmin(currentUserId, currentUserName);
     isAdmin = auth.isAdmin || false;
+
+    await loadAllWorks();
     
     if(isAdmin) {
       alert(`✅ 歡迎回來，${auth.name}！已開啟管理模式`);
       uploadArea.style.display = "block";
-      renderWorks();
     }
+
+    renderWorks();
   } catch (e) {
     isAdmin = false;
+    await loadAllWorks();
+    renderWorks();
   }
 
-  await loadAllWorks();
-  renderWorks();
   uploadBtn.disabled = false;
   loaderOverlay.classList.add('hidden');
 });
