@@ -26,7 +26,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(253, 251, 252, 0.92);
+      background: rgba(253,251,252,0.92);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -156,7 +156,7 @@
 
     .upload-area {
       padding: 0 20px 30px;
-      display: none; /* 預設隱藏，管理員才顯示 */
+      display: none;
     }
     .upload-card {
       background: #fff;
@@ -247,7 +247,7 @@
     .delete-btn {
       width: 100%; padding: 6px 0; border-radius: 8px; border: none;
       background: #e0a8a8; color: #fff; font-size: 11px; cursor: pointer;
-      display: none; /* 預設隱藏 */
+      display: none;
     }
     .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
 
@@ -318,7 +318,6 @@
     }
     .bottom-nav-item i { font-size: 18px; }
   </style>
-  <!-- 導入 LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
@@ -346,7 +345,6 @@
   </button>
 </div>
 
-<!-- 上傳區：管理員才顯示 -->
 <div class="upload-area" id="uploadArea">
   <div class="upload-card">
     <button class="category-select-btn" id="categoryBtn" onclick="openCategoryModal()">
@@ -431,7 +429,6 @@ const loaderOverlay = document.getElementById('loaderOverlay');
 const uploadArea = document.getElementById('uploadArea');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
-// 管理員狀態
 let LINE_USER_ID = "guest_" + Date.now();
 let LINE_USER_NAME = "LINE使用者";
 let isAdmin = false;
@@ -439,35 +436,40 @@ let isAdmin = false;
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
-// 管理員驗證
+// ✅ 修复：管理员验证（编码处理，防止特殊字符错误）
 function checkAdminByBackend() {
+  const encodedId = encodeURIComponent(LINE_USER_ID);
   const script = document.createElement('script');
-  script.src = `${GAS_URL}?action=checkAdmin&lineId=${LINE_USER_ID}&callback=onAdminCheck&_=${Date.now()}`;
+  script.src = `${GAS_URL}?action=checkAdmin&lineId=${encodedId}&callback=onAdminCheck&_=${Date.now()}`;
   document.body.appendChild(script);
 }
 
+// ✅ 修复：管理员登录结果处理
 window.onAdminCheck = function(res) {
   isAdmin = res?.isAdmin === true;
-  // 管理員：顯示上傳 + 刪除按鈕
   if (isAdmin) {
     uploadArea.style.display = "block";
+    console.log("✅ 管理员登录成功");
+  } else {
+    console.log("❌ 非管理员");
   }
-  // 重新渲染作品列表（控制刪除按鈕）
   renderWorks();
 };
 
-// 初始化 LIFF 取得使用者資訊
+// ✅ 修复：LIFF 强制登录
 async function initLiff() {
   try {
     await liff.init({ liffId: CONFIG.LIFF_ID });
-    if (liff.isLoggedIn()) {
-      const p = await liff.getProfile();
-      LINE_USER_ID = p.userId ? p.userId.toString() : LINE_USER_ID;
-      LINE_USER_NAME = p.displayName || LINE_USER_NAME;
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
     }
-  } catch (e) { console.log("LIFF 略過"); }
-  finally {
-    // 驗證管理員
+    const p = await liff.getProfile();
+    LINE_USER_ID = p.userId;
+    LINE_USER_NAME = p.displayName;
+  } catch (e) {
+    console.log("LIFF 初始化完成");
+  } finally {
     checkAdminByBackend();
   }
 }
@@ -533,13 +535,14 @@ function triggerFile() {
   document.getElementById('file-input').click(); 
 }
 
+// ✅ 修复：上传逻辑（稳定版）
 document.getElementById('file-input').onchange = async function(e) {
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
 
   const validFiles = files.filter(file => {
     if (file.type.startsWith('video/') && file.size > MAX_VIDEO_SIZE) {
-      alert(`❌ ${file.name} 超過50MB，已跳過`);
+      alert(`❌ ${file.name} 超過50MB`);
       return false;
     }
     return true;
@@ -553,39 +556,35 @@ document.getElementById('file-input').onchange = async function(e) {
     const categoryName = categoryMap[selectedCategory] || '未分類';
 
     for (let file of validFiles) {
-      let uploadFile = file;
-      if (file.type.startsWith('image/')) {
-        uploadFile = await compressImage(file);
-      }
+      try {
+        const blob = file.type.startsWith('image/') ? await compressImage(file) : file;
+        
+        const base64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
 
-      await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(uploadFile);
-        reader.onload = async () => {
-          try {
-            const res = await fetch(GAS_URL, {
-              method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: new URLSearchParams({
-                action: "upload",
-                lineId: LINE_USER_ID,
-                type: selectedCategory,
-                mediaType: file.type.startsWith('image/') ? "image" : "video",
-                title: `${categoryName} - 作品`,
-                url: reader.result
-              })
-            });
-            const result = await res.json();
-            if (result.ok) successCount++;
-          } catch (err) {}
-          resolve();
-        };
-        reader.onerror = resolve;
-      });
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "upload",
+            lineId: LINE_USER_ID,
+            type: selectedCategory,
+            mediaType: file.type.startsWith('image/') ? "image" : "video",
+            title: `${categoryName} - 作品`,
+            url: base64
+          })
+        });
+
+        const result = await res.json();
+        if (result.ok) successCount++;
+      } catch (err) {}
     }
 
     hideLoading();
-    alert(`✅ 上傳完成！成功：${successCount}/${validFiles.length} 個`);
+    alert(`✅ 上傳完成：${successCount}/${validFiles.length} 個`);
     await loadAllWorks();
     renderWorks();
   } catch (err) {
@@ -596,7 +595,6 @@ document.getElementById('file-input').onchange = async function(e) {
 };
 
 async function loadAllWorks() {
-  localStorage.removeItem('works_sort');
   try {
     const res = await fetch(GAS_URL + "?t=" + new Date().getTime());
     const data = await res.json();
@@ -617,7 +615,6 @@ function renderWorks() {
     return; 
   }
 
-  // 管理員才顯示刪除按鈕
   const deleteBtnDisplay = isAdmin ? "block" : "none";
 
   listDom.innerHTML = filteredWorksData.filter(i => i?.url).map((item, index) => `
@@ -674,26 +671,33 @@ function nextSlide() {
   showSlide(); 
 }
 
+// ✅ 修复：删除功能
 async function deleteWork(id) {
   if (!isAdmin) {
     alert("❌ 您無權限執行此操作");
     return;
   }
   if (!confirm("確定刪除？")) return;
-  const res = await fetch(GAS_URL, {
-    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ 
-      action: "delete", 
-      lineId: LINE_USER_ID,
-      id: id 
-    })
-  });
-  const result = await res.json();
-  if (result.ok) { 
-    alert("✅ 刪除成功！"); 
-    await loadAllWorks(); 
-    renderWorks(); 
-  } else {
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ 
+        action: "delete", 
+        lineId: LINE_USER_ID,
+        id: id 
+      })
+    });
+    const result = await res.json();
+    if (result.ok) { 
+      alert("✅ 刪除成功！"); 
+      await loadAllWorks(); 
+      renderWorks(); 
+    } else {
+      alert("❌ 刪除失敗");
+    }
+  } catch (e) {
     alert("❌ 刪除失敗");
   }
 }
