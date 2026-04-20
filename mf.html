@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>莫凡韓式皮膚管理 | 作品集</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
     * {
       margin: 0;
@@ -20,39 +20,18 @@
       color: #2a2a2a;
     }
 
-    .admin-toast {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #d4b2b8;
-      color: #fff;
-      padding: 12px 25px;
-      border-radius: 50px;
-      font-size: 14px;
-      z-index: 99999;
-      opacity: 0;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      white-space: nowrap;
-    }
-    .admin-toast.show {
-      opacity: 1;
-      top: 30px;
-    }
-
     .loader-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(253,251,252,0.92);
+      background: rgba(253, 251, 252, 0.92);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      transition: all 0.5s ease, visibility 0.5s ease;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
     }
     .loader-overlay.hidden {
       opacity: 0;
@@ -95,7 +74,7 @@
       display: block;
       width: 40px;
       height: 1px;
-      background: linear-gradient(90deg, #d4b2b8, #e8d0d0);
+      background: linear-gradient(90deg, #d4b2b8, #e8c8d0);
       margin: 0 auto 12px;
       opacity: 0.8;
     }
@@ -325,7 +304,7 @@
     .bottom-nav {
       position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       width: 92%; max-width: 500px; background: #ffffff;
-      border-radius: 24px; box-shadow: 0 4px 20 rgba(0,0,0,0.08);
+      border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       padding: 12px 8px; display: flex; z-index: 99;
     }
     .bottom-nav-item {
@@ -341,8 +320,6 @@
   </style>
 </head>
 <body>
-
-<div class="admin-toast" id="adminToast">✅ 管理員驗證成功</div>
 
 <div class="loader-overlay" id="loaderOverlay">
   <div class="loader-container">
@@ -363,14 +340,14 @@
     <div class="filter-tab" data-type="video">影片</div>
   </div>
   <button class="filter-select-btn" id="filterCategoryBtn" onclick="openFilterCategoryModal()">
-    <span>篩選作品分類：全部</span><i class="fa fa-chevron-down"></i>
+    <span>篩選分類：全部</span><i class="fa fa-chevron-down"></i>
   </button>
 </div>
 
 <div class="upload-area" id="uploadArea">
   <div class="upload-card">
     <button class="category-select-btn" id="categoryBtn" onclick="openCategoryModal()">
-      <span>選擇上傳分類：美甲</span><i class="fa fa-chevron-down"></i>
+      <span>選擇分類：美甲</span><i class="fa fa-chevron-down"></i>
     </button>
     <button class="upload-btn" id="uploadBtn" onclick="triggerFile()">
       <i class="fa fa-plus"></i> 批量上傳作品（多圖/多影片）
@@ -433,6 +410,7 @@
   </div>
 </div>
 
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
 let currentMediaFilter = "all-media";
@@ -442,53 +420,17 @@ let filteredWorksData = [];
 let selectedCategory = "nail";
 let currentSlideIndex = 0;
 let isAdmin = false;
-let adminName = "";
+let currentUserId = "";
+let currentUserName = "";
 
-// ======================
-// 你的管理員帳號
-// ======================
-const MY_USER_ID = "admin001";
-const MY_USER_NAME = "管理員";
-
-const uploadBtn = document.getElementById("uploadBtn");
 const uploadArea = document.getElementById("uploadArea");
+const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
 const loaderOverlay = document.getElementById('loaderOverlay');
-const adminToast = document.getElementById("adminToast");
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
-
-function showAdminToast() {
-  adminToast.innerText = `✅ 管理員：${adminName} 驗證成功`;
-  adminToast.classList.add("show");
-  setTimeout(() => {
-    adminToast.classList.remove("show");
-  }, 3000);
-}
-
-async function checkAdmin() {
-  try {
-    const url = `${GAS_URL}?action=verifyAdmin&userId=${encodeURIComponent(MY_USER_ID)}&userName=${encodeURIComponent(MY_USER_NAME)}`;
-    const res = await fetch(url, { mode: 'cors' });
-    const data = await res.json();
-    
-    isAdmin = data.isAdmin === true;
-    adminName = data.name || "";
-
-    if (isAdmin) {
-      uploadArea.style.display = "block";
-      showAdminToast();
-    } else {
-      console.log("驗證失敗");
-    }
-  } catch (e) {
-    console.error("驗證錯誤", e);
-    isAdmin = false;
-    adminName = "";
-  }
-}
 
 function compressImage(file) {
   return new Promise((resolve) => {
@@ -519,7 +461,7 @@ document.querySelectorAll('#categoryModal .category-item').forEach(item => {
     document.querySelectorAll('#categoryModal .category-item').forEach(i => i.classList.remove('active'));
     item.classList.add('active');
     selectedCategory = item.dataset.val;
-    document.getElementById("categoryBtn").innerHTML = `<span>選擇上傳分類：${item.innerText}</span><i class="fa fa-chevron-down"></i>`;
+    document.getElementById("categoryBtn").innerHTML = `<span>選擇分類：${item.innerText}</span><i class="fa fa-chevron-down"></i>`;
     document.getElementById("categoryModal").style.display = "none";
   });
 });
@@ -532,7 +474,7 @@ document.querySelectorAll('#filterCategoryModal .category-item').forEach(item =>
     document.querySelectorAll('#filterCategoryModal .category-item').forEach(i => i.classList.remove('active'));
     item.classList.add('active');
     currentCategoryFilter = item.dataset.val;
-    document.getElementById("filterCategoryBtn").innerHTML = `<span>篩選作品分類：${item.innerText}</span><i class="fa fa-chevron-down"></i>`;
+    document.getElementById("filterCategoryBtn").innerHTML = `<span>篩選分類：${item.innerText}</span><i class="fa fa-chevron-down"></i>`;
     document.getElementById("filterCategoryModal").style.display = "none";
     renderWorks();
   });
@@ -548,12 +490,12 @@ document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
 });
 
 function triggerFile() { 
+  if(!isAdmin) return;
   document.getElementById('file-input').click(); 
 }
 
 document.getElementById('file-input').onchange = async function(e) {
-  if (!isAdmin) { alert("權限不足"); return; }
-  
+  if(!isAdmin) return;
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
 
@@ -588,12 +530,12 @@ document.getElementById('file-input').onchange = async function(e) {
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
               body: new URLSearchParams({
                 action: "upload",
-                userId: MY_USER_ID,
-                userName: MY_USER_NAME,
                 type: selectedCategory,
                 mediaType: file.type.startsWith('image/') ? "image" : "video",
                 title: `${categoryName} - 作品`,
-                url: reader.result
+                url: reader.result,
+                userId: currentUserId,
+                userName: currentUserName
               })
             });
             const result = await res.json();
@@ -618,7 +560,7 @@ document.getElementById('file-input').onchange = async function(e) {
 
 async function loadAllWorks() {
   try {
-    const res = await fetch(GAS_URL + "?t=" + new Date().getTime());
+    const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
     const data = await res.json();
     allWorksData = Array.isArray(data.list) ? data.list : [];
     allWorksData.reverse();
@@ -647,7 +589,7 @@ function renderWorks() {
       <div class="work-info">
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
         <div class="work-operate">
-          <button class="delete-btn" onclick="deleteWork('${item.id}')" style="display:${isAdmin ? 'block' : 'none'};">刪除</button>
+          <button class="delete-btn" onclick="deleteWork('${item.id}')" style="display:${isAdmin ? 'block' : 'none'}">刪除</button>
         </div>
       </div>
     </div>
@@ -692,28 +634,24 @@ function nextSlide() {
 }
 
 async function deleteWork(id) {
-  if (!isAdmin) { alert("權限不足"); return; }
+  if(!isAdmin) return;
   if (!confirm("確定刪除？")) return;
-  
-  try {
-    const res = await fetch(GAS_URL, {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ 
-        action: "delete", 
-        id,
-        userId: MY_USER_ID,
-        userName: MY_USER_NAME
-      })
-    });
-    const result = await res.json();
-    if (result.ok) { 
-      alert("✅ 刪除成功！"); 
-      await loadAllWorks(); 
-      renderWorks(); 
-    } else {
-      alert("❌ 刪除失敗");
-    }
-  } catch (e) {
+  const res = await fetch(GAS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      action: "delete",
+      id: id,
+      userId: currentUserId,
+      userName: currentUserName
+    })
+  });
+  const result = await res.json();
+  if (result.ok) { 
+    alert("✅ 刪除成功！"); 
+    await loadAllWorks(); 
+    renderWorks(); 
+  } else {
     alert("❌ 刪除失敗");
   }
 }
@@ -726,14 +664,47 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
     switch(text) {
       case '預約': window.open('https://liff.line.me/2009598216-ZsS47DM8', '_blank'); break;
       case '地址': window.open('https://share.google/L5vzxJrpotDQnkWAx', '_blank'); break;
-      case '分享': window.open('line://nv/recommendOA/@97zfvfm', '_blank'); break;
+      case '分享': window.open('line://nv/recommendOA/@997zfvfm', '_blank'); break;
     }
   });
 });
 
+async function getLiffId() {
+  const res = await fetch(GAS_URL + "?action=getLiffId");
+  const data = await res.json();
+  return data.liffId || "";
+}
+
+async function verifyAdmin(uid, name) {
+  const res = await fetch(GAS_URL + `?action=verifyAdmin&userId=${encodeURIComponent(uid)}&userName=${encodeURIComponent(name)}`);
+  return await res.json();
+}
+
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
-  await checkAdmin();
+  try {
+    const liffId = await getLiffId();
+    if(liffId) {
+      await liff.init({ liffId });
+      if(!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+      const profile = await liff.getProfile();
+      currentUserId = profile.userId;
+      currentUserName = profile.displayName;
+      
+      const auth = await verifyAdmin(currentUserId, currentUserName);
+      isAdmin = auth.isAdmin || false;
+      
+      if(isAdmin) {
+        uploadArea.style.display = "block";
+      }
+    }
+  } catch (e) {
+    isAdmin = false;
+  }
+
   await loadAllWorks();
   renderWorks();
   uploadBtn.disabled = false;
