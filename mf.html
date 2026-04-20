@@ -413,6 +413,8 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
+const LIFF_ID = "2009598216-hGqsxRN9"; // 直接寫在前端
+
 let currentMediaFilter = "all-media";
 let currentCategoryFilter = "all";
 let allWorksData = [];
@@ -669,12 +671,6 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
-async function getLiffId() {
-  const res = await fetch(GAS_URL + "?action=getLiffId");
-  const data = await res.json();
-  return data.liffId || "";
-}
-
 async function verifyAdmin(uid, name) {
   const res = await fetch(GAS_URL + `?action=verifyAdmin&userId=${encodeURIComponent(uid)}&userName=${encodeURIComponent(name)}`);
   return await res.json();
@@ -683,23 +679,20 @@ async function verifyAdmin(uid, name) {
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
   try {
-    const liffId = await getLiffId();
-    if(liffId) {
-      await liff.init({ liffId });
-      if(!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
-      const profile = await liff.getProfile();
-      currentUserId = profile.userId;
-      currentUserName = profile.displayName;
-      
-      const auth = await verifyAdmin(currentUserId, currentUserName);
-      isAdmin = auth.isAdmin || false;
-      
-      if(isAdmin) {
-        uploadArea.style.display = "block";
-      }
+    await liff.init({ liffId: LIFF_ID });
+    if(!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+    const profile = await liff.getProfile();
+    currentUserId = profile.userId;
+    currentUserName = profile.displayName;
+    
+    const auth = await verifyAdmin(currentUserId, currentUserName);
+    isAdmin = auth.isAdmin || false;
+    
+    if(isAdmin) {
+      uploadArea.style.display = "block";
     }
   } catch (e) {
     isAdmin = false;
