@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>莫凡韓式皮膚管理 | 作品集</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-  <!-- 亞太高速 CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
     * {
@@ -425,6 +424,10 @@ const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
+// 快取配置
+const CACHE_KEY = "portfolio_works_cache";
+const CACHE_EXPIRE = 5 * 60 * 1000; // 5分鐘快取
+
 function compressImage(file) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -539,7 +542,8 @@ document.getElementById('file-input').onchange = async function(e) {
 
     hideLoading();
     alert(`✅ 上傳完成！成功：${successCount}/${validFiles.length} 個`);
-    await loadAllWorks();
+    localStorage.removeItem(CACHE_KEY);
+    await loadAllWorks(true);
     renderWorks();
   } catch (err) {
     hideLoading();
@@ -548,15 +552,52 @@ document.getElementById('file-input').onchange = async function(e) {
   this.value = '';
 };
 
-async function loadAllWorks() {
-  localStorage.removeItem('works_sort');
+// 從快取取出資料
+function getCache() {
+  try {
+    const item = localStorage.getItem(CACHE_KEY);
+    if (!item) return null;
+    const data = JSON.parse(item);
+    if (Date.now() - data.time > CACHE_EXPIRE) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    return data.list || [];
+  } catch (e) {
+    return null;
+  }
+}
+
+// 存入快取
+function setCache(list) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      time: Date.now(),
+      list: list
+    }));
+  } catch (e) {}
+}
+
+async function loadAllWorks(force = false) {
+  // 優先使用快取
+  if (!force) {
+    const cacheData = getCache();
+    if (cacheData) {
+      allWorksData = cacheData;
+      return;
+    }
+  }
+
   try {
     const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
     const data = await res.json();
-    allWorksData = Array.isArray(data.list) ? data.list : [];
-    allWorksData.reverse();
-  } catch (e) { 
-    allWorksData = []; 
+    const list = Array.isArray(data.list) ? data.list : [];
+    list.reverse();
+    allWorksData = list;
+    setCache(list);
+  } catch (e) {
+    const cacheData = getCache();
+    allWorksData = cacheData || [];
   }
 }
 
@@ -624,17 +665,22 @@ function nextSlide() {
 
 async function deleteWork(id) {
   if (!confirm("確定刪除？")) return;
-  const res = await fetch(GAS_URL, {
-    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "delete", id })
-  });
-  const result = await res.json();
-  if (result.ok) { 
-    alert("✅ 刪除成功！"); 
-    await loadAllWorks(); 
-    renderWorks(); 
-  } else {
-    alert("❌ 刪除失敗");
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ action: "delete", id })
+    });
+    const result = await res.json();
+    if (result.ok) { 
+      alert("✅ 刪除成功！"); 
+      localStorage.removeItem(CACHE_KEY);
+      await loadAllWorks(true); 
+      renderWorks(); 
+    } else {
+      alert("❌ 刪除失敗");
+    }
+  } catch (e) {
+    alert("❌ 刪除失敗，請重試");
   }
 }
 
@@ -651,12 +697,21 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
+// 啟動優化：先顯示快取，背景更新
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
-  await loadAllWorks();
-  uploadBtn.disabled = false;
-  loaderOverlay.classList.add('hidden');
+
+  // 1. 先讀快取 → 馬上顯示
+  await loadAllWorks(false);
   renderWorks();
+  loaderOverlay.classList.add('hidden');
+  uploadBtn.disabled = false;
+
+  // 2. 背景重新抓取最新資料
+  setTimeout(async () => {
+    await loadAllWorks(true);
+    renderWorks();
+  }, 1000);
 });
 </script>
 </body>
