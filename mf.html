@@ -21,6 +21,27 @@
       color: #2a2a2a;
     }
 
+    /* 管理員登入成功浮窗 */
+    .admin-toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #d4b2b8;
+      color: #fff;
+      padding: 12px 25px;
+      border-radius: 50px;
+      font-size: 14px;
+      z-index: 99999;
+      opacity: 0;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .admin-toast.show {
+      opacity: 1;
+      top: 30px;
+    }
+
     .loader-overlay {
       position: fixed;
       top: 0;
@@ -75,7 +96,7 @@
       display: block;
       width: 40px;
       height: 1px;
-      background: linear-gradient(90deg, #d4b2b8, #e8c8d0);
+      background: linear-gradient(90deg, #d4b2b8, #e8d0d0);
       margin: 0 auto 12px;
       opacity: 0.8;
     }
@@ -92,7 +113,7 @@
     }
     .page-subtitle {
       font-size: 13px;
-      color: #b0b0b0;
+      color: #b0b0b;
       letter-spacing: 2px;
       font-weight: 300;
       position: relative;
@@ -157,7 +178,7 @@
 
     .upload-area {
       padding: 0 20px 30px;
-      display: none; /* 預設隱藏，管理員才顯示 */
+      display: none;
     }
     .upload-card {
       background: #fff;
@@ -248,7 +269,7 @@
     .delete-btn {
       width: 100%; padding: 6px 0; border-radius: 8px; border: none;
       background: #e0a8a8; color: #fff; font-size: 11px; cursor: pointer;
-      display: none; /* 預設隱藏 */
+      display: none;
     }
     .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
 
@@ -321,6 +342,9 @@
   </style>
 </head>
 <body>
+
+<!-- 管理員登入提示浮窗 -->
+<div class="admin-toast" id="adminToast">✅ 管理員驗證成功</div>
 
 <div class="loader-overlay" id="loaderOverlay">
   <div class="loader-container">
@@ -419,26 +443,36 @@ let allWorksData = [];
 let filteredWorksData = [];
 let selectedCategory = "nail";
 let currentSlideIndex = 0;
-let isAdmin = false; // 管理員狀態
+let isAdmin = false;
 
 const uploadBtn = document.getElementById("uploadBtn");
 const uploadArea = document.getElementById("uploadArea");
 const listDom = document.getElementById('worksList');
 const loaderOverlay = document.getElementById('loaderOverlay');
+const adminToast = document.getElementById("adminToast");
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
-// 管理員驗證
+// 顯示管理員浮窗
+function showAdminToast() {
+  adminToast.classList.add("show");
+  setTimeout(() => {
+    adminToast.classList.remove("show");
+  }, 2500);
+}
+
+// 管理員驗證（穩定版）
 async function checkAdmin() {
   try {
-    const res = await fetch(GAS_URL + "?action=checkAdmin");
+    const res = await fetch(GAS_URL + "?action=verifyAdmin");
     const data = await res.json();
-    isAdmin = data.isAdmin === true;
-    
+    isAdmin = data.success === true;
+
     if (isAdmin) {
       uploadArea.style.display = "block";
+      showAdminToast();
     }
   } catch (e) {
     isAdmin = false;
@@ -572,7 +606,7 @@ document.getElementById('file-input').onchange = async function(e) {
 
 async function loadAllWorks() {
   try {
-    const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
+    const res = await fetch(GAS_URL + "?t=" + new Date().getTime());
     const data = await res.json();
     allWorksData = Array.isArray(data.list) ? data.list : [];
     allWorksData.reverse();
@@ -601,7 +635,7 @@ function renderWorks() {
       <div class="work-info">
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
         <div class="work-operate">
-          <button class="delete-btn" onclick="deleteWork('${item.id}')" ${isAdmin ? '' : 'style="display:none;"'}>刪除</button>
+          <button class="delete-btn" onclick="deleteWork('${item.id}')" style="display:${isAdmin ? 'block' : 'none'};">刪除</button>
         </div>
       </div>
     </div>
@@ -682,14 +716,9 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
 
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
-  
-  // 先驗證管理員
   await checkAdmin();
-  
-  // 載入資料
   await loadAllWorks();
   renderWorks();
-  
   uploadBtn.disabled = false;
   loaderOverlay.classList.add('hidden');
 });
