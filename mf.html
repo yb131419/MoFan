@@ -17,7 +17,7 @@
       background: #fdfbfc;
       font-family: 'PingFang SC', 'Helvetica Neue', 'Noto Sans TC', sans-serif;
       padding-bottom: 120px;
-      color: #2a2a2a;
+      color: #2a2a2;
     }
 
     /* 管理員登入成功浮窗 */
@@ -445,6 +445,12 @@ let currentSlideIndex = 0;
 let isAdmin = false;
 let adminName = "";
 
+// ======================
+// 你自己的管理員資料
+// ======================
+const MY_USER_ID = "admin001";
+const MY_USER_NAME = "管理員";
+
 const uploadBtn = document.getElementById("uploadBtn");
 const uploadArea = document.getElementById("uploadArea");
 const listDom = document.getElementById('worksList');
@@ -464,10 +470,10 @@ function showAdminToast() {
   }, 3000);
 }
 
-// 管理員驗證（UserID 驗證）
+// 管理員驗證（正確版）
 async function checkAdmin() {
   try {
-    const res = await fetch(GAS_URL + "?action=verifyAdmin");
+    const res = await fetch(GAS_URL + "?action=verifyAdmin&userId=" + MY_USER_ID + "&userName=" + MY_USER_NAME);
     const data = await res.json();
     
     isAdmin = data.isAdmin === true;
@@ -581,11 +587,12 @@ document.getElementById('file-input').onchange = async function(e) {
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
               body: new URLSearchParams({
                 action: "upload",
+                userId: MY_USER_ID,
+                userName: MY_USER_NAME,
                 type: selectedCategory,
                 mediaType: file.type.startsWith('image/') ? "image" : "video",
                 title: `${categoryName} - 作品`,
-                url: reader.result,
-                cover: DEFAULT_VIDEO_COVER
+                url: reader.result
               })
             });
             const result = await res.json();
@@ -690,7 +697,12 @@ async function deleteWork(id) {
   try {
     const res = await fetch(GAS_URL, {
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ action: "delete", id })
+      body: new URLSearchParams({ 
+        action: "delete", 
+        id,
+        userId: MY_USER_ID,
+        userName: MY_USER_NAME
+      })
     });
     const result = await res.json();
     if (result.ok) { 
@@ -713,7 +725,7 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
     switch(text) {
       case '預約': window.open('https://liff.line.me/2009598216-ZsS47DM8', '_blank'); break;
       case '地址': window.open('https://share.google/L5vzxJrpotDQnkWAx', '_blank'); break;
-      case '分享': window.open('line://nv/recommendOA/@997zfvfm', '_blank'); break;
+      case '分享': window.open('line://nv/recommendOA/@97zfvfm', '_blank'); break;
     }
   });
 });
