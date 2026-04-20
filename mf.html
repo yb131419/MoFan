@@ -413,7 +413,7 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
-const LIFF_ID = "2009598216-hGqsxRN9"; // 直接寫在前端
+const LIFF_ID = "2009598216-hGqsxRN9";
 
 let currentMediaFilter = "all-media";
 let currentCategoryFilter = "all";
@@ -484,7 +484,7 @@ document.querySelectorAll('#filterCategoryModal .category-item').forEach(item =>
 
 document.querySelectorAll('.media-tabs .filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.media-tabs .filter-tab').forEach(t => t.remove('active'));
     tab.classList.add('active');
     currentMediaFilter = tab.dataset.type;
     renderWorks();
@@ -672,7 +672,7 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
 });
 
 async function verifyAdmin(uid, name) {
-  const res = await fetch(GAS_URL + `?action=verifyAdmin&userId=${encodeURIComponent(uid)}&userName=${encodeURIComponent(name)}`);
+  const res = await fetch(GAS_URL + "?action=verifyAdmin&userId="+encodeURIComponent(uid)+"&userName="+encodeURIComponent(name));
   return await res.json();
 }
 
@@ -692,7 +692,9 @@ window.addEventListener('load', async () => {
     isAdmin = auth.isAdmin || false;
     
     if(isAdmin) {
+      alert(`✅ 歡迎回來，${auth.name}！已開啟管理模式`);
       uploadArea.style.display = "block";
+      renderWorks();
     }
   } catch (e) {
     isAdmin = false;
