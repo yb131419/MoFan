@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>莫凡韓式皮膚管理 | 作品集</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-  <!-- 亞太高速 CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- 亞太高速CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
   <style>
     * {
       margin: 0;
@@ -157,6 +157,7 @@
 
     .upload-area {
       padding: 0 20px 30px;
+      display: none; /* 預設隱藏，管理員才顯示 */
     }
     .upload-card {
       background: #fff;
@@ -247,6 +248,7 @@
     .delete-btn {
       width: 100%; padding: 6px 0; border-radius: 8px; border: none;
       background: #e0a8a8; color: #fff; font-size: 11px; cursor: pointer;
+      display: none; /* 預設隱藏 */
     }
     .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
 
@@ -343,7 +345,7 @@
   </button>
 </div>
 
-<div class="upload-area">
+<div class="upload-area" id="uploadArea">
   <div class="upload-card">
     <button class="category-select-btn" id="categoryBtn" onclick="openCategoryModal()">
       <span>選擇分類：美甲</span><i class="fa fa-chevron-down"></i>
@@ -417,13 +419,31 @@ let allWorksData = [];
 let filteredWorksData = [];
 let selectedCategory = "nail";
 let currentSlideIndex = 0;
+let isAdmin = false; // 管理員狀態
+
 const uploadBtn = document.getElementById("uploadBtn");
+const uploadArea = document.getElementById("uploadArea");
 const listDom = document.getElementById('worksList');
 const loaderOverlay = document.getElementById('loaderOverlay');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
+
+// 管理員驗證
+async function checkAdmin() {
+  try {
+    const res = await fetch(GAS_URL + "?action=checkAdmin");
+    const data = await res.json();
+    isAdmin = data.isAdmin === true;
+    
+    if (isAdmin) {
+      uploadArea.style.display = "block";
+    }
+  } catch (e) {
+    isAdmin = false;
+  }
+}
 
 function compressImage(file) {
   return new Promise((resolve) => {
@@ -487,6 +507,8 @@ function triggerFile() {
 }
 
 document.getElementById('file-input').onchange = async function(e) {
+  if (!isAdmin) { alert("權限不足"); return; }
+  
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
 
@@ -549,7 +571,6 @@ document.getElementById('file-input').onchange = async function(e) {
 };
 
 async function loadAllWorks() {
-  localStorage.removeItem('works_sort');
   try {
     const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
     const data = await res.json();
@@ -579,7 +600,9 @@ function renderWorks() {
       </div>
       <div class="work-info">
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
-        <div class="work-operate"><button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button></div>
+        <div class="work-operate">
+          <button class="delete-btn" onclick="deleteWork('${item.id}')" ${isAdmin ? '' : 'style="display:none;"'}>刪除</button>
+        </div>
       </div>
     </div>
   `).join("");
@@ -623,17 +646,23 @@ function nextSlide() {
 }
 
 async function deleteWork(id) {
+  if (!isAdmin) { alert("權限不足"); return; }
   if (!confirm("確定刪除？")) return;
-  const res = await fetch(GAS_URL, {
-    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "delete", id })
-  });
-  const result = await res.json();
-  if (result.ok) { 
-    alert("✅ 刪除成功！"); 
-    await loadAllWorks(); 
-    renderWorks(); 
-  } else {
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ action: "delete", id })
+    });
+    const result = await res.json();
+    if (result.ok) { 
+      alert("✅ 刪除成功！"); 
+      await loadAllWorks(); 
+      renderWorks(); 
+    } else {
+      alert("❌ 刪除失敗");
+    }
+  } catch (e) {
     alert("❌ 刪除失敗");
   }
 }
@@ -653,10 +682,16 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
 
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
+  
+  // 先驗證管理員
+  await checkAdmin();
+  
+  // 載入資料
   await loadAllWorks();
+  renderWorks();
+  
   uploadBtn.disabled = false;
   loaderOverlay.classList.add('hidden');
-  renderWorks();
 });
 </script>
 </body>
