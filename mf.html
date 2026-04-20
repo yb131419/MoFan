@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>莫凡韓式皮膚管理 | 作品集</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-  <!-- 亞太高速 CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
     * {
@@ -157,6 +156,7 @@
 
     .upload-area {
       padding: 0 20px 30px;
+      display: none; /* 預設隱藏，管理員才顯示 */
     }
     .upload-card {
       background: #fff;
@@ -247,6 +247,7 @@
     .delete-btn {
       width: 100%; padding: 6px 0; border-radius: 8px; border: none;
       background: #e0a8a8; color: #fff; font-size: 11px; cursor: pointer;
+      display: none; /* 預設隱藏 */
     }
     .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
 
@@ -317,6 +318,8 @@
     }
     .bottom-nav-item i { font-size: 18px; }
   </style>
+  <!-- 導入 LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
 
@@ -343,7 +346,8 @@
   </button>
 </div>
 
-<div class="upload-area">
+<!-- 上傳區：管理員才顯示 -->
+<div class="upload-area" id="uploadArea">
   <div class="upload-card">
     <button class="category-select-btn" id="categoryBtn" onclick="openCategoryModal()">
       <span>選擇上傳分類：美甲</span><i class="fa fa-chevron-down"></i>
@@ -411,6 +415,10 @@
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxQl92tgurrQmQO137YtukSt18bfiY3OXNNBA-tTFOrEXXfUbxRDXmDc4qfiTXTeRk1bg/exec";
+const CONFIG = {
+  LIFF_ID: "2009598216-ZsS47DM8" // 與預約系統相同
+};
+
 let currentMediaFilter = "all-media";
 let currentCategoryFilter = "all";
 let allWorksData = [];
@@ -420,10 +428,49 @@ let currentSlideIndex = 0;
 const uploadBtn = document.getElementById("uploadBtn");
 const listDom = document.getElementById('worksList');
 const loaderOverlay = document.getElementById('loaderOverlay');
+const uploadArea = document.getElementById('uploadArea');
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
+
+// 管理員狀態
+let LINE_USER_ID = "guest_" + Date.now();
+let LINE_USER_NAME = "LINE使用者";
+let isAdmin = false;
 
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩素" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
+
+// 管理員驗證
+function checkAdminByBackend() {
+  const script = document.createElement('script');
+  script.src = `${GAS_URL}?action=checkAdmin&lineId=${LINE_USER_ID}&callback=onAdminCheck&_=${Date.now()}`;
+  document.body.appendChild(script);
+}
+
+window.onAdminCheck = function(res) {
+  isAdmin = res?.isAdmin === true;
+  // 管理員：顯示上傳 + 刪除按鈕
+  if (isAdmin) {
+    uploadArea.style.display = "block";
+  }
+  // 重新渲染作品列表（控制刪除按鈕）
+  renderWorks();
+};
+
+// 初始化 LIFF 取得使用者資訊
+async function initLiff() {
+  try {
+    await liff.init({ liffId: CONFIG.LIFF_ID });
+    if (liff.isLoggedIn()) {
+      const p = await liff.getProfile();
+      LINE_USER_ID = p.userId ? p.userId.toString() : LINE_USER_ID;
+      LINE_USER_NAME = p.displayName || LINE_USER_NAME;
+    }
+  } catch (e) { console.log("LIFF 略過"); }
+  finally {
+    // 驗證管理員
+    checkAdminByBackend();
+  }
+}
 
 function compressImage(file) {
   return new Promise((resolve) => {
@@ -570,6 +617,9 @@ function renderWorks() {
     return; 
   }
 
+  // 管理員才顯示刪除按鈕
+  const deleteBtnDisplay = isAdmin ? "block" : "none";
+
   listDom.innerHTML = filteredWorksData.filter(i => i?.url).map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
@@ -579,7 +629,9 @@ function renderWorks() {
       </div>
       <div class="work-info">
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
-        <div class="work-operate"><button class="delete-btn" onclick="deleteWork('${item.id}')">刪除</button></div>
+        <div class="work-operate">
+          <button class="delete-btn" onclick="deleteWork('${item.id}')" style="display:${deleteBtnDisplay}">刪除</button>
+        </div>
       </div>
     </div>
   `).join("");
@@ -623,6 +675,10 @@ function nextSlide() {
 }
 
 async function deleteWork(id) {
+  if (!isAdmin) {
+    alert("❌ 您無權限執行此操作");
+    return;
+  }
   if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
     method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -653,6 +709,8 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
 
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
+  // 初始化 LIFF
+  await initLiff();
   await loadAllWorks();
   uploadBtn.disabled = false;
   loaderOverlay.classList.add('hidden');
