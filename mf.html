@@ -568,11 +568,11 @@ document.getElementById('file-input').onchange = async function(e) {
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
               body: new URLSearchParams({
                 action: "upload",
+                lineId: LINE_USER_ID,
                 type: selectedCategory,
                 mediaType: file.type.startsWith('image/') ? "image" : "video",
                 title: `${categoryName} - 作品`,
-                url: reader.result,
-                cover: DEFAULT_VIDEO_COVER
+                url: reader.result
               })
             });
             const result = await res.json();
@@ -598,7 +598,7 @@ document.getElementById('file-input').onchange = async function(e) {
 async function loadAllWorks() {
   localStorage.removeItem('works_sort');
   try {
-    const res = await fetch(GAS_URL + "?action=load&t=" + new Date().getTime());
+    const res = await fetch(GAS_URL + "?t=" + new Date().getTime());
     const data = await res.json();
     allWorksData = Array.isArray(data.list) ? data.list : [];
     allWorksData.reverse();
@@ -682,7 +682,11 @@ async function deleteWork(id) {
   if (!confirm("確定刪除？")) return;
   const res = await fetch(GAS_URL, {
     method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "delete", id })
+    body: new URLSearchParams({ 
+      action: "delete", 
+      lineId: LINE_USER_ID,
+      id: id 
+    })
   });
   const result = await res.json();
   if (result.ok) { 
@@ -709,7 +713,6 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
 
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
-  // 初始化 LIFF
   await initLiff();
   await loadAllWorks();
   uploadBtn.disabled = false;
