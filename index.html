@@ -940,8 +940,8 @@
   let isSubmittedSuccess = false;
   let locationDataMap = {};
   let reservationCountMap = {};
-  let LINE_USER_ID = "guest_" + Date.now();
-  let LINE_USER_NAME = "LINE使用者";
+  let LINE_USER_ID = ""; // 先清空，不給預設
+  let LINE_USER_NAME = "";
   let isAdmin = false;
   let currentPage = "user";
   let selectedReservations = [];
@@ -1122,13 +1122,6 @@
           loadLocationData();
           loadReservationCount();
         }
-      } else if (response.status === "adminList") {
-        window.fullReservationList = response.data || [];
-        window.fullReservationList.sort((a, b) => (a.submitTime || 0) - (b.submitTime || 0));
-        currentReservationPage = 1;
-        renderReservationsList(window.fullReservationList);
-      } else if (response.status === "adminTimeList") {
-        renderManageLocationList(response.date, response.times);
       } else if (response.status === "error") {
         alert("❌ 錯誤：" + (response.message || "系統異常"));
         currentPage === "user" && resetButtonState();
@@ -1489,43 +1482,41 @@
     setTimeout(() => document.body.removeChild(s), 3000);
   }
 
-async function initLiff() {
-  try {
-    // 初始化 LIFF
-    await liff.init({ liffId: CONFIG.LIFF_ID });
-    
-    // 未登入 → 導向登入
-    if (!liff.isLoggedIn()) {
-      liff.login();
+  // ✅ 修復：強制等待 LIFF 完成，確保拿到 U 開頭 ID
+  async function initLiff() {
+    try {
+      // 1. 初始化 LIFF
+      await liff.init({ liffId: CONFIG.LIFF_ID });
+
+      // 2. 未登入 → 強制導向登入
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      // 3. 取得真實 LINE 資料（U 開頭）
+      const profile = await liff.getProfile();
+      
+      if (profile?.userId) {
+        LINE_USER_ID = profile.userId;       // 真實 ID
+        LINE_USER_NAME = profile.displayName;
+      }
+
+    } catch (e) {
+      console.error("LIFF 錯誤:", e);
+      alert("請透過 LINE 開啟此預約系統");
       return;
     }
 
-    // 取得個人資料（一定會拿到 U 開頭 ID）
-    const profile = await liff.getProfile();
-    
-    if (profile?.userId) {
-      // ✅ 真實 LINE ID（U 開頭）
-      LINE_USER_ID = profile.userId;
-      LINE_USER_NAME = profile.displayName || "LINE使用者";
-    }
+    // ✅ 寫入表單（永遠是 U 開頭）
+    document.getElementById('lineId').value = LINE_USER_ID;
+    document.getElementById('lineName').value = LINE_USER_NAME;
 
-  } catch (e) {
-    console.error("LIFF 初始化失敗:", e);
-    
-    // ❌ 錯誤發生時，才使用訪客ID
-    LINE_USER_ID = "guest_" + Date.now();
-    LINE_USER_NAME = "訪客";
+    // 後續流程
+    checkAdminByBackend();
+    loadLocationData();
+    loadReservationCount();
   }
-
-  // ✅ 最後再寫入表單，確保一定拿到正確值
-  document.getElementById('lineId').value = LINE_USER_ID;
-  document.getElementById('lineName').value = LINE_USER_NAME;
-
-  // 繼續執行後續
-  checkAdminByBackend();
-  loadLocationData();
-  loadReservationCount();
-}
 
   document.addEventListener('DOMContentLoaded', async () => {
     submitBtn = document.getElementById('submitBtn');
@@ -1560,6 +1551,9 @@ async function initLiff() {
     headerTimeEl = document.getElementById('headerTime');
     successModal = document.getElementById('successModal');
 
+    // 預設禁用提交按鈕，等 LIFF 拿到 ID 才開放
+    submitBtn.disabled = true;
+
     updateHeaderTime();
     setInterval(updateHeaderTime, 1000);
 
@@ -1580,10 +1574,19 @@ async function initLiff() {
 
     userSelectDate.addEventListener('change', refreshLocationDataByDate);
 
+    // ✅ 強制先執行 LIFF，再啟用表單
     await initLiff();
 
-    infoForm.onsubmit = (e) => {
+    // ✅ 表單提交：確保一定有 U 開頭 ID
+    infoForm.onsubmit = async (e) => {
       e.preventDefault();
+
+      // 防呆：沒有拿到真實 ID 就不給提交
+      if (!LINE_USER_ID || LINE_USER_ID.startsWith("guest_")) {
+        alert("請透過 LINE 開啟，並允許登入權限");
+        return;
+      }
+
       const phone = phoneInput.value.trim();
       if (!validatePhone(phone)) { alert("請輸入正確10碼手機號碼"); phoneInput.focus(); return; }
       if (!locationSelect.value) { alert("請選擇預約地點"); return; }
