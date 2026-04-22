@@ -940,7 +940,7 @@
   let isSubmittedSuccess = false;
   let locationDataMap = {};
   let reservationCountMap = {};
-  let LINE_USER_ID = ""; // 永遠先清空，絕不給預設值
+  let LINE_USER_ID = "";
   let LINE_USER_NAME = "";
   let isAdmin = false;
   let currentPage = "user";
@@ -958,6 +958,11 @@
   let locationSelect, appointTimeDisplay, timeInput, locationInput;
   let userSelectDate;
   let successModal;
+
+  // 🔴 最強防呆：擋死 guest 開頭
+  function isRealUserId(uid) {
+    return uid && typeof uid === "string" && uid.startsWith("U") && !uid.startsWith("guest_");
+  }
 
   // 高質感浮窗
   function showSuccessModal() {
@@ -1052,9 +1057,8 @@
   }
 
   function togglePage() {
-    // 防呆：沒有真實 UID 禁止進入管理頁
-    if (!LINE_USER_ID || !LINE_USER_ID.startsWith('U')) {
-      alert("請透過 LINE 官方 APP 開啟，取得真實 ID 才能進入管理頁");
+    if (!isRealUserId(LINE_USER_ID)) {
+      alert("❌ 請使用 LINE APP 開啟此頁面，才能進入管理介面");
       return;
     }
 
@@ -1065,8 +1069,7 @@
   }
 
   function checkAdminByBackend() {
-    // 絕對確保有 UID 才檢查權限
-    if (!LINE_USER_ID || !LINE_USER_ID.startsWith('U')) return;
+    if (!isRealUserId(LINE_USER_ID)) return;
 
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=checkAdmin&lineId=${LINE_USER_ID}&callback=onAdminCheck&_=${Date.now()}`;
@@ -1118,7 +1121,6 @@
           submitBtn.disabled = true;
           btnText.textContent = '預約成功 ✅';
           
-          // 高質感浮窗
           showSuccessModal();
           
           infoForm.reset();
@@ -1240,6 +1242,12 @@
   }
 
   function sendData() {
+    if (!isRealUserId(LINE_USER_ID)) {
+      alert("❌ 請使用 LINE APP 開啟，才能提交預約");
+      resetButtonState();
+      return;
+    }
+
     try {
       const data = {
         pageId: "自然美學預約系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
@@ -1491,52 +1499,44 @@
     setTimeout(() => document.body.removeChild(s), 3000);
   }
 
-  // ✅ 100% 穩定取得 U 開頭真實 LINE ID
+  // ✅ 100% 只取 U 開頭 ID
   async function initLiff() {
     try {
-      // 1. 初始化 LIFF
       await liff.init({ liffId: CONFIG.LIFF_ID });
 
-      // 2. 未登入 → 強制導向登入
       if (!liff.isLoggedIn()) {
         liff.login();
         return;
       }
 
-      // 3. 取得個人檔案
       const profile = await liff.getProfile();
+      const uid = profile?.userId || "";
 
-      // 4. ✅ 最嚴格驗證：必須是 U 開頭
-      if (!profile?.userId || !profile.userId.startsWith("U")) {
-        alert("⚠️ 無法取得真實 LINE ID，請使用 LINE 官方 APP 開啟此網頁");
+      // 🔴 關鍵：只要不是 U 開頭，直接清空 + 警告
+      if (!isRealUserId(uid)) {
+        alert("❌ 請使用 LINE APP 開啟此頁面！\n\n外部瀏覽器只會取得匿名ID，無法使用預約與管理功能。");
         LINE_USER_ID = "";
+        submitBtn.disabled = true;
         return;
       }
 
-      // 5. 儲存 100% 真實 UID
-      LINE_USER_ID = profile.userId;
-      LINE_USER_NAME = profile.displayName;
+      // ✅ 只有 U 開頭才存
+      LINE_USER_ID = uid;
+      LINE_USER_NAME = profile.displayName || "使用者";
 
     } catch (e) {
-      console.error("LIFF 初始化失敗：", e);
-      alert("⚠️ 請透過 LINE 官方用戶端開啟，才能正常使用預約系統");
+      console.error("LIFF 錯誤", e);
+      alert("⚠️ 請使用 LINE APP 開啟，才能取得真實ID");
       LINE_USER_ID = "";
+      submitBtn.disabled = true;
       return;
     }
 
-    // 寫入表單隱藏欄位
     document.getElementById('lineId').value = LINE_USER_ID;
     document.getElementById('lineName').value = LINE_USER_NAME;
-
-    // ✅ 確定拿到 UID 才開放功能
     submitBtn.disabled = false;
 
-    // ✅ 延遲檢查管理員權限，確保 UID 已就緒
-    setTimeout(() => {
-      checkAdminByBackend();
-    }, 300);
-
-    // 載入資料
+    setTimeout(() => checkAdminByBackend(), 300);
     loadLocationData();
     loadReservationCount();
   }
@@ -1574,9 +1574,7 @@
     headerTimeEl = document.getElementById('headerTime');
     successModal = document.getElementById('successModal');
 
-    // 預設禁用提交按鈕，等 LIFF 拿到 ID 才開放
     submitBtn.disabled = true;
-
     updateHeaderTime();
     setInterval(updateHeaderTime, 1000);
 
@@ -1597,16 +1595,13 @@
 
     userSelectDate.addEventListener('change', refreshLocationDataByDate);
 
-    // ✅ 強制先執行 LIFF，再啟用表單
     await initLiff();
 
-    // ✅ 表單提交：確保一定有 U 開頭 ID
     infoForm.onsubmit = async (e) => {
       e.preventDefault();
 
-      // 最終防呆：沒有真實 ID 絕不提交
-      if (!LINE_USER_ID || !LINE_USER_ID.startsWith("U")) {
-        alert("⚠️ 請透過 LINE 官方 APP 開啟，並允許登入權限");
+      if (!isRealUserId(LINE_USER_ID)) {
+        alert("❌ 請使用 LINE APP 開啟，才能預約");
         return;
       }
 
