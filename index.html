@@ -940,7 +940,7 @@
   let isSubmittedSuccess = false;
   let locationDataMap = {};
   let reservationCountMap = {};
-  let LINE_USER_ID = ""; // 先清空，不給預設
+  let LINE_USER_ID = ""; // 永遠先清空，絕不給預設值
   let LINE_USER_NAME = "";
   let isAdmin = false;
   let currentPage = "user";
@@ -1052,6 +1052,12 @@
   }
 
   function togglePage() {
+    // 防呆：沒有真實 UID 禁止進入管理頁
+    if (!LINE_USER_ID || !LINE_USER_ID.startsWith('U')) {
+      alert("請透過 LINE 官方 APP 開啟，取得真實 ID 才能進入管理頁");
+      return;
+    }
+
     currentPage = currentPage === "user" ? "admin" : "user";
     userPage.style.display = currentPage === "user" ? "block" : "none";
     adminPage.style.display = currentPage === "admin" ? "block" : "none";
@@ -1059,6 +1065,9 @@
   }
 
   function checkAdminByBackend() {
+    // 絕對確保有 UID 才檢查權限
+    if (!LINE_USER_ID || !LINE_USER_ID.startsWith('U')) return;
+
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=checkAdmin&lineId=${LINE_USER_ID}&callback=onAdminCheck&_=${Date.now()}`;
     document.body.appendChild(script);
@@ -1482,44 +1491,55 @@
     setTimeout(() => document.body.removeChild(s), 3000);
   }
 
-  // ✅ 最穩定版本：保證 100% 拿到 U 開頭 ID
-async function initLiff() {
-  try {
-    await liff.init({ liffId: CONFIG.LIFF_ID });
+  // ✅ 100% 穩定取得 U 開頭真實 LINE ID
+  async function initLiff() {
+    try {
+      // 1. 初始化 LIFF
+      await liff.init({ liffId: CONFIG.LIFF_ID });
 
-    if (!liff.isLoggedIn()) {
-      liff.login();
+      // 2. 未登入 → 強制導向登入
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      // 3. 取得個人檔案
+      const profile = await liff.getProfile();
+
+      // 4. ✅ 最嚴格驗證：必須是 U 開頭
+      if (!profile?.userId || !profile.userId.startsWith("U")) {
+        alert("⚠️ 無法取得真實 LINE ID，請使用 LINE 官方 APP 開啟此網頁");
+        LINE_USER_ID = "";
+        return;
+      }
+
+      // 5. 儲存 100% 真實 UID
+      LINE_USER_ID = profile.userId;
+      LINE_USER_NAME = profile.displayName;
+
+    } catch (e) {
+      console.error("LIFF 初始化失敗：", e);
+      alert("⚠️ 請透過 LINE 官方用戶端開啟，才能正常使用預約系統");
+      LINE_USER_ID = "";
       return;
     }
 
-    const profile = await liff.getProfile();
-    
-    // ✅ 強制驗證：必須是 U 開頭
-    if (profile?.userId && profile.userId.startsWith("U")) {
-      LINE_USER_ID = profile.userId;
-      LINE_USER_NAME = profile.displayName;
-    } else {
-      throw new Error("無法取得真實 LINE ID");
-    }
+    // 寫入表單隱藏欄位
+    document.getElementById('lineId').value = LINE_USER_ID;
+    document.getElementById('lineName').value = LINE_USER_NAME;
 
-  } catch (e) {
-    console.error("LIFF 錯誤:", e);
-    alert("請透過 LINE 官方客戶端開啟，才能取得真實 ID");
-    LINE_USER_ID = "";
-    return;
+    // ✅ 確定拿到 UID 才開放功能
+    submitBtn.disabled = false;
+
+    // ✅ 延遲檢查管理員權限，確保 UID 已就緒
+    setTimeout(() => {
+      checkAdminByBackend();
+    }, 300);
+
+    // 載入資料
+    loadLocationData();
+    loadReservationCount();
   }
-
-  // 寫入表單
-  document.getElementById('lineId').value = LINE_USER_ID;
-  document.getElementById('lineName').value = LINE_USER_NAME;
-
-  // ✅ 確定拿到 ID 才開放按鈕
-  submitBtn.disabled = false;
-
-  checkAdminByBackend();
-  loadLocationData();
-  loadReservationCount();
-}
 
   document.addEventListener('DOMContentLoaded', async () => {
     submitBtn = document.getElementById('submitBtn');
@@ -1584,9 +1604,9 @@ async function initLiff() {
     infoForm.onsubmit = async (e) => {
       e.preventDefault();
 
-      // 防呆：沒有拿到真實 ID 就不給提交
-      if (!LINE_USER_ID || LINE_USER_ID.startsWith("guest_")) {
-        alert("請透過 LINE 開啟，並允許登入權限");
+      // 最終防呆：沒有真實 ID 絕不提交
+      if (!LINE_USER_ID || !LINE_USER_ID.startsWith("U")) {
+        alert("⚠️ 請透過 LINE 官方 APP 開啟，並允許登入權限");
         return;
       }
 
