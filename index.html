@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title> 莫凡韓式皮膚管理 </title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://lf-cn-beijing.bytecdn.cn/obj/dailycdn/liff/2/sdk.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
     * {
@@ -127,6 +127,7 @@
       background: linear-gradient(90deg, #ff4d88, #ff8da1, #c77dff);
       background-size: 100% auto;
       -webkit-background-clip: text;
+      background-clip: text;
       color: transparent;
       white-space: normal;
       letter-spacing: 1.5px;
@@ -176,7 +177,7 @@
     }
     .date-nav-row input {
       flex: 1;
-      margin-bottom: 0 !important;
+      margin-bottom: 0;
     }
     .date-nav-row .week-box {
       width: 70px;
@@ -223,12 +224,12 @@
     }
 
     input:focus, select:focus, textarea:focus {
-      background: #FDF2F8 !important;
-      border: 2px solid #D894A7 !important;
-      color: #6D4C5D !important;
-      font-weight: 700 !important;
-      outline: none !important;
-      box-shadow: 0 0 0 4px rgba(216,148,167,0.15) !important;
+      background: #FDF2F8;
+      border: 2px solid #D894A7;
+      color: #6D4C5D;
+      font-weight: 700;
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(216,148,167,0.15);
       transform: translateY(-1px);
     }
     select:valid {
@@ -282,7 +283,7 @@
       background: #FDF2F8;
       color: #6D4C5D;
       font-weight: 700;
-      border: 2px solid #D894A7 !important;
+      border: 2px solid #D894A7;
       box-shadow: 0 6px 18px rgba(216,148,167,0.2);
       transform: translateY(-1px);
     }
@@ -293,7 +294,7 @@
       color: #ccc;
       border-color: #eee;
       box-shadow: none;
-      transform: none !important;
+      transform: none;
     }
 
     .btn-container {
@@ -322,10 +323,6 @@
       overflow: hidden;
     }
 
-    button::before {
-      display: none;
-    }
-
     button:hover:not(:disabled) {
       transform: translateY(-3px);
       box-shadow: 0 12px 32px rgba(255, 61, 113, 0.35);
@@ -338,8 +335,8 @@
 
     button.permanent-disabled {
       opacity: 0.8;
-      background: #2dd386 !important;
-      box-shadow: 0 6px 20px rgba(45,211,134,0.25) !important;
+      background: #2dd386;
+      box-shadow: 0 6px 20px rgba(45,211,134,0.25);
     }
 
     .loader {
@@ -369,13 +366,13 @@
 
     .success {
       animation: successPulse 0.6s ease-in-out;
-      background: #2dd386 !important;
-      box-shadow: 0 8px 25px rgba(45,211,134,0.25) !important;
+      background: #2dd386;
+      box-shadow: 0 8px 25px rgba(45,211,134,0.25);
     }
 
     .error {
       animation: successPulse 0.6s ease-in-out;
-      background: #ff3366 !important;
+      background: #ff3366;
     }
 
     .admin-section {
@@ -465,16 +462,16 @@
 
     .admin-card input:focus,
     .admin-card select:focus {
-      background: #e6f7ff !important;
-      border: 2px solid #000 !important;
-      color: #000 !important;
-      font-weight: 900 !important;
+      background: #e6f7ff;
+      border: 2px solid #000;
+      color: #000;
+      font-weight: 900;
     }
     .admin-card textarea:focus {
-      background: #fff0f6 !important;
-      border: 2px solid #000 !important;
-      color: #000 !important;
-      font-weight: 900 !important;
+      background: #fff0f6;
+      border: 2px solid #000;
+      color: #000;
+      font-weight: 900;
     }
 
     .search-box {
@@ -492,7 +489,7 @@
       box-shadow: 0 4px 12px rgba(255,77,136,0.15);
     }
     .batch-delete-btn {
-      background: #ff3366 !important;
+      background: #ff3366;
       margin-top: 15px;
       height: 52px;
       font-size: 1rem;
@@ -714,33 +711,112 @@
     }
 
     .max-booking-input {
-      width: 100% !important;
-      height: 52px !important;
-      padding: 0 18px !important;
-      border-radius: 16px !important;
-      border: 1px solid #f0f0f0 !important;
-      font-size: 1rem !important;
-      background: #fafbfc !important;
-      color: #333 !important;
-      margin-bottom: 15px !important;
-      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
-      font-family: 'Noto Sans TC', sans-serif !important;
-      font-weight: 500 !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
-      text-align: center !important;
+      width: 100%;
+      height: 52px;
+      padding: 0 18px;
+      border-radius: 16px;
+      border: 1px solid #f0f0f0;
+      font-size: 1rem;
+      background: #fafbfc;
+      color: #333;
+      margin-bottom: 15px;
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      text-align: center;
     }
     .max-booking-input:focus {
-      background: #e6f7ff !important;
-      border: 2px solid #000 !important;
-      color: #000 !important;
-      font-weight: 900 !important;
-      outline: none !important;
-      box-shadow: 0 0 0 4px rgba(0,0,0,0.1) !important;
-      transform: translateY(-1px) !important;
+      background: #e6f7ff;
+      border: 2px solid #000;
+      color: #000;
+      font-weight: 900;
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
+    }
+
+    /* 高質感自訂浮窗樣式 */
+    .custom-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .custom-modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background: #fff;
+      width: 90%;
+      max-width: 380px;
+      border-radius: 20px;
+      padding: 35px 25px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      transform: translateY(30px);
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .custom-modal.show .modal-content {
+      transform: translateY(0);
+    }
+    .modal-icon {
+      font-size: 50px;
+      margin-bottom: 20px;
+      color: #2dd386;
+    }
+    .modal-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #333;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+    .modal-desc {
+      font-size: 15px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+    .modal-btn {
+      width: 100%;
+      height: 50px;
+      background: linear-gradient(135deg, #FF5D8F, #FF3377);
+      border: none;
+      border-radius: 16px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .modal-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 61, 113, 0.3);
     }
   </style>
 </head>
 <body>
+
+<!-- 高質感預約成功浮窗 -->
+<div class="custom-modal" id="successModal">
+  <div class="modal-content">
+    <div class="modal-icon">✅</div>
+    <div class="modal-title">預約成功</div>
+    <div class="modal-desc">專人將透過LINE與您聯繫<br>感謝您的預約</div>
+    <button class="modal-btn" onclick="closeSuccessModal()">確認</button>
+  </div>
+</div>
 
 <div class="top-bar">
   <div class="page-switch" id="switchContainer">
@@ -929,6 +1005,15 @@
   let headerTimeEl;
   let prevDateBtn, nextDateBtn, appointDate;
   let maxBookingInput, saveMaxBookingBtn;
+  let successModal;
+
+  // 浮窗控制
+  function openSuccessModal() {
+    successModal.classList.add('show');
+  }
+  function closeSuccessModal() {
+    successModal.classList.remove('show');
+  }
 
   function toggleCollapse(id) {
     const body = document.getElementById(id);
@@ -1177,7 +1262,8 @@
           submitBtn.classList.add('success','permanent-disabled');
           submitBtn.disabled = true;
           btnText.textContent = '預約成功 ✅';
-          alert("\n✅ 預約成功！\n\n專人將透過LINE與您聯繫");
+          // 開高質感浮窗
+          openSuccessModal();
           infoForm.reset();
           document.getElementById('weekText').textContent="星期幾";
           document.getElementById('timeGrid').innerHTML=`<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
@@ -1241,9 +1327,7 @@ function renderTimeList() {
     timeCountMap[t] = (timeCountMap[t] || 0) + 1;
   });
 
-  const uniqueList = [...new Set(list.map(item => item.value || item))];
-  uniqueList.sort();
-
+  const uniqueList = [...new Set(list.map(item => item.value || item))].sort();
   const availableList = uniqueList.filter(time => {
     if (shouldHideTime(date, time)) return false;
     const booked = reservationCountMap[`${date}_${time}`] || 0;
@@ -1604,6 +1688,14 @@ async function initLiff() {
     document.getElementById('lineId').value = LINE_USER_ID;
     document.getElementById('lineName').value = LINE_USER_NAME;
     checkAdminByBackend();
+    renderTimeSelectGrid();
+    
+    // 並行載入優化，大幅提速
+    Promise.all([
+      new Promise(resolve => { loadTimeData(); resolve(); }),
+      new Promise(resolve => { loadReservationCount(); resolve(); }),
+      new Promise(resolve => { loadMaxBookingLimit(); resolve(); })
+    ]);
   }
 }
 
@@ -1641,12 +1733,6 @@ async function initLiff() {
     updateHeaderTime();
     setInterval(updateHeaderTime, 1000);
 
-    // 立即初始化日期，不用等LIFF
-    const today = getTaipeiDateString();
-    appointDate.min = today;
-    appointDate.value = today;
-    manageDate.min = today;
-
     prevDateBtn.onclick = () => changeDate(-1);
     nextDateBtn.onclick = () => changeDate(1);
 
@@ -1663,16 +1749,14 @@ async function initLiff() {
     manageDate.addEventListener('change', loadManageTime);
     
     phoneInput.addEventListener('input', e => e.target.value = formatPhoneNumber(e.target.value));
+    const today = getTaipeiDateString();
+    appointDate.min = today;
+    manageDate.min = today;
+
+    // 取得浮窗元素
+    successModal = document.getElementById('successModal');
     
-    // 立即載入預約所需數據，不用等登入
-    loadTimeData();
-    loadReservationCount();
-    loadMaxBookingLimit();
-    renderTimeSelectGrid();
-    renderTimeList();
-    
-    // 初始化LIFF（背景執行，不阻擋頁面使用）
-    initLiff();
+    await initLiff();
     
     appointDate.addEventListener('change', renderTimeList);
     appointDate.addEventListener('input', renderTimeList);
