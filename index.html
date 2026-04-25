@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title> 自然美學 </title>
-  <!-- 台灣高速 CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@line/liff@2.22.0/dist/liff.stable.js"></script>
+  <title> 莫凡韓式皮膚管理 </title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
     * {
@@ -16,7 +14,7 @@
     }
 
     body {
-      background: linear-gradient(135deg, #f0f9f4 0%, #f7fdf9 50%, #e6f7f0 100%);
+      background: linear-gradient(135deg, #fdf2f8 0%, #fef7fb 50%, #fce8f3 100%);
       font-family: 'Noto Sans TC', sans-serif;
       color: #444;
       display: flex;
@@ -35,7 +33,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 Q100,20 100,100 L0,100 Z" fill="rgba(179,255,217,0.05)"/></svg>');
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 Q100,20 100,100 L0,100 Z" fill="rgba(255,179,217,0.05)"/></svg>');
       background-size: cover;
       opacity: 0.3;
       z-index: -1;
@@ -57,24 +55,24 @@
       padding: 10px 18px;
       border-radius: 50px;
       background: #fff;
-      border: 1px solid rgba(46, 204, 113, 0.2);
-      color: #2ecc71;
+      border: 1px solid rgba(255, 77, 136, 0.2);
+      color: #ff4d88;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(46,204,113,0.1);
+      box-shadow: 0 4px 15px rgba(255,77,136,0.1);
       transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .switch-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(46,204,113,0.15);
-      background: #f5fff9;
+      box-shadow: 0 6px 20px rgba(255,77,136,0.15);
+      background: #fff5f8;
     }
 
     main {
       background: #ffffff;
       border-radius: 24px;
-      box-shadow: 0 15px 50px rgba(46, 204, 113, 0.12);
+      box-shadow: 0 15px 50px rgba(255, 133, 162, 0.12);
       width: 100%;
       max-width: 460px;
       padding: 35px 25px;
@@ -91,7 +89,7 @@
       left: 0;
       width: 100%;
       height: 6px;
-      background: linear-gradient(90deg, #2ecc71, #27ae60, #82e0aa);
+      background: linear-gradient(90deg, #ff8da1, #ff4d88, #c77dff);
     }
 
     @media (min-width: 768px) {
@@ -109,7 +107,7 @@
     .header-time {
       text-align: center;
       font-size: 14px;
-      color: #2ecc71;
+      color: #ff4d88;
       font-weight: 600;
       margin-bottom: 12px;
       letter-spacing: 1px;
@@ -126,7 +124,7 @@
       font-size: 1.8rem;
       display: block;
       margin-bottom: 12px;
-      background: linear-gradient(90deg, #2ecc71, #27ae60, #82e0aa);
+      background: linear-gradient(90deg, #ff4d88, #ff8da1, #c77dff);
       background-size: 100% auto;
       -webkit-background-clip: text;
       color: transparent;
@@ -148,6 +146,51 @@
       font-size: 0.95rem;
       color: #555;
       letter-spacing: 0.5px;
+    }
+
+    .date-nav-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 25px;
+    }
+    .date-nav-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #eee;
+      font-size: 18px;
+      font-weight: 700;
+      color: #ff4d88;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .date-nav-btn:hover {
+      background: #FDF2F8;
+      border-color: #D894A7;
+    }
+    .date-nav-row input {
+      flex: 1;
+      margin-bottom: 0 !important;
+    }
+    .date-nav-row .week-box {
+      width: 70px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid #f3f3f3;
+      background: #fafbfc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #666;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
     input[type="text"],
@@ -180,29 +223,36 @@
     }
 
     input:focus, select:focus, textarea:focus {
-      background: #f0f9f4;
-      border: 2px solid #58d68d;
-      color: #27ae60;
-      font-weight: 600;
-      outline: none;
-      box-shadow: 0 0 0 4px rgba(88,214,141,0.15);
+      background: #FDF2F8 !important;
+      border: 2px solid #D894A7 !important;
+      color: #6D4C5D !important;
+      font-weight: 700 !important;
+      outline: none !important;
+      box-shadow: 0 0 0 4px rgba(216,148,167,0.15) !important;
       transform: translateY(-1px);
     }
     select:valid {
-      background: #f0f9f4;
-      border: 2px solid #58d68d;
-      color: #27ae60;
-      font-weight: 600;
+      background: #FDF2F8;
+      border: 2px solid #D894A7;
+      color: #6D4C5D;
+      font-weight: 700;
     }
 
     select {
       -webkit-appearance: none;
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 24 24' fill='none' stroke='%23777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 18px center;
       background-size: 18px;
       cursor: pointer;
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 25px;
     }
 
     .time-btn {
@@ -222,18 +272,18 @@
     }
 
     .time-btn:hover:not(.expired) {
-      border-color: #58d68d;
-      color: #2ecc71;
+      border-color: #ff85a2;
+      color: #ff4d88;
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(46,204,113,0.1);
+      box-shadow: 0 4px 12px rgba(255,133,162,0.1);
     }
 
     .time-btn.active {
-      background: #f0f9f4;
-      color: #27ae60;
+      background: #FDF2F8;
+      color: #6D4C5D;
       font-weight: 700;
-      border: 2px solid #58d68d;
-      box-shadow: 0 6px 18px rgba(88,214,141,0.2);
+      border: 2px solid #D894A7 !important;
+      box-shadow: 0 6px 18px rgba(216,148,167,0.2);
       transform: translateY(-1px);
     }
     .time-btn.expired {
@@ -243,7 +293,7 @@
       color: #ccc;
       border-color: #eee;
       box-shadow: none;
-      transform: none;
+      transform: none !important;
     }
 
     .btn-container {
@@ -252,60 +302,44 @@
 
     button {
       width: 100%;
-      height: 58px;
-      background: linear-gradient(135deg, #4cd991, #2ecc71, #27ae60);
-      background-size: 200% 200%;
+      height: 56px;
+      background: linear-gradient(135deg, #FF5D8F, #FF3377);
       border: none;
-      border-radius: 20px;
-      font-size: 1.1rem;
+      border-radius: 18px;
+      font-size: 1.05rem;
       color: #fff;
-      font-weight: 800;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-      box-shadow: 0 8px 28px rgba(46, 204, 113, 0.3);
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      box-shadow: 0 8px 25px rgba(255, 61, 113, 0.28);
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 10px;
       font-family: 'Noto Sans TC', sans-serif;
-      letter-spacing: 1.8px;
+      letter-spacing: 1px;
       position: relative;
       overflow: hidden;
-      animation: gradientShift 3s ease infinite;
     }
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+
     button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-      transition: left 0.6s ease;
+      display: none;
     }
-    button:hover:not(:disabled)::before {
-      left: 100%;
-    }
+
     button:hover:not(:disabled) {
-      transform: translateY(-4px);
-      box-shadow: 0 14px 36px rgba(46, 204, 113, 0.4);
-      letter-spacing: 2.2px;
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(255, 61, 113, 0.35);
     }
+
     button:disabled {
-      opacity: 0.75;
+      opacity: 0.7;
       cursor: not-allowed;
-      transform: none !important;
-      box-shadow: 0 4px 15px rgba(46,204,113,0.15) !important;
     }
+
     button.permanent-disabled {
-      opacity: 1;
-      background: linear-gradient(135deg, #38e08d, #2ecc71);
-      box-shadow: 0 8px 25px rgba(45, 211, 134, 0.3);
+      opacity: 0.8;
+      background: #2dd386 !important;
+      box-shadow: 0 6px 20px rgba(45,211,134,0.25) !important;
     }
 
     .loader {
@@ -357,7 +391,7 @@
     .admin-title {
       font-size: 1.5rem;
       font-weight: 900;
-      color: #2ecc71;
+      color: #ff4d88;
       margin-bottom: 15px;
       text-align: center;
       display: flex;
@@ -395,7 +429,7 @@
       border-radius: 24px;
       padding: 28px;
       box-shadow: 0 6px 22px rgba(0,0,0,0.06);
-      border: 1px solid rgba(46,204,113,0.05);
+      border: 1px solid rgba(255,77,136,0.05);
       transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
       position: relative;
       overflow: hidden;
@@ -408,7 +442,7 @@
       left: 0;
       width: 5px;
       height: 100%;
-      background: linear-gradient(180deg, #2ecc71, #58d68d);
+      background: linear-gradient(180deg, #ff4d88, #ff8da1);
     }
 
     .admin-card:hover {
@@ -431,23 +465,23 @@
 
     .admin-card input:focus,
     .admin-card select:focus {
-      background: #e6f7ff;
-      border: 2px solid #000;
-      color: #000;
-      font-weight: 900;
+      background: #e6f7ff !important;
+      border: 2px solid #000 !important;
+      color: #000 !important;
+      font-weight: 900 !important;
     }
     .admin-card textarea:focus {
-      background: #f0fff4;
-      border: 2px solid #000;
-      color: #000;
-      font-weight: 900;
+      background: #fff0f6 !important;
+      border: 2px solid #000 !important;
+      color: #000 !important;
+      font-weight: 900 !important;
     }
 
     .search-box {
       height: 50px;
       border-radius: 16px;
       margin-bottom: 15px;
-      border: 1px solid #d4f8e4;
+      border: 1px solid #ffd6e7;
     }
 
     .admin-btn {
@@ -455,10 +489,10 @@
       font-size: 1rem;
       margin-bottom: 15px;
       border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(46,204,113,0.15);
+      box-shadow: 0 4px 12px rgba(255,77,136,0.15);
     }
     .batch-delete-btn {
-      background: #ff3366;
+      background: #ff3366 !important;
       margin-top: 15px;
       height: 52px;
       font-size: 1rem;
@@ -482,8 +516,8 @@
       transition: all 0.3s ease;
     }
     .reservation-item:hover {
-      background: #f0fff4;
-      border-color: rgba(46,204,113,0.15);
+      background: #fff5f8;
+      border-color: rgba(255,77,136,0.15);
       transform: translateX(2px);
     }
     .reservation-item:last-child {
@@ -504,7 +538,7 @@
     }
     .reserve-num {
       font-size: 0.9rem;
-      color: #2ecc71;
+      color: #ff4d88;
       font-weight: 900;
       min-width: 28px;
       text-align: center;
@@ -553,9 +587,9 @@
       transition: all 0.3s;
     }
     .time-manage-item:hover {
-      background: #f0f9f4;
-      border-color: #58d68d;
-      color: #27ae60;
+      background: #FDF2F8;
+      border-color: #D894A7;
+      color: #6D4C5D;
       font-weight: 700;
     }
 
@@ -637,9 +671,9 @@
       font-size: 14px;
     }
     .time-select-item.active {
-      background: #f0f9f4;
-      border-color: #58d68d;
-      color: #27ae60;
+      background: #FDF2F8;
+      border-color: #D894A7;
+      color: #6D4C5D;
       font-weight: 700;
     }
 
@@ -665,9 +699,9 @@
       transition: all 0.2s;
     }
     .page-btn:hover:not(:disabled) {
-      background: #f0f9f4;
-      border-color: #58d68d;
-      color: #27ae60;
+      background: #FDF2F8;
+      border-color: #D894A7;
+      color: #6D4C5D;
     }
     .page-btn:disabled {
       opacity: 0.4;
@@ -680,112 +714,29 @@
     }
 
     .max-booking-input {
-      width: 100%;
-      height: 52px;
-      padding: 0 18px;
-      border-radius: 16px;
-      border: 1px solid #f0f0f0;
-      font-size: 1rem;
-      background: #fafbfc;
-      color: #333;
-      margin-bottom: 15px;
-      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-      font-family: 'Noto Sans TC', sans-serif;
-      font-weight: 500;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      text-align: center;
+      width: 100% !important;
+      height: 52px !important;
+      padding: 0 18px !important;
+      border-radius: 16px !important;
+      border: 1px solid #f0f0f0 !important;
+      font-size: 1rem !important;
+      background: #fafbfc !important;
+      color: #333 !important;
+      margin-bottom: 15px !important;
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
+      font-family: 'Noto Sans TC', sans-serif !important;
+      font-weight: 500 !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+      text-align: center !important;
     }
     .max-booking-input:focus {
-      background: #e6f7ff;
-      border: 2px solid #000;
-      color: #000;
-      font-weight: 900;
-      outline: none;
-      box-shadow: 0 0 0 4px rgba(0,0,0,0.1);
-      transform: translateY(-1px);
-    }
-
-    /* 高質感預約成功浮窗 */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(4px);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-    .modal-overlay.show {
-      opacity: 1;
-      visibility: visible;
-    }
-    .success-modal {
-      background: #fff;
-      width: 90%;
-      max-width: 380px;
-      border-radius: 24px;
-      padding: 40px 30px;
-      text-align: center;
-      box-shadow: 0 20px 60px rgba(46, 204, 113, 0.25);
-      transform: scale(0.9);
-      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-      position: relative;
-    }
-    .modal-overlay.show .success-modal {
-      transform: scale(1);
-    }
-    .success-icon {
-      width: 70px;
-      height: 70px;
-      background: #2ecc71;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 32px;
-      color: #fff;
-      animation: successPop 0.6s ease;
-    }
-    @keyframes successPop {
-      0% { transform: scale(0); opacity: 0; }
-      70% { transform: scale(1.15); }
-      100% { transform: scale(1); }
-    }
-    .success-modal h3 {
-      font-size: 1.5rem;
-      font-weight: 900;
-      color: #2ecc71;
-      margin-bottom: 12px;
-    }
-    .success-modal p {
-      font-size: 1rem;
-      color: #666;
-      line-height: 1.6;
-      margin-bottom: 30px;
-    }
-    .modal-close-btn {
-      width: 100%;
-      height: 54px;
-      background: #2ecc71;
-      color: #fff;
-      border: none;
-      border-radius: 16px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .modal-close-btn:hover {
-      background: #27ae60;
-      transform: translateY(-2px);
+      background: #e6f7ff !important;
+      border: 2px solid #000 !important;
+      color: #000 !important;
+      font-weight: 900 !important;
+      outline: none !important;
+      box-shadow: 0 0 0 4px rgba(0,0,0,0.1) !important;
+      transform: translateY(-1px) !important;
     }
   </style>
 </head>
@@ -802,27 +753,41 @@
     <div class="header-time" id="headerTime">載入時間中...</div>
 
     <h2>
-      <span class="main-title">自然美學<br>線上預約系統</span>
-      <span class="sub-title">千年的回春秘密<br>『 免費體驗 』</span>
+      <span class="main-title">莫凡<br>線上預約系統</span>
+      <span class="sub-title">韓式皮膚管理、美甲、霧眉<br>『 一對一貼心服務 』</span>
     </h2>
 
     <form id="infoForm">
-      <input type="hidden" id="pageId" value="自然美學預約系統">
+      <input type="hidden" id="pageId" value="美容預約系統">
       <input type="hidden" id="lineId">
       <input type="hidden" id="lineName">
       <input type="hidden" id="appointTime" name="appointTime">
-      <input type="hidden" id="appointDate">
 
-      <label>預約地點</label>
-      <select id="location" required>
-        <option value="">請選擇預約地點</option>
+      <label>服務項目</label>
+      <select id="serviceType" required>
+        <option value="">請選擇服務項目</option>
+        <option value="手足保養">手足保養</option>
+        <option value="美甲光療凝膠">美甲光療凝膠</option>
+        <option value="霧眉">霧眉</option>
+        <option value="臉部保養">臉部保養</option>
+        <option value="粉刺管理">粉刺管理</option>
+        <option value="韓式皮膚管理">韓式皮膚管理</option>
+        <option value="重返青春">重返青春</option>
+        <option value="雷射煥膚">雷射煥膚</option>
       </select>
 
       <label>預約日期</label>
-      <input type="date" id="userSelectDate" required>
+      <div class="date-nav-row">
+        <button type="button" class="date-nav-btn" id="prevDateBtn">&lt;</button>
+        <input type="date" id="appointDate" required>
+        <button type="button" class="date-nav-btn" id="nextDateBtn">&gt;</button>
+        <div class="week-box" id="weekText">星期幾</div>
+      </div>
 
-      <label>預約時間</label>
-      <input type="text" id="appointTimeDisplay" readonly placeholder="系統自動帶入預約時間">
+      <label>預約時段</label>
+      <div class="time-grid" id="timeGrid">
+        <div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>
+      </div>
 
       <label>姓名</label>
       <input type="text" id="name" required placeholder="請輸入您的姓名">
@@ -830,8 +795,11 @@
       <label>聯絡電話</label>
       <input type="tel" id="phone" required placeholder="0912-345-678" autocomplete="off">
 
+      <label>電子信箱（選填）</label>
+      <input type="email" id="email" placeholder="請輸入電子信箱">
+
       <label>備註說明（選填）</label>
-      <textarea id="extraInfo" placeholder="特殊需求備註"></textarea>
+      <textarea id="extraInfo" placeholder="肌膚狀況、特殊需求備註"></textarea>
 
       <div class="btn-container">
         <button type="submit" id="submitBtn">
@@ -854,7 +822,7 @@
       <div class="admin-container">
         <div class="admin-card">
           <div class="collapse-header" onclick="toggleCollapse('reserveCollapse')">
-            <h3>📋 預約管理紀錄 <span id="reserveCount" style="color:#2ecc71;">(0 筆)</span></h3>
+            <h3>📋 預約管理紀錄 <span id="reserveCount" style="color:#ff4d88;">(0 筆)</span></h3>
             <span class="collapse-arrow" id="reserveArrow">▼</span>
           </div>
           <div class="collapse-body" id="reserveCollapse">
@@ -862,7 +830,7 @@
               type="text" 
               id="searchInput" 
               class="search-box" 
-              placeholder="🔍 搜尋：姓名 / 電話 / 地點"
+              placeholder="🔍 搜尋：姓名 / 電話 / 服務項目"
               oninput="renderReservationsList(window.fullReservationList || [])"
             >
 
@@ -881,36 +849,45 @@
 
         <div class="admin-card">
           <div class="collapse-header" onclick="toggleCollapse('timeCollapse')">
-            <h3>📍 地點&日期&時間設定 <span id="timeCount" style="color:#2ecc71;">(0 筆)</span></h3>
+            <h3>⏰ 日期&時段設定 <span id="timeCount" style="color:#ff4d88;">(0 筆)</span></h3>
             <span class="collapse-arrow" id="timeArrow">▼</span>
           </div>
           <div class="collapse-body" id="timeCollapse">
-            <div class="date-nav-row" style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-              <button type="button" class="date-nav-btn" id="prevManageDateBtn" style="width:40px;height:40px;border-radius:8px; border:1px solid #eee; background:#fff;cursor:pointer;">&lt;</button>
-              <input type="date" id="manageDate" placeholder="選擇日期" style="flex:1;">
-              <button type="button" class="date-nav-btn" id="nextManageDateBtn" style="width:40px;height:40px;border-radius:8px; border:1px solid #eee; background:#fff;cursor:pointer;">&gt;</button>
+            <div class="date-nav-row">
+              <button type="button" class="date-nav-btn" id="prevManageDateBtn">&lt;</button>
+              <input type="date" id="manageDate" placeholder="選擇日期">
+              <button type="button" class="date-nav-btn" id="nextManageDateBtn">&gt;</button>
             </div>
-            <p style="margin:-10px 0 10px; font-size:12px; color:#888;">💡 設定地點、日期、時間，前台自動帶入</p>
+            <p style="margin:-10px 0 10px; font-size:12px; color:#888;">💡 可點選多個時段一起『新增』、『刪除』</p>
             
-            <label>預約地點</label>
-            <input type="text" id="locationInput" placeholder="請輸入預約地點（例如：總店/分店）">
+            <div class="time-select-header" onclick="toggleTimeSelectCollapse()">
+              <span style="font-weight:600;color:#555;">點此展開/收起時段選單</span>
+              <span class="time-select-arrow" id="timeSelectArrow">▼</span>
+            </div>
+            <div class="time-select-body" id="timeSelectBody">
+              <div class="time-select-grid" id="timeSelectGrid"></div>
+            </div>
+
+            <label style="margin-top:15px;">時段預約人數上限</label>
+            <input type="number" id="maxBookingLimit" class="max-booking-input" min="1" max="10" placeholder="請輸入每個時段最多可預約人數">
+            <button class="admin-btn" id="saveMaxBookingBtn">
+              <span class="loader"></span>
+              <span>儲存人數上限設定</span>
+            </button>
             
-            <label>預約時間</label>
-            <input type="time" id="timeInput">
-            
-            <button class="admin-btn" id="addLocationBtn">
+            <button class="admin-btn" id="addTimeBtn">
               <span class="loader"></span>
-              <span>新增地點&時間</span>
+              <span>新增所選時段</span>
             </button>
-            <button class="admin-btn batch-delete-btn" id="deleteSelectedLocationBtn">
+            <button class="admin-btn batch-delete-btn" id="deleteSelectedTimeBtn">
               <span class="loader"></span>
-              <span>刪除所選項目</span>
+              <span>刪除所選時段</span>
             </button>
-            <button class="admin-btn" id="loadLocationBtn">
+            <button class="admin-btn" id="loadTimeBtn">
               <span class="loader"></span>
-              <span>載入當日設定</span>
+              <span>載入當日時段</span>
             </button>
-            <div id="manageLocationList"></div>
+            <div id="manageTimeList"></div>
           </div>
         </div>
       </div>
@@ -918,59 +895,40 @@
   </div>
 </main>
 
-<!-- 高質感成功浮窗 -->
-<div class="modal-overlay" id="successModal">
-  <div class="success-modal">
-    <div class="success-icon">✓</div>
-    <h3>預約成功 ✅</h3>
-    <p>專人將透過 LINE 與您聯繫<br>感謝您的預約</p>
-    <button class="modal-close-btn" onclick="closeSuccessModal()">確認</button>
-  </div>
-</div>
-
 <script>
   const CONFIG = {
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzfFbC_xI1L6MnPP0IITT6B3Zto9Vs19KQZRwUIYTIRdQEKIT8wmuv7T-JYgQYBOFOh/exec",
-    LIFF_ID: "2007475335-Z0LKm1wQ"
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwC7AlQo-uGGebkgelOzPHKiwm7tC1CVczEBPw2po5UZaCaItgTCxsNndJ0ETRh__tzgA/exec",
+    LIFF_ID: "2009598216-ZsS47DM8"
   };
 
+  const fixedHeader = ["日期", "時段1", "時段2", "時段3", "時段4", "時段5", "時段6", "時段7", "時段8", "時段9", "時段10", "時段11", "時段12", "時段13", "時段14", "時段15", "時段16", "時段17", "時段18", "時段19", "時段20", "時段21", "時段22", "時段23", "時段24"];
+
   let MAX_BOOKING_COUNT = 1;
+
   let submitBtn, btnText, infoForm;
   let isSubmitting = false;
   let isSubmittedSuccess = false;
-  let locationDataMap = {};
+  let timeDataMap = {};
   let reservationCountMap = {};
-  let LINE_USER_ID = "";
-  let LINE_USER_NAME = "";
+  let LINE_USER_ID = "guest_" + Date.now();
+  let LINE_USER_NAME = "LINE使用者";
   let isAdmin = false;
   let currentPage = "user";
   let selectedReservations = [];
-  let selectedLocations = [];
   let isAdminLoading = false;
+  let deleteCount = 0;
+  let batchDeleteTimesCount = 0;
+  let isBatchDeletingTimes = false;
 
   let currentReservationPage = 1;
   const reservationsPerPage = 3;
 
   let switchBtn, userPage, adminPage, adminContent, adminAccessDenied, switchContainer;
-  let loadReservationsBtn, batchDeleteBtn, addLocationBtn, loadLocationBtn, manageDate, deleteSelectedLocationBtn;
+  let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, manageDate, deleteSelectedTimeBtn;
   let prevManageDateBtn, nextManageDateBtn;
   let headerTimeEl;
-  let locationSelect, appointTimeDisplay, timeInput, locationInput;
-  let userSelectDate;
-  let successModal;
-
-  // 🔴 最強防呆：擋死 guest 開頭
-  function isRealUserId(uid) {
-    return uid && typeof uid === "string" && uid.startsWith("U") && !uid.startsWith("guest_");
-  }
-
-  // 高質感浮窗
-  function showSuccessModal() {
-    successModal.classList.add('show');
-  }
-  function closeSuccessModal() {
-    successModal.classList.remove('show');
-  }
+  let prevDateBtn, nextDateBtn, appointDate;
+  let maxBookingInput, saveMaxBookingBtn;
 
   function toggleCollapse(id) {
     const body = document.getElementById(id);
@@ -981,6 +939,33 @@
     } else {
       body.style.maxHeight = '5000px';
       arrow.classList.add('open');
+    }
+  }
+
+  function toggleTimeSelectCollapse() {
+    const body = document.getElementById('timeSelectBody');
+    const arrow = document.getElementById('timeSelectArrow');
+    if (body.style.maxHeight && body.style.maxHeight !== '0px') {
+      body.style.maxHeight = '0px';
+      arrow.classList.remove('open');
+    } else {
+      body.style.maxHeight = '800px';
+      arrow.classList.add('open');
+    }
+  }
+
+  function changeDate(days) {
+    const dateInput = document.getElementById('appointDate');
+    if (!dateInput.value) dateInput.value = getTaipeiDateString();
+    const current = new Date(dateInput.value + 'T00:00:00+08:00');
+    current.setDate(current.getDate() + days);
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, '0');
+    const d = String(current.getDate()).padStart(2, '0');
+    const newDate = `${y}-${m}-${d}`;
+    if (newDate >= getTaipeiDateString()) {
+      dateInput.value = newDate;
+      renderTimeList();
     }
   }
 
@@ -995,7 +980,7 @@
     const newDate = `${y}-${m}-${d}`;
     if (newDate >= getTaipeiDateString()) {
       dateInput.value = newDate;
-      loadManageLocations();
+      loadManageTime();
     }
   }
 
@@ -1031,6 +1016,35 @@
     if (headerTimeEl) headerTimeEl.textContent = formatFullTime();
   }
 
+  function getWeekDayStr(dateStr) {
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return "星期幾";
+    try {
+      const d = new Date(dateStr + "T12:00:00+08:00");
+      const week = ["日", "一", "二", "三", "四", "五", "六"];
+      return "星期" + week[d.getDay()];
+    } catch (e) {
+      return "星期幾";
+    }
+  }
+
+  function isToday(dateStr) {
+    return dateStr === getTaipeiDateString();
+  }
+
+  function isTimeInRestrictedZone(timeStr) {
+    const now = getTaipeiDate();
+    const [h, m] = timeStr.split(':').map(Number);
+    const target = new Date(now);
+    target.setHours(h, m, 0);
+    const diffMin = (target - now) / 60000;
+    return diffMin <= 180;
+  }
+
+  function shouldHideTime(dateStr, timeStr) {
+    if (!isToday(dateStr)) return false;
+    return isTimeInRestrictedZone(timeStr);
+  }
+
   function formatPhoneNumber(value) {
     const phone = value.replace(/\D/g, '');
     if (phone.length <= 4) return phone;
@@ -1048,6 +1062,14 @@
     return /^\d{4}-\d{2}-\d{2}$/.test(str) ? str : "";
   }
 
+  function formatToStandardTimeSafe(timeVal) {
+    if (!timeVal) return "";
+    const match = String(timeVal).trim().match(/^(\d{1,2}):(\d{1,2})/);
+    if (!match) return "";
+    const h = parseInt(match[1]), m = parseInt(match[2]);
+    return (h >= 0 && h <= 23 && m >= 0 && m <= 59) ? `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}` : "";
+  }
+
   function setAdminLoading(loading, btn = null) {
     isAdminLoading = loading;
     if (btn) {
@@ -1057,11 +1079,6 @@
   }
 
   function togglePage() {
-    if (!isRealUserId(LINE_USER_ID)) {
-      alert("❌ 請使用 LINE APP 開啟此頁面，才能進入管理介面");
-      return;
-    }
-
     currentPage = currentPage === "user" ? "admin" : "user";
     userPage.style.display = currentPage === "user" ? "block" : "none";
     adminPage.style.display = currentPage === "admin" ? "block" : "none";
@@ -1069,20 +1086,59 @@
   }
 
   function checkAdminByBackend() {
-    if (!isRealUserId(LINE_USER_ID)) return;
-
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=checkAdmin&lineId=${LINE_USER_ID}&callback=onAdminCheck&_=${Date.now()}`;
     document.body.appendChild(script);
-    setTimeout(() => document.body.removeChild(script), 3000);
   }
 
   function loadReservationCount() {
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=getReservationCount&pageId=自然美學預約系統&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=getReservationCount&pageId=美容預約系統&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
-    setTimeout(() => document.body.removeChild(s), 3000);
   }
+
+  function loadMaxBookingLimit() {
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?action=getMaxBooking&pageId=美容預約系統&callback=callbackMaxBooking&_=${Date.now()}`;
+    document.body.appendChild(s);
+  }
+
+  function saveMaxBookingLimit() {
+    const value = parseInt(maxBookingInput.value);
+    if (!value || value < 1 || value > 10) {
+      alert("請輸入1-10之間的數字");
+      return;
+    }
+    setAdminLoading(true, saveMaxBookingBtn);
+    const params = new URLSearchParams({
+      action: "setMaxBooking",
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      maxCount: value
+    });
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callbackSaveMax&_=${Date.now()}`;
+    document.body.appendChild(s);
+  }
+
+  window.callbackMaxBooking = function(res) {
+    if (res.status === "success" && res.maxCount) {
+      MAX_BOOKING_COUNT = parseInt(res.maxCount);
+      if (maxBookingInput) maxBookingInput.value = MAX_BOOKING_COUNT;
+      renderTimeList();
+    }
+  };
+
+  window.callbackSaveMax = function(res) {
+    setAdminLoading(false, saveMaxBookingBtn);
+    if (res.status === "success") {
+      MAX_BOOKING_COUNT = parseInt(maxBookingInput.value);
+      alert("✅ 預約人數上限儲存成功");
+      renderTimeList();
+    } else {
+      alert("❌ 儲存失敗：" + (res.message || "系統異常"));
+    }
+  };
 
   window.onAdminCheck = function(res) {
     isAdmin = res?.isAdmin === true;
@@ -1095,22 +1151,23 @@
     try {
       isSubmitting = false;
       isAdminLoading = false;
-      [submitBtn,loadReservationsBtn,batchDeleteBtn,addLocationBtn,loadLocationBtn,deleteSelectedLocationBtn].forEach(btn=>{
+      [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn,deleteSelectedTimeBtn,saveMaxBookingBtn].forEach(btn=>{
         if(btn) {btn.classList.remove('loading'); btn.disabled=false;}
       });
-      document.querySelectorAll('.reserve-btns button, .location-manage-item').forEach(btn=>{
+      document.querySelectorAll('.reserve-btns button, .time-manage-item').forEach(btn=>{
         btn.classList.remove('loading');
         btn.disabled = false;
       });
 
       if (response.status === "init") {
-        locationDataMap = response.timeMap || {};
-        updateLocationList();
+        timeDataMap = response.timeMap || {};
+        renderTimeList();
         return;
       }
       
       if (response.status === "reservationCount") {
         reservationCountMap = response.data || {};
+        renderTimeList();
         return;
       }
       
@@ -1120,19 +1177,34 @@
           submitBtn.classList.add('success','permanent-disabled');
           submitBtn.disabled = true;
           btnText.textContent = '預約成功 ✅';
-          
-          showSuccessModal();
-          
+          alert("\n✅ 預約成功！\n\n專人將透過LINE與您聯繫");
           infoForm.reset();
-          loadLocationData();
+          document.getElementById('weekText').textContent="星期幾";
+          document.getElementById('timeGrid').innerHTML=`<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
+          document.getElementById('appointTime').value="";
           loadReservationCount();
+          
         }else{
-          alert("✅ 操作成功");
+          if(batchDeleteTimesCount > 0 && isBatchDeletingTimes){
+            alert(`✅ 成功刪除 ${batchDeleteTimesCount} 筆時段`);
+            batchDeleteTimesCount = 0;
+            isBatchDeletingTimes = false;
+          }else if(!isBatchDeletingTimes){
+            alert("✅ 操作成功");
+          }
           loadAllReservations();
-          loadManageLocations();
-          loadLocationData();
+          loadManageTime();
+          loadTimeData();
           loadReservationCount();
+          document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
         }
+      } else if (response.status === "adminList") {
+        window.fullReservationList = response.data || [];
+        window.fullReservationList.sort((a, b) => (a.submitTime || 0) - (b.submitTime || 0));
+        currentReservationPage = 1;
+        renderReservationsList(window.fullReservationList);
+      } else if (response.status === "adminTimeList") {
+        renderManageTimeList(response.date, response.times);
       } else if (response.status === "error") {
         alert("❌ 錯誤：" + (response.message || "系統異常"));
         currentPage === "user" && resetButtonState();
@@ -1143,86 +1215,62 @@
     }
   };
 
-  function updateLocationList() {
-    const locations = new Set();
-    Object.values(locationDataMap || {}).forEach(items => {
-      items.forEach(item => locations.add(item.location));
-    });
+function renderTimeList() {
+  const date = document.getElementById('appointDate').value;
+  const grid = document.getElementById('timeGrid');
+  const timeInput = document.getElementById('appointTime');
+  
+  grid.innerHTML = "";
+  timeInput.value = "";
+  document.getElementById('weekText').textContent = getWeekDayStr(date);
 
-    locationSelect.innerHTML = '<option value="">請選擇預約地點</option>';
-    appointTimeDisplay.value = '';
-    document.getElementById('appointTime').value = '';
-    userSelectDate.value = '';
-    userSelectDate.disabled = true;
-    appointTimeDisplay.disabled = true;
-    submitBtn.disabled = true;
+  if (!date) {
+    grid.innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">請先選擇日期</div>`;
+    return;
+  }
 
-    if (locations.size === 0) return;
+  const list = timeDataMap[date] || [];
+  if (!list.length) {
+    grid.innerHTML = `<div style="grid-column:1/3;text-align:center;color:#999;">當日無可預約時段</div>`;
+    return;
+  }
 
-    Array.from(locations).forEach(loc => {
-      const opt = document.createElement('option');
-      opt.value = loc;
-      opt.textContent = loc;
-      locationSelect.appendChild(opt);
-    });
+  const timeCountMap = {};
+  list.forEach(item => {
+    const t = item.value || item;
+    timeCountMap[t] = (timeCountMap[t] || 0) + 1;
+  });
 
-    locationSelect.onchange = function () {
-      const selectedLoc = this.value;
-      userSelectDate.disabled = !selectedLoc;
-      appointTimeDisplay.disabled = !selectedLoc;
-      appointTimeDisplay.value = '';
-      document.getElementById('appointTime').value = '';
-      userSelectDate.value = '';
-      submitBtn.disabled = true;
+  const uniqueList = [...new Set(list.map(item => item.value || item))];
+  uniqueList.sort();
 
-      if (!selectedLoc) return;
+  const availableList = uniqueList.filter(time => {
+    if (shouldHideTime(date, time)) return false;
+    const booked = reservationCountMap[`${date}_${time}`] || 0;
+    const maxAllowed = timeCountMap[time] || 1;
+    return booked < maxAllowed;
+  });
 
-      const availableDates = [];
-      Object.entries(locationDataMap || {}).forEach(([date, items]) => {
-        const hasLocation = items.some(i => i.location === selectedLoc);
-        if (hasLocation) availableDates.push(date);
-      });
+  if (!availableList.length) {
+    grid.innerHTML = `<div style="grid-column:1/3;text-align:center;color:#999;">當日無可預約時段</div>`;
+    return;
+  }
 
-      if (availableDates.length === 0) {
-        alert("此地點暫無開放預約日期");
-        return;
-      }
-
-      const today = getTaipeiDateString();
-      userSelectDate.min = today;
-      const validDates = availableDates.filter(d => d >= today);
-      if (validDates.length === 0) {
-        alert("此地點目前無可預約時段");
-        return;
-      }
-
-      userSelectDate.value = validDates[0];
-      document.getElementById('appointDate').value = validDates[0];
-      updateTimeByLocationAndDate(selectedLoc, validDates[0]);
+  availableList.forEach(time => {
+    const btn = document.createElement('div');
+    btn.className = "time-btn";
+    btn.textContent = time;
+    
+    btn.onclick = () => {
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      timeInput.value = time;
     };
-  }
-
-  function updateTimeByLocationAndDate(selectedLoc, date) {
-    const items = locationDataMap[date] || [];
-    const match = items.find(i => i.location === selectedLoc);
-    if (match) {
-      appointTimeDisplay.value = match.time || '';
-      document.getElementById('appointTime').value = match.time || '';
-      submitBtn.disabled = false;
-    } else {
-      appointTimeDisplay.value = '';
-      document.getElementById('appointTime').value = '';
-      submitBtn.disabled = true;
-    }
-  }
-
-  function refreshLocationDataByDate() {
-    const selectedLoc = locationSelect.value;
-    const selectedDate = userSelectDate.value;
-    if (!selectedLoc || !selectedDate) return;
-    document.getElementById('appointDate').value = selectedDate;
-    updateTimeByLocationAndDate(selectedLoc, selectedDate);
-  }
+    
+    grid.appendChild(btn);
+  });
+}
+    
 
   function resetButtonState() {
     if(isSubmittedSuccess) return;
@@ -1232,38 +1280,44 @@
     isSubmitting = false;
   }
 
-  function loadLocationData() {
+  function loadTimeData() {
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=getDates&pageId=自然美學預約系統&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=getDates&pageId=美容預約系統&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
-    setTimeout(() => {
-      if (document.body.contains(s)) document.body.removeChild(s);
-    }, 3000);
   }
 
   function sendData() {
-    if (!isRealUserId(LINE_USER_ID)) {
-      alert("❌ 請使用 LINE APP 開啟，才能提交預約");
-      resetButtonState();
-      return;
-    }
-
     try {
+      const date = document.getElementById('appointDate').value;
+      const time = document.getElementById('appointTime').value;
+      
+      const list = timeDataMap[date] || [];
+      const timeCountMap = {};
+      list.forEach(item => {
+        const t = item.value || item;
+        timeCountMap[t] = (timeCountMap[t] || 0) + 1;
+      });
+      const maxAllowed = timeCountMap[time] || 1;
+      const bookedCount = reservationCountMap[`${date}_${time}`] || 0;
+      
+      if(bookedCount >= maxAllowed){
+        alert("❌ 該時段已滿，請重新選擇時段");
+        resetButtonState();
+        return;
+      }
+
       const data = {
-        pageId: "自然美學預約系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
-        serviceType: document.getElementById('location').value,
-        appointDate: document.getElementById('appointDate').value,
-        appointTime: document.getElementById('appointTime').value,
+        pageId: "美容預約系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
+        serviceType: document.getElementById('serviceType').value,
+        appointDate: formatToStandardDateSafe(document.getElementById('appointDate').value),
+        appointTime: formatToStandardTimeSafe(document.getElementById('appointTime').value),
         name: document.getElementById('name').value, phone: document.getElementById('phone').value,
-        email: "", extraInfo: document.getElementById('extraInfo').value
+        email: document.getElementById('email').value, extraInfo: document.getElementById('extraInfo').value
       };
       const p = new URLSearchParams(data);
       const s = document.createElement('script');
       s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(s);
-      setTimeout(() => {
-        if (document.body.contains(s)) document.body.removeChild(s);
-      }, 3000);
     } catch(e) {
       alert("提交失敗");
       resetButtonState();
@@ -1276,9 +1330,8 @@
     selectedReservations = [];
     const todayStr = getTaipeiDateString();
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=自然美學預約系統&lineId=${LINE_USER_ID}&cleanBeforeDays=7&today=${todayStr}&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=美容預約系統&lineId=${LINE_USER_ID}&cleanBeforeDays=7&today=${todayStr}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
-    setTimeout(() => document.body.removeChild(s), 3000);
   }
 
   function editReservation(item) {
@@ -1288,14 +1341,14 @@
     btn.classList.add('loading');
     btn.disabled = true;
     
-    const location = prompt("預約地點", item.serviceType || "");
+    const service = prompt("服務項目", item.serviceType || "");
     const name = prompt("姓名", item.name || "");
     const phone = prompt("電話", item.phone || "");
     const date = prompt("預約日期(YYYY-MM-DD)", formatToStandardDateSafe(item.appointDate));
-    const time = prompt("預約時間(HH:mm)", item.appointTime || "");
+    const time = prompt("預約時段(HH:mm)", formatToStandardTimeSafe(item.appointTime));
     const remark = prompt("備註", item.remark || "");
 
-    if (!location || !name || !phone || !date || !time) { 
+    if (!service || !name || !phone || !date || !time) { 
       alert("請填寫完整資訊"); 
       btn.classList.remove('loading');
       btn.disabled = false;
@@ -1305,20 +1358,19 @@
     
     const params = new URLSearchParams({
       action: "adminUpdate",
-      pageId: "自然美學預約系統",
+      pageId: "美容預約系統",
       lineId: LINE_USER_ID,
       id: item.submitTime,
-      serviceType: location,
+      serviceType: service,
       name: name,
       phone: phone,
       appointDate: formatToStandardDateSafe(date),
-      appointTime: time,
+      appointTime: formatToStandardTimeSafe(time),
       remark: remark
     });
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(script);
-    setTimeout(() => document.body.removeChild(script), 3000);
   }
 
   function renderReservationsList(list) {
@@ -1329,8 +1381,8 @@
       filtered = filtered.filter(item => {
         const name = (item.name || '').toLowerCase();
         const phone = (item.phone || '').toLowerCase();
-        const location = (item.serviceType || '').toLowerCase();
-        return name.includes(keyword) || phone.includes(keyword) || location.includes(keyword);
+        const service = (item.serviceType || '').toLowerCase();
+        return name.includes(keyword) || phone.includes(keyword) || service.includes(keyword);
       });
     }
 
@@ -1363,11 +1415,10 @@
           </div>
         </div>
 <div class="reservation-info">
-  日期：${formatToStandardDateSafe(item.appointDate)}<br>
-  地點：${item.serviceType}<br>
-  時間：${item.appointTime}<br>
-  姓名：${item.name}<br>
-  電話：${item.phone}
+  預約：${formatToStandardDateSafe(item.appointDate)} ${formatToStandardTimeSafe(item.appointTime)}<br>
+  姓名：${item.name}<br>服務：${item.serviceType}<br>
+  電話：${item.phone}<br>LINE：${item.lineName || '未取得'}<br>
+  備註：${item.remark || '無'}
 </div>
       </div>`).join('');
 
@@ -1393,96 +1444,137 @@
     i > -1 ? selectedReservations.splice(i, 1) : selectedReservations.push(id);
   }
 
-  function toggleLocationSelect(id) {
-    const i = selectedLocations.indexOf(id);
-    i > -1 ? selectedLocations.splice(i, 1) : selectedLocations.push(id);
-  }
-
   function batchDeleteReservations() {
     if (!isAdmin || isAdminLoading || !selectedReservations.length || !confirm(`確定刪除 ${selectedReservations.length} 筆預約？`)) return;
     setAdminLoading(true, batchDeleteBtn);
     
     selectedReservations.forEach(id => {
-      const p = new URLSearchParams({action:"adminDelReserve",pageId:"自然美學預約系統",lineId:LINE_USER_ID,submitTime:id});
+      const p = new URLSearchParams({action:"adminDelReserve",pageId:"美容預約系統",lineId:LINE_USER_ID,submitTime:id});
       const s = document.createElement('script');
       s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(s);
-      setTimeout(() => document.body.removeChild(s), 3000);
     });
     selectedReservations = [];
   }
 
-  function loadManageLocations() {
+  function loadManageTime() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
     if (!date) return;
-    setAdminLoading(true, loadLocationBtn);
+    setAdminLoading(true, loadTimeBtn);
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=自然美學預約系統&lineId=${LINE_USER_ID}&date=${date}&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=美容預約系統&lineId=${LINE_USER_ID}&date=${date}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
-    setTimeout(() => document.body.removeChild(s), 3000);
   }
 
-  function renderManageLocationList(date, items) {
-    const c = document.getElementById('manageLocationList');
-    const dataArray = items || [];
-    document.getElementById('timeCount').textContent = `(${dataArray.length} 筆)`;
+  function renderManageTimeList(date, times) {
+    const c = document.getElementById('manageTimeList');
+    const timeArray = times || [];
+    document.getElementById('timeCount').textContent = `(${timeArray.length} 筆)`;
     
-    c.innerHTML = !dataArray.length ? `<div class="empty-state">當日未設定地點</div>` :
-      `<div class="time-manage-grid">${dataArray.map((item, index) => {
-        const location = item.location || '';
-        const time = item.time || '';
-        const id = `${date}_${location}_${time}_${index}`;
-        return `
-          <div class="time-manage-item location-manage-item" onclick="toggleLocationSelect('${id}')" data-date="${date}" data-location="${location}" data-time="${time}">
-            <input type="checkbox" style="transform:scale(1.2);margin-right:5px;" onchange="toggleLocationSelect('${id}')">
-            ${location}<br>${time}
-          </div>`;
+    c.innerHTML = !timeArray.length ? `<div class="empty-state">當日無時段</div>` :
+      `<div class="time-manage-grid">${timeArray.map(t => {
+        const timeVal = formatToStandardTimeSafe(t.value || t);
+        return `<div class="time-manage-item" onclick="deleteTime('${date}','${timeVal}')">${timeVal}</div>`;
       }).join('')}</div>`;
   }
 
-  function addLocation() {
+  const DEFAULT_TIMES = [
+    "10:00","10:30","11:00","11:30","12:00","12:30",
+    "13:00","13:30","14:00","14:30","15:00","15:30",
+    "16:00","16:30","17:00","17:30","18:00","18:30",
+    "19:00","19:30","20:00"
+  ];
+
+  function renderTimeSelectGrid() {
+    const container = document.getElementById('timeSelectGrid');
+    container.innerHTML = DEFAULT_TIMES.map(t => `
+      <div class="time-select-item" onclick="toggleTimeSelect(this)">${t}</div>
+    `).join('');
+  }
+
+  function toggleTimeSelect(el) {
+    el.classList.toggle('active');
+  }
+
+  function addSelectedTimes() {
     const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
-    const location = document.getElementById('locationInput').value.trim();
-    const time = document.getElementById('timeInput').value;
+    const selected = Array.from(document.querySelectorAll('.time-select-item.active'))
+      .map(el => el.textContent.trim())
+      .filter(t => t);
 
-    if (!date) { alert("請選擇日期"); return; }
-    if (!location) { alert("請輸入地點"); return; }
-    if (!time) { alert("請選擇時間"); return; }
+    if (!date) {
+      alert("請先選擇日期");
+      return;
+    }
+    if (selected.length === 0) {
+      alert("請至少選擇一個時段");
+      return;
+    }
 
-    setAdminLoading(true, addLocationBtn);
+    setAdminLoading(true, addTimeBtn);
+
     const params = new URLSearchParams({
-      action: "adminAddTime",
-      pageId: "自然美學預約系統",
+      action: "adminBatchAddTime",
+      pageId: "美容預約系統",
       lineId: LINE_USER_ID,
       date: date,
-      time: JSON.stringify({ location, time })
+      times: JSON.stringify(selected)
     });
+
     const s = document.createElement('script');
     s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
-    setTimeout(() => document.body.removeChild(s), 3000);
   }
 
-  function deleteSelectedLocations() {
-    if (!isAdmin || isAdminLoading || selectedLocations.length === 0 || !confirm(`確定刪除 ${selectedLocations.length} 筆設定？`)) return;
+  function deleteSelectedTimes() {
+    event.preventDefault();
+    event.stopPropagation();
     
-    setAdminLoading(true, deleteSelectedLocationBtn);
+    const date = formatToStandardDateSafe(document.getElementById('manageDate').value);
+    const selected = Array.from(document.querySelectorAll('.time-select-item.active'))
+      .map(el => el.textContent.trim())
+      .filter(t => t);
+
+    if (!date) {
+      alert("請先選擇日期");
+      return;
+    }
+    if (selected.length === 0) {
+      alert("請至少選擇一個要刪除的時段");
+      return;
+    }
+    if (!confirm(`確定刪除所選 ${selected.length} 個時段？`)) {
+      return;
+    }
+
+    isBatchDeletingTimes = true;
+    batchDeleteTimesCount = selected.length;
+    setAdminLoading(true, deleteSelectedTimeBtn);
     
-    selectedLocations.forEach(id => {
-      const [date, location, time] = id.split('_');
+    selected.forEach(time => {
       const p = new URLSearchParams({
         action: "adminDelTime",
-        pageId: "自然美學預約系統",
+        pageId: "美容預約系統",
         lineId: LINE_USER_ID,
         date: date,
-        time: JSON.stringify({ location, time })
+        time: time
       });
       const s = document.createElement('script');
       s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(s);
-      setTimeout(() => document.body.removeChild(s), 3000);
     });
-    selectedLocations = [];
+  }
+
+  function deleteTime(date, time) {
+    if (!isAdmin || isAdminLoading || !confirm(`確定刪除 ${time} 時段？`)) return;
+    
+    batchDeleteTimesCount = 0;
+    isBatchDeletingTimes = false;
+    setAdminLoading(true);
+    const p = new URLSearchParams({action:"adminDelTime",pageId:"美容預約系統",lineId:LINE_USER_ID,date:date,time:time});
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
+    document.body.appendChild(s);
   }
 
   function deleteReservation(id) {
@@ -1491,78 +1583,52 @@
     btn.classList.add('loading');
     btn.disabled = true;
     
+    isBatchDeletingTimes = false;
     setAdminLoading(true);
-    const p = new URLSearchParams({action:"adminDelReserve",pageId:"自然美學預約系統",lineId:LINE_USER_ID,submitTime:id});
+    const p = new URLSearchParams({action:"adminDelReserve",pageId:"美容預約系統",lineId:LINE_USER_ID,submitTime:id});
     const s = document.createElement('script');
     s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
-    setTimeout(() => document.body.removeChild(s), 3000);
   }
 
-  // ✅ 100% 只取 U 開頭 ID
-  async function initLiff() {
-    try {
-      await liff.init({ liffId: CONFIG.LIFF_ID });
-
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
-
-      const profile = await liff.getProfile();
-      const uid = profile?.userId || "";
-
-      // 🔴 關鍵：只要不是 U 開頭，直接清空 + 警告
-      if (!isRealUserId(uid)) {
-        alert("❌ 請使用 LINE APP 開啟此頁面！\n\n外部瀏覽器只會取得匿名ID，無法使用預約與管理功能。");
-        LINE_USER_ID = "";
-        submitBtn.disabled = true;
-        return;
-      }
-
-      // ✅ 只有 U 開頭才存
-      LINE_USER_ID = uid;
-      LINE_USER_NAME = profile.displayName || "使用者";
-
-    } catch (e) {
-      console.error("LIFF 錯誤", e);
-      alert("⚠️ 請使用 LINE APP 開啟，才能取得真實ID");
-      LINE_USER_ID = "";
-      submitBtn.disabled = true;
-      return;
+async function initLiff() {
+  try {
+    await liff.init({ liffId: CONFIG.LIFF_ID });
+    if (liff.isLoggedIn()) {
+      const p = await liff.getProfile();
+      LINE_USER_ID = p.userId ? p.userId.toString() : LINE_USER_ID;
+      LINE_USER_NAME = p.displayName || LINE_USER_NAME;
     }
-
+  } catch (e) { console.log("LIFF 略過"); }
+  finally {
     document.getElementById('lineId').value = LINE_USER_ID;
     document.getElementById('lineName').value = LINE_USER_NAME;
-    submitBtn.disabled = false;
-
-    setTimeout(() => checkAdminByBackend(), 300);
-    loadLocationData();
-    loadReservationCount();
+    checkAdminByBackend();
   }
+}
 
   document.addEventListener('DOMContentLoaded', async () => {
     submitBtn = document.getElementById('submitBtn');
     btnText = submitBtn.querySelector('.btn-text');
     infoForm = document.getElementById('infoForm');
-    locationSelect = document.getElementById('location');
-    appointTimeDisplay = document.getElementById('appointTimeDisplay');
+    appointDate = document.getElementById('appointDate');
     const phoneInput = document.getElementById('phone');
     
-    userSelectDate = document.getElementById('userSelectDate');
-    const todayStr = getTaipeiDateString();
+    prevDateBtn = document.getElementById('prevDateBtn');
+    nextDateBtn = document.getElementById('nextDateBtn');
     
     prevManageDateBtn = document.getElementById('prevManageDateBtn');
     nextManageDateBtn = document.getElementById('nextManageDateBtn');
     
     loadReservationsBtn = document.getElementById('loadReservationsBtn');
     batchDeleteBtn = document.getElementById('batchDeleteBtn');
-    addLocationBtn = document.getElementById('addLocationBtn');
-    loadLocationBtn = document.getElementById('loadLocationBtn');
+    addTimeBtn = document.getElementById('addTimeBtn');
+    loadTimeBtn = document.getElementById('loadTimeBtn');
     manageDate = document.getElementById('manageDate');
-    deleteSelectedLocationBtn = document.getElementById('deleteSelectedLocationBtn');
-    locationInput = document.getElementById('locationInput');
-    timeInput = document.getElementById('timeInput');
+    deleteSelectedTimeBtn = document.getElementById('deleteSelectedTimeBtn');
+    
+    maxBookingInput = document.getElementById('maxBookingLimit');
+    saveMaxBookingBtn = document.getElementById('saveMaxBookingBtn');
     
     switchBtn = document.getElementById('switchBtn');
     switchContainer = document.getElementById('switchContainer');
@@ -1572,42 +1638,50 @@
     adminAccessDenied = document.getElementById('adminAccessDenied');
     
     headerTimeEl = document.getElementById('headerTime');
-    successModal = document.getElementById('successModal');
-
-    submitBtn.disabled = true;
     updateHeaderTime();
     setInterval(updateHeaderTime, 1000);
+
+    // 立即初始化日期，不用等LIFF
+    const today = getTaipeiDateString();
+    appointDate.min = today;
+    appointDate.value = today;
+    manageDate.min = today;
+
+    prevDateBtn.onclick = () => changeDate(-1);
+    nextDateBtn.onclick = () => changeDate(1);
 
     prevManageDateBtn.onclick = () => changeManageDate(-1);
     nextManageDateBtn.onclick = () => changeManageDate(1);
     
     switchBtn.onclick = togglePage;
     loadReservationsBtn.onclick = loadAllReservations;
-    loadLocationBtn.onclick = loadManageLocations;
-    addLocationBtn.onclick = addLocation;
+    loadTimeBtn.onclick = loadManageTime;
+    addTimeBtn.onclick = addSelectedTimes;
     batchDeleteBtn.onclick = batchDeleteReservations;
-    deleteSelectedLocationBtn.onclick = deleteSelectedLocations;
-    manageDate.addEventListener('change', loadManageLocations);
+    deleteSelectedTimeBtn.onclick = deleteSelectedTimes;
+    saveMaxBookingBtn.onclick = saveMaxBookingLimit;
+    manageDate.addEventListener('change', loadManageTime);
     
     phoneInput.addEventListener('input', e => e.target.value = formatPhoneNumber(e.target.value));
-    manageDate.min = todayStr;
-    manageDate.value = todayStr;
+    
+    // 立即載入預約所需數據，不用等登入
+    loadTimeData();
+    loadReservationCount();
+    loadMaxBookingLimit();
+    renderTimeSelectGrid();
+    renderTimeList();
+    
+    // 初始化LIFF（背景執行，不阻擋頁面使用）
+    initLiff();
+    
+    appointDate.addEventListener('change', renderTimeList);
+    appointDate.addEventListener('input', renderTimeList);
 
-    userSelectDate.addEventListener('change', refreshLocationDataByDate);
-
-    await initLiff();
-
-    infoForm.onsubmit = async (e) => {
+    infoForm.onsubmit = (e) => {
       e.preventDefault();
-
-      if (!isRealUserId(LINE_USER_ID)) {
-        alert("❌ 請使用 LINE APP 開啟，才能預約");
-        return;
-      }
-
       const phone = phoneInput.value.trim();
       if (!validatePhone(phone)) { alert("請輸入正確10碼手機號碼"); phoneInput.focus(); return; }
-      if (!locationSelect.value) { alert("請選擇預約地點"); return; }
+      if (!document.getElementById('appointTime').value) { alert("請選擇預約時段"); return; }
       
       isSubmitting = true;
       submitBtn.disabled = true;
