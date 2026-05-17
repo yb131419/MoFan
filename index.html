@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title> 莫凡韓式皮膚管理 </title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <!-- 加入圖標庫 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
     * {
@@ -26,8 +24,6 @@
       padding: 20px 12px;
       position: relative;
       overflow-x: hidden;
-      /* 給底部浮騰騰欄留空間 */
-      padding-bottom: 70px;
     }
 
     body::before {
@@ -742,45 +738,6 @@
       box-shadow: 0 0 0 4px rgba(0,0,0,0.1) !important;
       transform: translateY(-1px) !important;
     }
-
-    /* ====================== 底部浮動導航欄樣式 ====================== */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 60px;
-      background: #ffffff;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.08);
-      z-index: 9999;
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-    }
-    .bottom-nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      font-size: 12px;
-      color: #888;
-      cursor: pointer;
-      transition: all 0.3s;
-      flex: 1;
-    }
-    .bottom-nav-item i {
-      font-size: 20px;
-    }
-    .bottom-nav-item.active {
-      color: #ff4d88;
-      font-weight: 700;
-    }
-    .bottom-nav-item:active {
-      transform: scale(0.95);
-    }
   </style>
 </head>
 <body>
@@ -811,12 +768,15 @@
         <option value="">請選擇服務項目</option>
         <option value="手足保養">手足保養</option>
         <option value="美甲光療凝膠">美甲光療凝膠</option>
-        <option value="霧眉">霧眉</option>
+        <option value="霧眉/霧唇">霧眉/霧唇</option>
         <option value="臉部保養">臉部保養</option>
-        <option value="粉刺管理">粉刺管理</option>
+        <option value="手技粉刺深層清潔管理">手技粉刺深層清潔管理</option>
+        <option value="韓式無痛清粉刺系列">韓式無痛清粉刺系列</option>
         <option value="韓式皮膚管理">韓式皮膚管理</option>
+        <option value="韓式液態飛梭">韓式液態飛梭</option>
         <option value="重返青春">重返青春</option>
-        <option value="雷射煥膚">雷射煥膚</option>
+        <option value="無痛乳暈粉嫩術">無痛乳暈粉嫩術</option>
+        <option value="外泌體育髮">外泌體育髮</option>
       </select>
 
       <label>預約日期</label>
@@ -937,19 +897,6 @@
     </div>
   </div>
 </main>
-
-<!-- 浮動底部導航欄 -->
-<div class="bottom-nav">
-  <div class="bottom-nav-item active" id="navReserve">
-    <i class="fa fa-calendar-check-o"></i><span>作品</span>
-  </div>
-  <div class="bottom-nav-item" id="navAddress">
-    <i class="fa fa-map-marker"></i><span>地址</span>
-  </div>
-  <div class="bottom-nav-item" id="navShare">
-    <i class="fa fa-share-alt"></i><span>分享</span>
-  </div>
-</div>
 
 <script>
   const CONFIG = {
@@ -1745,20 +1692,6 @@ async function initLiff() {
       btnText.textContent = '預約中...';
       sendData();
     };
-
-    // 底部浮動導航欄點擊事件
-    document.querySelectorAll('.bottom-nav-item').forEach(item => {
-      item.addEventListener('click', () => {
-        document.querySelectorAll('.bottom-nav-item').forEach(nav => nav.classList.remove('active'));
-        item.classList.add('active');
-        const text = item.querySelector('span').innerText;
-        switch(text) {
-          case '作品': window.open('https://liff.line.me/2009598216-hGqsxRN9', '_blank'); break;
-          case '地址': window.open('https://share.google/L5vzxJrpotDQnkWAx', '_blank'); break;
-          case '分享': window.open('line://nv/recommendOA/@997zfvfm', '_blank'); break;
-        }
-      });
-    });
   });
 </script>
 
