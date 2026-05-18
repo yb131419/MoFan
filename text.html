@@ -269,6 +269,7 @@
 
 <script>
   const CONFIG = {
+    // 👇 等下你要替换成【自己正确的GAS网址】
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwgKFHvVz6ZrPN4gkFGP4DMJ6Gwi8DFpLZ5JlMlC-TgL0NnSClqLZvHgtgvlKr1FljcoA/exec",
     LIFF_ID: "2009598216-ZsS47DM8"
   };
@@ -277,6 +278,7 @@
   let LINE_USER_ID = "guest";
   let LINE_USER_NAME = "使用者";
 
+  // 日期工具
   function getTaipeiDate() {
     const now = new Date();
     const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -297,6 +299,7 @@
     renderWeekSelector();
   }
 
+  // 渲染日期
   function renderWeekSelector() {
     const container = document.getElementById('weekSelector');
     container.innerHTML = "";
@@ -324,67 +327,52 @@
     }
   }
 
+  // 交互函数
   function selectDate(date) {
     document.querySelectorAll('.week-day').forEach(el => el.classList.remove('active'));
     document.querySelector(`[data-date="${date}"]`).classList.add('active');
     document.getElementById('selectedDate').value = date;
     loadAvailableSlots();
   }
-
   function selectStaff(staffId) {
     document.querySelectorAll('.staff-btn').forEach(el => el.classList.remove('active'));
     document.querySelector(`[data-staff="${staffId}"]`).classList.add('active');
     document.getElementById('selectedStaff').value = staffId;
     loadAvailableSlots();
   }
-
   function selectTime(time) {
     document.querySelectorAll('.time-btn').forEach(el => el.classList.remove('active'));
     document.querySelector(`[data-time="${time}"]`).classList.add('active');
     document.getElementById('selectedTime').value = time;
   }
 
-  // 修复加载服务函数
+  // ✅ 纯JSONP请求，无CORS，无跨域（GAS唯一兼容方式）
   function loadServices() {
     const select = document.getElementById('serviceSelect');
-    // 兼容式请求，解决加载失败
-    fetch(CONFIG.SCRIPT_URL + "?action=getServices")
-      .then(res => res.text())
-      .then(text => {
-        // 提取JSON数据
-        const jsonStr = text.replace(/^test\(/, '').replace(/\)$/, '');
-        const res = JSON.parse(jsonStr);
-        callbackServices(res);
-      })
-      .catch(err => {
-        select.innerHTML = '<option value="">載入失敗，請重新整理</option>';
-        console.error(err);
-      });
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=getServices&callback=callbackServices&_=${Date.now()}`;
+    script.onerror = () => {
+      select.innerHTML = '<option value="">載入失敗，請檢查GAS部署</option>';
+    };
+    document.body.appendChild(script);
   }
-
   function loadAvailableSlots() {
     const date = document.getElementById('selectedDate').value;
     const serviceId = document.getElementById('serviceSelect').value;
     if (!date || !serviceId) return;
-
-    fetch(`${CONFIG.SCRIPT_URL}?action=getAvailableSlots&date=${date}&serviceId=${serviceId}`)
-      .then(res => res.text())
-      .then(text => {
-        const jsonStr = text.replace(/^.*\(/, '').replace(/\)$/, '');
-        const res = JSON.parse(jsonStr);
-        callbackSlots(res);
-      });
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=getAvailableSlots&date=${date}&serviceId=${serviceId}&callback=callbackSlots&_=${Date.now()}`;
+    document.body.appendChild(script);
   }
 
+  // 回调函数
   window.callbackServices = function(res) {
     const select = document.getElementById('serviceSelect');
     select.innerHTML = '<option value="">請選擇服務項目</option>';
-    
     if (!res.list || res.list.length === 0) {
       select.innerHTML = '<option value="">暫無服務項目</option>';
       return;
     }
-    
     res.list.forEach(item => {
       const opt = document.createElement('option');
       opt.value = item.id;
@@ -392,17 +380,14 @@
       select.appendChild(opt);
     });
   };
-
   window.callbackSlots = function(res) {
     const staffGrid = document.getElementById('staffGrid');
     const slots = res.data.slots;
-    
     if (Object.keys(slots).length === 0) {
       staffGrid.innerHTML = '<div class="empty-tip">當日無可預約美容師</div>';
       document.getElementById('timeGrid').innerHTML = '<div class="empty-tip">請先選擇美容師</div>';
       return;
     }
-
     staffGrid.innerHTML = "";
     for (let id in slots) {
       const btn = document.createElement('div');
@@ -412,14 +397,12 @@
       btn.onclick = () => selectStaff(id);
       staffGrid.appendChild(btn);
     }
-
     const staffId = document.getElementById('selectedStaff').value;
     const timeGrid = document.getElementById('timeGrid');
     if (!staffId || !slots[staffId]) {
       timeGrid.innerHTML = '<div class="empty-tip">請選擇美容師</div>';
       return;
     }
-
     timeGrid.innerHTML = "";
     slots[staffId].times.forEach(time => {
       const btn = document.createElement('div');
@@ -431,6 +414,7 @@
     });
   };
 
+  // 提交预约
   document.getElementById('bookingForm').onsubmit = (e) => {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -438,29 +422,17 @@
     btn.disabled = true;
 
     const data = {
-      action: "submitBooking",
-      lineId: LINE_USER_ID,
-      lineName: LINE_USER_NAME,
-      date: document.getElementById('selectedDate').value,
-      serviceId: document.getElementById('serviceSelect').value,
-      staffId: document.getElementById('selectedStaff').value,
-      startTime: document.getElementById('selectedTime').value,
-      name: document.getElementById('name').value,
-      phone: document.getElementById('phone').value,
-      email: document.getElementById('email').value,
-      remark: document.getElementById('remark').value
+      action: "submitBooking", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
+      date: document.getElementById('selectedDate').value, serviceId: document.getElementById('serviceSelect').value,
+      staffId: document.getElementById('selectedStaff').value, startTime: document.getElementById('selectedTime').value,
+      name: document.getElementById('name').value, phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value, remark: document.getElementById('remark').value
     };
     const params = new URLSearchParams(data);
-    
-    fetch(`${CONFIG.SCRIPT_URL}?${params}`)
-      .then(res => res.text())
-      .then(text => {
-        const jsonStr = text.replace(/^.*\(/, '').replace(/\)$/, '');
-        const res = JSON.parse(jsonStr);
-        callbackSubmit(res);
-      });
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callbackSubmit&_=${Date.now()}`;
+    document.body.appendChild(s);
   };
-
   window.callbackSubmit = function(res) {
     const btn = document.getElementById('submitBtn');
     btn.classList.remove('loading');
@@ -477,6 +449,7 @@
     }
   };
 
+  // 初始化
   async function init() {
     try {
       await liff.init({ liffId: CONFIG.LIFF_ID });
@@ -485,16 +458,12 @@
         LINE_USER_ID = p.userId;
         LINE_USER_NAME = p.displayName;
       }
-    } catch (e) {
-      console.log("LIFF初始化失敗，使用訪客模式");
-    }
+    } catch (e) { console.log("LIFF初始化失敗，使用訪客模式"); }
     
     document.getElementById('lineId').value = LINE_USER_ID;
     document.getElementById('lineName').value = LINE_USER_NAME;
-
     setInterval(() => {
-      const d = getTaipeiDate();
-      document.getElementById('headerTime').textContent = d.toLocaleString();
+      document.getElementById('headerTime').textContent = getTaipeiDate().toLocaleString();
     }, 1000);
 
     renderWeekSelector();
@@ -505,6 +474,7 @@
     document.getElementById('serviceSelect').onchange = loadAvailableSlots;
   }
 
+  // 底部导航
   document.querySelectorAll('.bottom-nav-item').forEach(item => {
     item.onclick = () => {
       const text = item.querySelector('span').innerText;
