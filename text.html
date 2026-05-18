@@ -87,17 +87,17 @@
       padding: 15px;
     }
 
-    /* 一周日期选择 */
+    /* 修正：一周日期选择 - 完整显示7天，禁止滑动 */
     .week-selector {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 20px;
-      overflow-x: auto;
-      padding: 5px 0;
+      justify-content: space-between;
     }
     .week-day {
-      min-width: 60px;
-      padding: 10px 5px;
+      flex: 1;
+      min-width: unset;
+      padding: 10px 2px;
       border-radius: 12px;
       background: #fafbfc;
       border: 1px solid #eee;
@@ -276,10 +276,9 @@
     LIFF_ID: "2009598216-ZsS47DM8"
   };
 
-  let currentWeekStart = getTaipeiDate(); // 當前周第一天
+  let currentWeekStart = getTaipeiDate();
   let LINE_USER_ID = "guest";
   let LINE_USER_NAME = "使用者";
-  let serviceList = [];
 
   // ====================== 日期工具 ======================
   function getTaipeiDate() {
@@ -302,7 +301,7 @@
     renderWeekSelector();
   }
 
-  // ====================== 渲染一周日期 ======================
+  // ====================== 渲染一周日期（固定7天，無滑動） ======================
   function renderWeekSelector() {
     const container = document.getElementById('weekSelector');
     container.innerHTML = "";
@@ -320,7 +319,6 @@
       el.dataset.date = dateStr;
       el.innerHTML = `${dayStr}日<br>週${weekStr}`;
       
-      // 禁用過去日期
       if (dateStr < today) {
         el.style.opacity = "0.5";
         el.style.cursor = "not-allowed";
@@ -352,26 +350,40 @@
     document.getElementById('selectedTime').value = time;
   }
 
-  // ====================== 加载数据 ======================
+  // ====================== 修复：加载服务（增加错误兜底） ======================
   function loadServices() {
-    const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=getServices&callback=callbackServices&_=${Date.now()}`;
-    document.body.appendChild(s);
+    const select = document.getElementById('serviceSelect');
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=getServices&callback=callbackServices&_=${Date.now()}`;
+    
+    // 加载失败兜底
+    script.onerror = () => {
+      select.innerHTML = '<option value="">載入失敗，請重新整理</option>';
+    };
+    document.body.appendChild(script);
   }
+
   function loadAvailableSlots() {
     const date = document.getElementById('selectedDate').value;
     const serviceId = document.getElementById('serviceSelect').value;
     if (!date || !serviceId) return;
 
-    const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=getAvailableSlots&date=${date}&serviceId=${serviceId}&callback=callbackSlots&_=${Date.now()}`;
-    document.body.appendChild(s);
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=getAvailableSlots&date=${date}&serviceId=${serviceId}&callback=callbackSlots&_=${Date.now()}`;
+    document.body.appendChild(script);
   }
 
   // ====================== 回调函数 ======================
   window.callbackServices = function(res) {
     const select = document.getElementById('serviceSelect');
     select.innerHTML = '<option value="">請選擇服務項目</option>';
+    
+    // 空数据兜底
+    if (!res.list || res.list.length === 0) {
+      select.innerHTML = '<option value="">暫無服務項目</option>';
+      return;
+    }
+    
     res.list.forEach(item => {
       const opt = document.createElement('option');
       opt.value = item.id;
@@ -379,15 +391,17 @@
       select.appendChild(opt);
     });
   };
+
   window.callbackSlots = function(res) {
-    // 渲染美容师
     const staffGrid = document.getElementById('staffGrid');
     const slots = res.data.slots;
+    
     if (Object.keys(slots).length === 0) {
       staffGrid.innerHTML = '<div class="empty-tip">當日無可預約美容師</div>';
       document.getElementById('timeGrid').innerHTML = '<div class="empty-tip">請先選擇美容師</div>';
       return;
     }
+
     staffGrid.innerHTML = "";
     for (let id in slots) {
       const btn = document.createElement('div');
@@ -397,13 +411,14 @@
       btn.onclick = () => selectStaff(id);
       staffGrid.appendChild(btn);
     }
-    // 渲染时段
+
     const staffId = document.getElementById('selectedStaff').value;
     const timeGrid = document.getElementById('timeGrid');
     if (!staffId || !slots[staffId]) {
       timeGrid.innerHTML = '<div class="empty-tip">請選擇美容師</div>';
       return;
     }
+
     timeGrid.innerHTML = "";
     slots[staffId].times.forEach(time => {
       const btn = document.createElement('div');
@@ -440,6 +455,7 @@
     s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callbackSubmit&_=${Date.now()}`;
     document.body.appendChild(s);
   };
+
   window.callbackSubmit = function(res) {
     const btn = document.getElementById('submitBtn');
     btn.classList.remove('loading');
@@ -458,7 +474,7 @@
 
   // ====================== 初始化 ======================
   async function init() {
-    // 初始化LIFF
+    // LIFF初始化
     try {
       await liff.init({ liffId: CONFIG.LIFF_ID });
       if (liff.isLoggedIn()) {
@@ -466,24 +482,26 @@
         LINE_USER_ID = p.userId;
         LINE_USER_NAME = p.displayName;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log("LIFF初始化失敗，使用訪客模式");
+    }
+    
     document.getElementById('lineId').value = LINE_USER_ID;
     document.getElementById('lineName').value = LINE_USER_NAME;
 
-    // 渲染时间
+    // 实时时间
     setInterval(() => {
       const d = getTaipeiDate();
       document.getElementById('headerTime').textContent = d.toLocaleString();
     }, 1000);
 
-    // 初始化一周日期
+    // 初始化日期 + 服务
     renderWeekSelector();
     loadServices();
 
-    // 周切换
+    // 事件绑定
     document.getElementById('prevWeek').onclick = () => changeWeek(-1);
     document.getElementById('nextWeek').onclick = () => changeWeek(1);
-    // 服务切换
     document.getElementById('serviceSelect').onchange = loadAvailableSlots;
   }
 
