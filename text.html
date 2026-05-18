@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>莫凡韓式皮膚管理 - 動態預約</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: linear-gradient(135deg, #fdf2f8 0%, #fef7fb 50%, #fce8f3 100%);
+      font-family: 'Noto Sans TC', sans-serif;
+      color: #444;
+      display: flex;
+      justify-content: center;
+      padding: 20px 12px 70px;
+      min-height: 100vh;
+    }
+    main {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 15px 50px rgba(255,133,162,0.12);
+      width: 100%;
+      max-width: 460px;
+      padding: 35px 25px;
+      position: relative;
+      overflow: hidden;
+    }
+    main::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 6px;
+      background: linear-gradient(90deg, #ff8da1, #ff4d88, #c77dff);
+    }
+    .header-time {
+      text-align: center;
+      font-size: 14px;
+      color: #ff4d88;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .main-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      background: linear-gradient(90deg, #ff4d88, #ff8da1, #c77dff);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .sub-title {
+      font-size: 1rem;
+      color: #999;
+      font-weight: 500;
+    }
+    form label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #555;
+    }
+    select, input, textarea {
+      width: 100%;
+      height: 52px;
+      padding: 0 18px;
+      border-radius: 16px;
+      border: 1px solid #f0f0f0;
+      background: #fafbfc;
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+    select:focus, input:focus, textarea:focus {
+      background: #fdf2f8;
+      border: 2px solid #d894a7;
+      outline: none;
+    }
+    textarea {
+      height: 120px;
+      padding: 15px;
+    }
+
+    /* 一周日期选择 */
+    .week-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding: 5px 0;
+    }
+    .week-day {
+      min-width: 60px;
+      padding: 10px 5px;
+      border-radius: 12px;
+      background: #fafbfc;
+      border: 1px solid #eee;
+      text-align: center;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .week-day.active {
+      background: #fdf2f8;
+      border-color: #d894a7;
+      font-weight: 700;
+    }
+    .week-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .week-btn {
+      padding: 8px 15px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #ff4d88;
+      color: #ff4d88;
+      cursor: pointer;
+    }
+
+    /* 美容师 + 时段 */
+    .staff-grid, .time-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .staff-btn, .time-btn {
+      padding: 12px;
+      border-radius: 14px;
+      background: #fafbfc;
+      border: 1px solid #eee;
+      text-align: center;
+      cursor: pointer;
+    }
+    .staff-btn.active, .time-btn.active {
+      background: #fdf2f8;
+      border-color: #d894a7;
+      font-weight: 700;
+    }
+    .empty-tip {
+      grid-column: 1/3;
+      text-align: center;
+      color: #999;
+      padding: 20px;
+    }
+
+    button {
+      width: 100%;
+      height: 56px;
+      background: linear-gradient(135deg, #FF5D8F, #FF3377);
+      border: none;
+      border-radius: 18px;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .loader {
+      width: 20px; height: 20px;
+      border: 2px solid #fff;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      animation: rotation 1s linear infinite;
+      display: none;
+    }
+    button.loading .loader { display: block; }
+    @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* 底部导航 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; width: 100%; height: 60px;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -2px 15px rgba(0,0,0,0.08);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+    }
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      color: #888;
+      cursor: pointer;
+    }
+    .bottom-nav-item i { font-size: 20px; margin-bottom: 3px; }
+    .bottom-nav-item.active { color: #ff4d88; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<main>
+  <div class="header-time" id="headerTime"></div>
+  <h2>
+    <span class="main-title">莫凡<br>動態預約系統</span>
+    <br>
+    <span class="sub-title">一對一動態排程預約</span>
+  </h2>
+
+  <form id="bookingForm">
+    <input type="hidden" id="lineId">
+    <input type="hidden" id="lineName">
+    <input type="hidden" id="selectedDate">
+    <input type="hidden" id="selectedStaff">
+    <input type="hidden" id="selectedTime">
+
+    <label>選擇服務項目</label>
+    <select id="serviceSelect" required>
+      <option value="">載入服務中...</option>
+    </select>
+
+    <div class="week-nav">
+      <button type="button" class="week-btn" id="prevWeek">上一周</button>
+      <button type="button" class="week-btn" id="nextWeek">下一周</button>
+    </div>
+    <div class="week-selector" id="weekSelector"></div>
+
+    <label>選擇美容師</label>
+    <div class="staff-grid" id="staffGrid">
+      <div class="empty-tip">請先選擇服務</div>
+    </div>
+
+    <label>可預約時段</label>
+    <div class="time-grid" id="timeGrid">
+      <div class="empty-tip">請先選擇日期與美容師</div>
+    </div>
+
+    <label>姓名</label>
+    <input type="text" id="name" required placeholder="請輸入姓名">
+
+    <label>聯絡電話</label>
+    <input type="tel" id="phone" required placeholder="0912-345-678">
+
+    <label>電子信箱（選填）</label>
+    <input type="email" id="email" placeholder="請輸入信箱">
+
+    <label>備註</label>
+    <textarea id="remark" placeholder="肌膚狀況或特殊需求"></textarea>
+
+    <button type="submit" id="submitBtn">
+      <span class="loader"></span>
+      確認預約
+    </button>
+  </form>
+</main>
+
+<div class="bottom-nav">
+  <div class="bottom-nav-item active" id="navReserve">
+    <i class="fa fa-calendar-check-o"></i><span>預約</span>
+  </div>
+  <div class="bottom-nav-item" id="navAddress">
+    <i class="fa fa-map-marker"></i><span>地址</span>
+  </div>
+  <div class="bottom-nav-item" id="navShare">
+    <i class="fa fa-share-alt"></i><span>分享</span>
+  </div>
+</div>
+
+<script>
+  const CONFIG = {
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwC7AlQo-uGGebkgelOzPHKiwm7tC1CVczEBPw2po5UZaCaItgTCxsNndJ0ETRh__tzgA/exec",
+    LIFF_ID: "2009598216-ZsS47DM8"
+  };
+
+  let currentWeekStart = getTaipeiDate(); // 當前周第一天
+  let LINE_USER_ID = "guest";
+  let LINE_USER_NAME = "使用者";
+  let serviceList = [];
+
+  // ====================== 日期工具 ======================
+  function getTaipeiDate() {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    return new Date(utc + 3600000 * 8);
+  }
+  function formatDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const d_ = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${d_}`;
+  }
+  function getWeekDay(d) {
+    const w = ["日","一","二","三","四","五","六"];
+    return w[d.getDay()];
+  }
+  function changeWeek(diff) {
+    currentWeekStart.setDate(currentWeekStart.getDate() + diff * 7);
+    renderWeekSelector();
+  }
+
+  // ====================== 渲染一周日期 ======================
+  function renderWeekSelector() {
+    const container = document.getElementById('weekSelector');
+    container.innerHTML = "";
+    const today = formatDate(getTaipeiDate());
+
+    for (let i=0; i<7; i++) {
+      const d = new Date(currentWeekStart);
+      d.setDate(d.getDate() + i);
+      const dateStr = formatDate(d);
+      const weekStr = getWeekDay(d);
+      const dayStr = d.getDate();
+
+      const el = document.createElement('div');
+      el.className = 'week-day';
+      el.dataset.date = dateStr;
+      el.innerHTML = `${dayStr}日<br>週${weekStr}`;
+      
+      // 禁用過去日期
+      if (dateStr < today) {
+        el.style.opacity = "0.5";
+        el.style.cursor = "not-allowed";
+      } else {
+        el.onclick = () => selectDate(dateStr);
+      }
+      container.appendChild(el);
+    }
+  }
+
+  // ====================== 核心交互 ======================
+  function selectDate(date) {
+    document.querySelectorAll('.week-day').forEach(el => el.classList.remove('active'));
+    document.querySelector(`[data-date="${date}"]`).classList.add('active');
+    document.getElementById('selectedDate').value = date;
+    loadAvailableSlots();
+  }
+
+  function selectStaff(staffId) {
+    document.querySelectorAll('.staff-btn').forEach(el => el.classList.remove('active'));
+    document.querySelector(`[data-staff="${staffId}"]`).classList.add('active');
+    document.getElementById('selectedStaff').value = staffId;
+    loadAvailableSlots();
+  }
+
+  function selectTime(time) {
+    document.querySelectorAll('.time-btn').forEach(el => el.classList.remove('active'));
+    document.querySelector(`[data-time="${time}"]`).classList.add('active');
+    document.getElementById('selectedTime').value = time;
+  }
+
+  // ====================== 加载数据 ======================
+  function loadServices() {
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?action=getServices&callback=callbackServices&_=${Date.now()}`;
+    document.body.appendChild(s);
+  }
+  function loadAvailableSlots() {
+    const date = document.getElementById('selectedDate').value;
+    const serviceId = document.getElementById('serviceSelect').value;
+    if (!date || !serviceId) return;
+
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?action=getAvailableSlots&date=${date}&serviceId=${serviceId}&callback=callbackSlots&_=${Date.now()}`;
+    document.body.appendChild(s);
+  }
+
+  // ====================== 回调函数 ======================
+  window.callbackServices = function(res) {
+    const select = document.getElementById('serviceSelect');
+    select.innerHTML = '<option value="">請選擇服務項目</option>';
+    res.list.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = `${item.name} (${item.duration}分鐘)`;
+      select.appendChild(opt);
+    });
+  };
+  window.callbackSlots = function(res) {
+    // 渲染美容师
+    const staffGrid = document.getElementById('staffGrid');
+    const slots = res.data.slots;
+    if (Object.keys(slots).length === 0) {
+      staffGrid.innerHTML = '<div class="empty-tip">當日無可預約美容師</div>';
+      document.getElementById('timeGrid').innerHTML = '<div class="empty-tip">請先選擇美容師</div>';
+      return;
+    }
+    staffGrid.innerHTML = "";
+    for (let id in slots) {
+      const btn = document.createElement('div');
+      btn.className = 'staff-btn';
+      btn.dataset.staff = id;
+      btn.textContent = slots[id].name;
+      btn.onclick = () => selectStaff(id);
+      staffGrid.appendChild(btn);
+    }
+    // 渲染时段
+    const staffId = document.getElementById('selectedStaff').value;
+    const timeGrid = document.getElementById('timeGrid');
+    if (!staffId || !slots[staffId]) {
+      timeGrid.innerHTML = '<div class="empty-tip">請選擇美容師</div>';
+      return;
+    }
+    timeGrid.innerHTML = "";
+    slots[staffId].times.forEach(time => {
+      const btn = document.createElement('div');
+      btn.className = 'time-btn';
+      btn.dataset.time = time;
+      btn.textContent = time;
+      btn.onclick = () => selectTime(time);
+      timeGrid.appendChild(btn);
+    });
+  };
+
+  // ====================== 提交预约 ======================
+  document.getElementById('bookingForm').onsubmit = (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const data = {
+      action: "submitBooking",
+      lineId: LINE_USER_ID,
+      lineName: LINE_USER_NAME,
+      date: document.getElementById('selectedDate').value,
+      serviceId: document.getElementById('serviceSelect').value,
+      staffId: document.getElementById('selectedStaff').value,
+      startTime: document.getElementById('selectedTime').value,
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value,
+      remark: document.getElementById('remark').value
+    };
+    const params = new URLSearchParams(data);
+    const s = document.createElement('script');
+    s.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callbackSubmit&_=${Date.now()}`;
+    document.body.appendChild(s);
+  };
+  window.callbackSubmit = function(res) {
+    const btn = document.getElementById('submitBtn');
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    if (res.status === "success") {
+      alert("✅ 預約成功！管理員已收到通知");
+      document.getElementById('bookingForm').reset();
+      document.getElementById('selectedDate').value = "";
+      document.getElementById('selectedStaff').value = "";
+      document.getElementById('selectedTime').value = "";
+      renderWeekSelector();
+    } else {
+      alert("❌ 預約失敗：" + res.message);
+    }
+  };
+
+  // ====================== 初始化 ======================
+  async function init() {
+    // 初始化LIFF
+    try {
+      await liff.init({ liffId: CONFIG.LIFF_ID });
+      if (liff.isLoggedIn()) {
+        const p = await liff.getProfile();
+        LINE_USER_ID = p.userId;
+        LINE_USER_NAME = p.displayName;
+      }
+    } catch (e) {}
+    document.getElementById('lineId').value = LINE_USER_ID;
+    document.getElementById('lineName').value = LINE_USER_NAME;
+
+    // 渲染时间
+    setInterval(() => {
+      const d = getTaipeiDate();
+      document.getElementById('headerTime').textContent = d.toLocaleString();
+    }, 1000);
+
+    // 初始化一周日期
+    renderWeekSelector();
+    loadServices();
+
+    // 周切换
+    document.getElementById('prevWeek').onclick = () => changeWeek(-1);
+    document.getElementById('nextWeek').onclick = () => changeWeek(1);
+    // 服务切换
+    document.getElementById('serviceSelect').onchange = loadAvailableSlots;
+  }
+
+  // 底部导航
+  document.querySelectorAll('.bottom-nav-item').forEach(item => {
+    item.onclick = () => {
+      const text = item.querySelector('span').innerText;
+      if (text === '地址') window.open('https://share.google/L5vzxJrpotDQnkWAx', '_blank');
+      if (text === '分享') window.open('line://nv/recommendOA/@997zfvfm', '_blank');
+    };
+  });
+
+  window.onload = init;
+</script>
+</body>
+</html>
