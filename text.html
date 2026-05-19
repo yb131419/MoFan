@@ -123,14 +123,7 @@
       color: #999;
     }
 
-    form label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #555;
-    }
-
-    /* 手机端一周日期选择器 */
+    /* 參考瑜伽預約：日期周選擇器 */
     .week-slider {
       display: flex;
       gap: 8px;
@@ -173,6 +166,20 @@
       color: #fff;
     }
 
+    /* 參考瑜伽預約：當日美容師卡片 */
+    .staff-card {
+      background: #fafbfc;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 20px;
+      border: 1px solid #f0f0f0;
+    }
+    .staff-card-title {
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #ff4d88;
+    }
+
     input, select, textarea {
       width: 100%;
       height: 52px;
@@ -190,6 +197,7 @@
       outline: none;
     }
 
+    /* 參考瑜伽預約：時段網格 */
     .time-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -212,10 +220,6 @@
       background: #FDF2F8;
       border: 2px solid #D894A7;
       font-weight: 700;
-    }
-    .time-btn.expired {
-      opacity: 0.4;
-      cursor: not-allowed;
     }
 
     button {
@@ -290,22 +294,26 @@
       <input type="hidden" id="appointTime" name="appointTime">
       <input type="hidden" id="selectedDate">
 
+      <!-- 1. 第一步：選擇日期（優先級最高｜參考瑜伽預約） -->
+      <label>預約日期</label>
+      <div class="week-slider" id="weekSlider"></div>
+
+      <!-- 2. 第二步：日期選完才載入當日美容師 -->
       <label>選擇美容師</label>
       <select id="staffName" required>
-        <option value="">載入美容師中...</option>
+        <option value="">請先選擇預約日期</option>
       </select>
 
+      <!-- 3. 第三步：選完美容師載入服務項目 -->
       <label>服務項目</label>
       <select id="serviceType" required>
         <option value="">請先選擇美容師</option>
       </select>
 
-      <label>預約日期</label>
-      <div class="week-slider" id="weekSlider"></div>
-
+      <!-- 4. 第四步：載入動態可預約時段 -->
       <label>預約時段</label>
       <div class="time-grid" id="timeGrid">
-        <div style="text-align:center;grid-column:1/3;">請先選擇日期</div>
+        <div style="text-align:center;grid-column:1/3;">請先選擇美容師</div>
       </div>
 
       <label>姓名</label>
@@ -333,18 +341,15 @@
       </div>
 
       <div class="admin-card">
-        <h3>⏰ 美容師時段設定</h3>
+        <h3>⏰ 美容師班表設定</h3>
         <label>選擇美容師</label>
         <select id="manageStaff">
           <option value="">請先選擇美容師</option>
         </select>
-        <div class="date-nav-row">
-          <button class="date-nav-btn" id="prevManageDateBtn">&lt;</button>
-          <input type="date" id="manageDate">
-          <button class="date-nav-btn" id="nextManageDateBtn">&gt;</button>
-        </div>
-        <button class="admin-btn" id="loadTimeBtn">載入時段</button>
-        <div id="manageTimeList"></div>
+        <input type="date" id="manageDate">
+        <input type="time" id="workStart" placeholder="上班開始">
+        <input type="time" id="workEnd" placeholder="上班結束">
+        <button class="admin-btn" id="addScheduleBtn">新增班表</button>
       </div>
     </div>
   </div>
@@ -364,98 +369,87 @@
 
   let STAFF_LIST = [];
   let SERVICE_CONFIG = {};
-  let timeDataMap = {};
   let LINE_USER_ID = "guest_" + Date.now();
   let LINE_USER_NAME = "LINE使用者";
   let weekDays = ['日', '一', '二', '三', '四', '五', '六'];
 
-  // 初始化 - 纯JSONP，无任何fetch
-  document.addEventListener('DOMContentLoaded', async () => {
-    initElements();
-    renderWeekSlider();
-    bindEvents();
-    initLiff();
-    // 核心：JSONP加载美容师+服务项目
-    loadStaffService();
-  });
+  // 全局JSONP回調（所有接口共用）
+  window.callback = (response) => {
+    console.log("JSONP回調：", response);
+    // 1. 載入美容師+服務配置
+    if (response.status === "success" && response.staff && response.serviceConfig) {
+      STAFF_LIST = response.staff;
+      SERVICE_CONFIG = response.serviceConfig;
+      renderManageStaffSelect();
+      return;
+    }
+    // 2. 載入當日上班美容師（日期選擇後）
+    if (response.status === "success" && response.workStaff) {
+      renderWorkStaffSelect(response.workStaff);
+      return;
+    }
+    // 3. 載入可預約時段（美容師選擇後）
+    if (response.status === "success" && response.slots) {
+      renderTimeList(response.slots);
+      return;
+    }
+    // 4. 預約提交成功
+    if (response.status === "success" && response.message) {
+      alert(response.message);
+      document.getElementById('infoForm').reset();
+      renderWeekSlider();
+      return;
+    }
+    // 5. 錯誤提示
+    if (response.status === "error") {
+      alert("❌ " + response.message);
+    }
+  };
 
-  // ✅ 纯JSONP请求：加载美容师+服务配置
+  // ✅ 純JSONP：載入美容師與服務配置
   function loadStaffService() {
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=getStaffAndService&callback=callback`;
     document.body.appendChild(script);
   }
 
-  // ✅ 纯JSONP请求：加载预约时段
-  function loadTimeData() {
-    const staff = document.getElementById('staffName').value;
-    const date = document.getElementById('selectedDate').value;
-    if (!staff || !date) return;
-
+  // ✅ 純JSONP：根據日期載入當日上班美容師
+  function loadWorkStaffByDate(dateStr) {
     const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=getDates&staffName=${staff}&pageId=美容預約系統&callback=callback`;
+    script.src = `${CONFIG.SCRIPT_URL}?action=getStaffByDate&date=${dateStr}&callback=callback`;
     document.body.appendChild(script);
   }
 
-  // ✅ 修复核心：统一JSONP回调函数（区分美容师/时段/预约返回）
-  window.callback = (response) => {
-    // 1. 加载 美容师+服务项目 成功
-    if (response.status === "success" && response.staff && response.serviceConfig) {
-      STAFF_LIST = response.staff;
-      SERVICE_CONFIG = response.serviceConfig;
-      renderStaffSelect();
-      return;
-    }
-    // 2. 加载 预约时段 成功
-    if (response.status === "init") {
-      timeDataMap = response.timeMap || {};
-      renderTimeList();
-      return;
-    }
-    // 3. 预约提交结果
-    if (response.status === "success") {
-      alert("✅ 預約成功！");
-      document.getElementById('infoForm').reset();
-      renderWeekSlider();
-      return;
-    }
-    // 4. 错误提示
-    if (response.status === "error") {
-      alert("❌ " + response.message);
-    }
-  };
-
-  // ✅ 修复：渲染美容师下拉框
-  function renderStaffSelect() {
-    const staffSelect = document.getElementById('staffName');
-    const manageStaff = document.getElementById('manageStaff');
-    
-    // 清空原有选项
-    staffSelect.innerHTML = '<option value="">請選擇美容師</option>';
-    manageStaff.innerHTML = '<option value="">請選擇美容師</option>';
-    
-    // 追加美容师选项
-    STAFF_LIST.forEach(staff => {
-      staffSelect.add(new Option(staff, staff));
-      manageStaff.add(new Option(staff, staff));
-    });
+  // ✅ 純JSONP：載入美容師可預約時段
+  function loadAvailableSlots(dateStr, staffName) {
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=getAvailableSlots&date=${dateStr}&staffName=${staffName}&callback=callback`;
+    document.body.appendChild(script);
   }
 
-  // ✅ 修复：根据美容师筛选服务项目
-  function filterServiceByStaff() {
-    const staff = document.getElementById('staffName').value;
-    const serviceSelect = document.getElementById('serviceType');
-    serviceSelect.innerHTML = '<option value="">請選擇服務項目</option>';
-    
-    if (!staff || !SERVICE_CONFIG[staff]) return;
-    
-    // 追加服务项目
-    SERVICE_CONFIG[staff].forEach(item => {
-      serviceSelect.add(new Option(`${item.name} (${item.duration}分鐘)`, item.name));
-    });
+  // ✅ 純JSONP：提交預約
+  function submitForm(e) {
+    e.preventDefault();
+    const data = {
+      pageId: "美容預約系統",
+      lineId: LINE_USER_ID,
+      lineName: LINE_USER_NAME,
+      staffName: document.getElementById('staffName').value,
+      serviceType: document.getElementById('serviceType').value,
+      appointDate: document.getElementById('selectedDate').value,
+      appointTime: document.getElementById('appointTime').value,
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value,
+      extraInfo: document.getElementById('extraInfo').value
+    };
+    const params = new URLSearchParams(data);
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback`;
+    document.body.appendChild(script);
   }
 
-  // 渲染一周7天日期选择器
+  // 渲染一週日期選擇器（參考瑜伽預約）
   function renderWeekSlider() {
     const slider = document.getElementById('weekSlider');
     slider.innerHTML = '';
@@ -480,83 +474,97 @@
       `;
       dayEl.dataset.date = dateStr;
 
+      // 日期點擊：載入當日美容師
       dayEl.onclick = () => {
         document.querySelectorAll('.week-day').forEach(el => el.classList.remove('active'));
         dayEl.classList.add('active');
         document.getElementById('selectedDate').value = dateStr;
-        loadTimeData();
+        // 重置後續選擇
+        document.getElementById('staffName').innerHTML = '<option value="">載入美容師中...</option>';
+        document.getElementById('serviceType').innerHTML = '<option value="">請先選擇美容師</option>';
+        document.getElementById('timeGrid').innerHTML = '<div style="text-align:center;grid-column:1/3;">請先選擇美容師</div>';
+        // 載入當日上班美容師
+        loadWorkStaffByDate(dateStr);
       };
 
       slider.appendChild(dayEl);
     }
     document.getElementById('selectedDate').value = document.querySelector('.week-day').dataset.date;
+    // 預載今日美容師
+    loadWorkStaffByDate(document.getElementById('selectedDate').value);
   }
 
-  // 渲染预约时段
-  function renderTimeList() {
+  // 渲染當日上班美容師下拉選單
+  function renderWorkStaffSelect(workStaffList) {
+    const staffSelect = document.getElementById('staffName');
+    staffSelect.innerHTML = '<option value="">請選擇美容師</option>';
+    if(workStaffList.length === 0){
+      staffSelect.innerHTML = '<option value="">該日無美容師排班</option>';
+      return;
+    }
+    workStaffList.forEach(staff => {
+      staffSelect.add(new Option(`${staff.name} (${staff.start}-${staff.end})`, staff.name));
+    });
+  }
+
+  // 渲染管理後台美容師選單
+  function renderManageStaffSelect() {
+    const manageStaff = document.getElementById('manageStaff');
+    manageStaff.innerHTML = '<option value="">請選擇美容師</option>';
+    STAFF_LIST.forEach(staff => {
+      manageStaff.add(new Option(staff, staff));
+    });
+  }
+
+  // 根據美容師篩選服務項目
+  function filterServiceByStaff() {
+    const staff = document.getElementById('staffName').value;
     const date = document.getElementById('selectedDate').value;
+    const serviceSelect = document.getElementById('serviceType');
+    serviceSelect.innerHTML = '<option value="">請選擇服務項目</option>';
+    
+    if (!staff || !SERVICE_CONFIG[staff]) return;
+    
+    SERVICE_CONFIG[staff].forEach(item => {
+      serviceSelect.add(new Option(`${item.name} (${item.duration}分鐘)`, item.name));
+    });
+
+    // 載入可預約時段
+    loadAvailableSlots(date, staff);
+  }
+
+  // 渲染可預約時段
+  function renderTimeList(slots) {
     const grid = document.getElementById('timeGrid');
     grid.innerHTML = "";
 
-    const times = timeDataMap[date] || [];
-    if (!times.length) {
+    if (!slots.length) {
       grid.innerHTML = `<div style="grid-column:1/3;text-align:center;">當日無可預約時段</div>`;
       return;
     }
 
-    times.forEach(time => {
+    slots.forEach(time => {
       const btn = document.createElement('div');
       btn.className = "time-btn";
-      btn.textContent = time.value;
+      btn.textContent = time;
       btn.onclick = () => {
         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        document.getElementById('appointTime').value = time.value;
+        document.getElementById('appointTime').value = time;
       };
       grid.appendChild(btn);
     });
   }
 
-  // ✅ 纯JSONP提交预约表单
-  function submitForm(e) {
-    e.preventDefault();
-    const data = {
-      pageId: "美容預約系統",
-      lineId: LINE_USER_ID,
-      lineName: LINE_USER_NAME,
-      staffName: document.getElementById('staffName').value,
-      serviceType: document.getElementById('serviceType').value,
-      appointDate: document.getElementById('selectedDate').value,
-      appointTime: document.getElementById('appointTime').value,
-      name: document.getElementById('name').value,
-      phone: document.getElementById('phone').value,
-      email: document.getElementById('email').value,
-      extraInfo: document.getElementById('extraInfo').value
-    };
-    const params = new URLSearchParams(data);
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback`;
-    document.body.appendChild(script);
-  }
-
-  // 初始化DOM元素
-  function initElements() {
-    window.staffSelect = document.getElementById('staffName');
-    window.serviceSelect = document.getElementById('serviceType');
-  }
-
-  // 绑定事件
+  // 綁定事件
   function bindEvents() {
-    // 切换美容师 → 刷新服务项目+时段
-    document.getElementById('staffName').addEventListener('change', () => {
-      filterServiceByStaff();
-      loadTimeData();
-    });
-    // 表单提交
+    // 美容師切換 → 刷新服務項目+時段
+    document.getElementById('staffName').addEventListener('change', filterServiceByStaff);
+    // 表單提交
     document.getElementById('infoForm').addEventListener('submit', submitForm);
   }
 
-  // LIFF登录
+  // LIFF登入
   async function initLiff() {
     try {
       await liff.init({ liffId: CONFIG.LIFF_ID });
@@ -565,8 +573,16 @@
         LINE_USER_ID = p.userId;
         LINE_USER_NAME = p.displayName;
       }
-    } catch (e) {}
+    } catch (e) { console.log("LIFF初始化失敗", e); }
   }
+
+  // 頁面初始化
+  document.addEventListener('DOMContentLoaded', async () => {
+    renderWeekSlider();
+    bindEvents();
+    initLiff();
+    loadStaffService();
+  });
 </script>
 </body>
 </html>
