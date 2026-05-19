@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>莫凡韓式皮膚管理</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
     * {box-sizing: border-box;margin: 0;padding: 0;}
@@ -95,14 +94,12 @@
 </main>
 
 <script>
+  // ⚠️ 替換成你自己的 GAS 部署網址！
   const CONFIG = {
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwgKFHvVz6ZrPN4gkFGP4DMJ6Gwi8DFpLZ5JlMlC-TgL0NnSClqLZvHgtgvlKr1FljcoA/exec",
     LIFF_ID: "2009598216-MmBS77sp"
   };
 
-  let ALL_SCHEDULE = {};
-  let ALL_SERVICES = [];
-  let ALL_STAFF = [];
   let LINE_USER_ID = "guest_" + Date.now();
   let LINE_USER_NAME = "訪客";
   let weekDays = ['日', '一', '二', '三', '四', '五', '六'];
@@ -112,51 +109,38 @@
     script.src = `${CONFIG.SCRIPT_URL}?action=getAllData&callback=initAllData`;
     document.body.appendChild(script);
   }
-
   function loadServicesByDate(date) {
     if(!date) return;
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=getServicesByDate&date=${date}&callback=renderServices`;
     document.body.appendChild(script);
   }
-
   function loadStaffByService(date, service) {
     if(!date||!service) return;
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=getStaffByService&date=${date}&service=${service}&callback=renderStaff`;
     document.body.appendChild(script);
   }
-
   function loadAvailableSlots() {
     const date = document.getElementById('selectedDate').value;
     const staff = document.getElementById('staffSelect').value;
     const service = document.getElementById('serviceSelect').value;
     if(!date||!staff||!service) return;
-
     document.getElementById('timeGrid').innerHTML = '<div>載入時段中...</div>';
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=getAvailableSlots&date=${date}&staff=${staff}&service=${service}&callback=renderSlots`;
     document.body.appendChild(script);
   }
-
   function submitReservation() {
     const data = {
-      action: "submit",
-      lineId: LINE_USER_ID,
-      lineName: LINE_USER_NAME,
-      date: document.getElementById('selectedDate').value,
-      service: document.getElementById('serviceSelect').value,
-      staff: document.getElementById('staffSelect').value,
-      appointTime: document.getElementById('selectedTime').value,
-      name: document.getElementById('name').value.trim(),
-      phone: document.getElementById('phone').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      extraInfo: document.getElementById('extraInfo').value.trim()
+      action: "submit", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
+      date: document.getElementById('selectedDate').value, service: document.getElementById('serviceSelect').value,
+      staff: document.getElementById('staffSelect').value, appointTime: document.getElementById('selectedTime').value,
+      name: document.getElementById('name').value.trim(), phone: document.getElementById('phone').value.trim(),
+      email: document.getElementById('email').value.trim(), extraInfo: document.getElementById('extraInfo').value.trim()
     };
-
-    if(!data.appointTime) {alert("請選擇預約時段");return;}
-    if(!data.name||!data.phone) {alert("請填寫姓名/電話");return;}
-
+    if(!data.appointTime){alert("請選擇預約時段");return;}
+    if(!data.name||!data.phone){alert("請填寫姓名/電話");return;}
     const params = new URLSearchParams(data);
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=submitCallback`;
@@ -165,108 +149,69 @@
 
   window.initAllData = function(res) {
     if(res.status!=="success"){alert("載入失敗");return;}
-    ALL_SCHEDULE = res.schedule;
-    ALL_SERVICES = res.services;
-    ALL_STAFF = res.staff;
     renderWeekSlider();
   };
-
   window.renderServices = function(res) {
     const select = document.getElementById('serviceSelect');
     select.innerHTML = '<option value="">請選擇服務</option>';
     if(!res.services.length){select.innerHTML = '<option value="">當日無服務</option>';return;}
     res.services.forEach(item=>select.add(new Option(`${item.name} (${item.duration}分鐘)`, item.name)));
   };
-
   window.renderStaff = function(res) {
     const select = document.getElementById('staffSelect');
     select.innerHTML = '<option value="">請選擇美容師</option>';
     if(!res.staff.length){select.innerHTML = '<option value="">無美容師可服務</option>';return;}
     res.staff.forEach(s=>select.add(new Option(`${s.name} (${s.start}-${s.end})`, s.name)));
   };
-
   window.renderSlots = function(res) {
     const grid = document.getElementById('timeGrid');
-    grid.innerHTML = "";
-    document.getElementById('selectedTime').value = "";
+    grid.innerHTML = ""; document.getElementById('selectedTime').value = "";
     if(!res.slots.length){grid.innerHTML = '<div>當日已滿單</div>';return;}
     res.slots.forEach(time=>{
-      const btn = document.createElement('div');
-      btn.className = "time-btn";
-      btn.textContent = time;
+      const btn = document.createElement('div'); btn.className = "time-btn"; btn.textContent = time;
       btn.onclick = function(){
         document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('selectedTime').value = time;
+        btn.classList.add('active'); document.getElementById('selectedTime').value = time;
       };
       grid.appendChild(btn);
     });
   };
-
   window.submitCallback = function(res) {
     alert(res.message || "預約成功！");
-    if(res.status==="success"){
-      document.getElementById('reserveForm').reset();
-    }
+    if(res.status==="success") document.getElementById('reserveForm').reset();
     loadAvailableSlots();
   };
 
   function renderWeekSlider() {
-    const slider = document.getElementById('weekSlider');
-    slider.innerHTML = '';
+    const slider = document.getElementById('weekSlider'); slider.innerHTML = '';
     const today = new Date();
-
     for(let i=0; i<7; i++){
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      const y = date.getFullYear();
-      const m = String(date.getMonth()+1).padStart(2,'0');
-      const d = String(date.getDate()).padStart(2,'0');
-      const dateStr = `${y}-${m}-${d}`;
-      const week = weekDays[date.getDay()];
-
-      const el = document.createElement('div');
-      el.className = 'week-day' + (i===0 ? ' active' : '');
-      el.innerHTML = `<div>${m}/${d}</div><div>週${week}</div>`;
-      el.dataset.date = dateStr;
-      
+      const date = new Date(today); date.setDate(today.getDate()+i);
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+      const el = document.createElement('div'); el.className = 'week-day'+(i===0?' active':'');
+      el.innerHTML = `<div>${String(date.getMonth()+1)}/${date.getDate()}</div><div>週${weekDays[date.getDay()]}</div>`;
       el.onclick = function(){
         document.querySelectorAll('.week-day').forEach(e=>e.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('selectedDate').value = dateStr;
-        loadServicesByDate(dateStr);
-        document.getElementById('staffSelect').innerHTML = '<option>請先選擇服務</option>';
+        el.classList.add('active'); document.getElementById('selectedDate').value = dateStr;
+        loadServicesByDate(dateStr); document.getElementById('staffSelect').innerHTML = '<option>請先選擇服務</option>';
         document.getElementById('timeGrid').innerHTML = '<div>請先選擇美容師</div>';
       };
       slider.appendChild(el);
     }
-
-    const firstDate = document.querySelector('.week-day').dataset.date;
+    const firstDate = document.querySelector('.week-day.active').dataset.date;
     document.getElementById('selectedDate').value = firstDate;
     loadServicesByDate(firstDate);
   }
 
   async function initLiff() {
-    try {
-      await liff.init({ liffId: CONFIG.LIFF_ID });
-      if(liff.isLoggedIn()){
-        const p = await liff.getProfile();
-        LINE_USER_ID = p.userId;
-        LINE_USER_NAME = p.displayName;
-      }
-    } catch(e) {}
+    try { await liff.init({ liffId: CONFIG.LIFF_ID }); if(liff.isLoggedIn()){ const p=await liff.getProfile(); LINE_USER_ID=p.userId; LINE_USER_NAME=p.displayName; } } catch(e) {}
   }
 
   document.addEventListener('DOMContentLoaded', function(){
-    initLiff();
-    loadAllData();
-    
+    initLiff(); loadAllData();
     document.getElementById('serviceSelect').addEventListener('change', function(){
-      const date = document.getElementById('selectedDate').value;
-      const service = document.getElementById('serviceSelect').value;
-      loadStaffByService(date, service);
+      loadStaffByService(document.getElementById('selectedDate').value, this.value);
     });
-    
     document.getElementById('staffSelect').addEventListener('change', loadAvailableSlots);
     document.getElementById('submitBtn').addEventListener('click', submitReservation);
   });
