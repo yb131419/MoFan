@@ -28,16 +28,17 @@
     textarea{width:100%;min-height:120px;padding:18px;border-radius:16px;border:1px solid #f0f0f0;background:#fafbfc;margin-bottom:20px}
     .loading{text-align:center;color:#999;padding:10px}
     .disabled{pointer-events:none;opacity:0.6}
+    #preloadTip{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:20px 30px;border-radius:16px;box-shadow:0 5px 20px rgba(0,0,0,0.1);z-index:999}
   </style>
 </head>
 <body>
-<main>
+<div id="preloadTip">資料預加載中，請稍候...</div>
+<main class="disabled">
   <h2>
     <span class="main-title">莫凡<br>線上預約系統</span>
     <span class="sub-title">專業美容師一對一服務</span>
   </h2>
   <form id="reserveForm">
-    <!-- 修復：LIFF登錄信息隱藏域 -->
     <input type="hidden" id="lineId" value="">
     <input type="hidden" id="lineName" value="">
     <input type="hidden" id="selectedDate" value="">
@@ -75,62 +76,159 @@
 </main>
 
 <script>
-  // ⚠️ 修正：LIFF_ID 只填純ID，去掉網址！！
   const CONFIG = {
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwgKFHvVz6ZrPN4gkFGP4DMJ6Gwi8DFpLZ5JlMlC-TgL0NnSClqLZvHgtgvlKr1FljcoA/exec",
     LIFF_ID: "2009598216-MmBS77sp"
   };
 
-  // 全局變量
+  // 全局變量 + 本地緩存（核心優化：預加載所有數據）
   let userId = "guest_" + Date.now();
   let userName = "訪客";
   const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
   let scriptLoading = false;
+  let preloadFinished = false;
+  // 全量緩存：頁面打開時一次性加載所有數據
+  const CACHE = {
+    allDates: [],
+    dateServices: {}, // 日期對應服務
+    dateStaff: {},    // 日期+服務對應美容師
+    dateStaffSlots: {}// 日期+美容師+服務對應時段
+  };
 
-  // 修復：JSONP請求（防重複、防報錯）
-  function request(url) {
-    if (scriptLoading) return;
-    scriptLoading = true;
-    const s = document.createElement('script');
-    s.src = `${url}&_=${new Date().getTime()}`;
-    s.onload = () => { scriptLoading = false; s.remove(); };
-    s.onerror = () => { scriptLoading = false; s.remove(); alert("網路異常，請重試"); };
-    document.body.appendChild(s);
-    setTimeout(() => { scriptLoading = false; }, 5000);
+  // 統一JSONP請求
+  function request(url, callbackName) {
+    return new Promise((resolve, reject) => {
+      if (scriptLoading) return reject('加載中');
+      scriptLoading = true;
+      window[callbackName] = (res) => {
+        scriptLoading = false;
+        delete window[callbackName];
+        resolve(res);
+      };
+      const s = document.createElement('script');
+      s.src = `${url}&callback=${callbackName}&_=${Date.now()}`;
+      s.onload = () => setTimeout(() => s.remove(), 100);
+      s.onerror = () => {
+        scriptLoading = false;
+        delete window[callbackName];
+        reject('網路異常');
+      };
+      document.body.appendChild(s);
+    });
   }
 
-  // 加載排班日期（修復日期選擇失敗）
-  function loadDates() {
-    request(`${CONFIG.SCRIPT_URL}?action=getAllData&callback=cbDates`);
+  // 預加載：一次性獲取所有排班日期
+  async function loadAllDates() {
+    const res = await request(`${CONFIG.SCRIPT_URL}?action=getAllData`, 'cbAllDates');
+    if (res.status === 'success' && res.dateList.length) {
+      CACHE.allDates = res.dateList;
+      return res.dateList;
+    }
+    return [];
   }
 
-  // 加載服務項目
-  function loadServices(date) {
-    if (!date) return;
-    document.getElementById('serviceSelect').innerHTML = '<option value="">載入中...</option>';
-    request(`${CONFIG.SCRIPT_URL}?action=getServices&date=${date}&callback=cbServices`);
+  // 預加載：一次性獲取所有日期的服務/美容師/時段（核心優化）
+  async function preloadAllData(dates) {
+    for (const date of dates) {
+      // 加載當日服務
+      const serviceRes = await request(`${CONFIG.SCRIPT_URL}?action=getServices&date=${date}`, `cbServices_${date}`);
+      CACHE.dateServices[date] = serviceRes.status === 'success' ? serviceRes.services : [];
+      
+      // 加載當日所有美容師
+      for (const service of CACHE.dateServices[date]) {
+        const staffRes = await request(`${CONFIG.SCRIPT_URL}?action=getStaff&date=${date}&service=${encodeURIComponent(service.name)}`, `cbStaff_${date}_${service.name}`);
+        const staffKey = `${date}_${service.name}`;
+        CACHE.dateStaff[staffKey] = staffRes.status === 'success' ? staffRes.staff : [];
+        
+        // 加載所有時段
+        for (const staff of CACHE.dateStaff[staffKey]) {
+          const slotRes = await request(`${CONFIG.SCRIPT_URL}?action=getSlots&date=${date}&staff=${encodeURIComponent(staff.name)}&service=${encodeURIComponent(service.name)}`, `cbSlots_${date}_${staff.name}_${service.name}`);
+          const slotKey = `${date}_${staff.name}_${service.name}`;
+          CACHE.dateStaffSlots[slotKey] = slotRes.status === 'success' ? slotRes.slots : [];
+        }
+      }
+    }
+    preloadFinished = true;
   }
 
-  // 加載美容師
-  function loadStaff(date, service) {
-    if (!date || !service) return;
-    document.getElementById('staffSelect').innerHTML = '<option value="">載入中...</option>';
-    document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
-    request(`${CONFIG.SCRIPT_URL}?action=getStaff&date=${date}&service=${encodeURIComponent(service)}&callback=cbStaff`);
+  // 渲染日期（本地緩存讀取，0延遲）
+  function renderDates() {
+    const wrap = document.getElementById('weekSlider');
+    wrap.innerHTML = '';
+    const dates = CACHE.allDates;
+    if (!dates.length) {
+      wrap.innerHTML = '<div class="loading">暫無排班</div>';
+      return;
+    }
+    const firstDate = dates[0];
+    document.getElementById('selectedDate').value = firstDate;
+
+    dates.forEach((str, i) => {
+      const [y, m, d] = str.split('-');
+      const w = weekDays[new Date(str).getDay()];
+      const el = document.createElement('div');
+      el.className = `week-day ${i === 0 ? 'active' : ''}`;
+      el.dataset.date = str;
+      el.innerHTML = `<div>${m}/${d}</div><div>週${w}</div>`;
+      el.onclick = () => {
+        document.querySelectorAll('.week-day').forEach(e => e.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('selectedDate').value = str;
+        renderServices(str); // 本地讀取，瞬間渲染
+      };
+      wrap.appendChild(el);
+    });
+    renderServices(firstDate);
   }
 
-  // 加載可用時段
-  function loadSlots() {
-    const d = document.getElementById('selectedDate').value;
-    const s = document.getElementById('staffSelect').value;
-    const sv = document.getElementById('serviceSelect').value;
-    if (!d || !s || !sv) return;
-    document.getElementById('timeGrid').innerHTML = '<div class="loading">載入時段中...</div>';
+  // 渲染服務（本地緩存，0延遲）
+  function renderServices(date) {
+    const sel = document.getElementById('serviceSelect');
+    sel.innerHTML = '<option value="">請選擇服務</option>';
+    const services = CACHE.dateServices[date] || [];
+    if (!services.length) {
+      sel.innerHTML = '<option value="">當日無服務</option>';
+      return;
+    }
+    services.forEach(item => sel.add(new Option(`${item.name} (${item.duration}分)`, item.name)));
+  }
+
+  // 渲染美容師（本地緩存，0延遲）
+  function renderStaff(date, service) {
+    const sel = document.getElementById('staffSelect');
+    sel.innerHTML = '<option value="">請選擇美容師</option>';
+    const staff = CACHE.dateStaff[`${date}_${service}`] || [];
+    if (!staff.length) {
+      sel.innerHTML = '<option value="">當日無美容師</option>';
+      return;
+    }
+    staff.forEach(x => sel.add(new Option(`${x.name} (${x.start}~${x.end})`, x.name)));
+  }
+
+  // 渲染時段（本地緩存，0延遲）
+  function renderSlots(date, staff, service) {
+    const grid = document.getElementById('timeGrid');
+    grid.innerHTML = '';
     document.getElementById('selectedTime').value = '';
-    request(`${CONFIG.SCRIPT_URL}?action=getSlots&date=${d}&staff=${encodeURIComponent(s)}&service=${encodeURIComponent(sv)}&callback=cbSlots`);
+    const slots = CACHE.dateStaffSlots[`${date}_${staff}_${service}`] || [];
+    if (!slots.length) {
+      grid.innerHTML = '<div class="loading">當日已滿單</div>';
+      return;
+    }
+    slots.forEach(time => {
+      const btn = document.createElement('div');
+      btn.className = 'time-btn';
+      btn.textContent = time;
+      btn.onclick = () => {
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('selectedTime').value = time;
+      };
+      grid.appendChild(btn);
+    });
   }
 
-  // 提交預約（修復：參數完整傳遞）
+  // 提交預約
   function submit() {
     const data = {
       action: "submit",
@@ -146,7 +244,6 @@
       extraInfo: document.getElementById('extraInfo').value.trim()
     };
 
-    // 表單驗證
     if (!data.date) return alert("請選擇預約日期");
     if (!data.service) return alert("請選擇服務項目");
     if (!data.staff) return alert("請選擇美容師");
@@ -154,140 +251,63 @@
     if (!data.name || !data.phone) return alert("請填寫姓名與聯絡電話");
 
     document.getElementById('submitBtn').classList.add('disabled');
-    request(`${CONFIG.SCRIPT_URL}?${new URLSearchParams(data)}&callback=cbSubmit`);
+    request(`${CONFIG.SCRIPT_URL}?${new URLSearchParams(data)}`, 'cbSubmit').then(res => {
+      document.getElementById('submitBtn').classList.remove('disabled');
+      alert(res.message);
+      if (res.status === "success") {
+        document.getElementById('reserveForm').reset();
+        document.getElementById('selectedTime').value = '';
+      }
+    });
   }
 
-  // ==================== 回調函數 ====================
-  // 日期回調
-  window.cbDates = (res) => {
-    const wrap = document.getElementById('weekSlider');
-    wrap.innerHTML = '';
-    if (res.status !== "success") {
-      wrap.innerHTML = `<div class="loading">${res.message}</div>`;
-      return;
-    }
-    if (!res.dateList.length) {
-      wrap.innerHTML = '<div class="loading">暫無排班</div>';
-      return;
-    }
-
-    const firstDate = res.dateList[0];
-    document.getElementById('selectedDate').value = firstDate;
-
-    // 渲染日期
-    res.dateList.forEach((str, i) => {
-      const [y, m, d] = str.split('-');
-      const w = weekDays[new Date(str).getDay()];
-      const el = document.createElement('div');
-      el.className = `week-day ${i === 0 ? 'active' : ''}`;
-      el.dataset.date = str;
-      el.innerHTML = `<div>${m}/${d}</div><div>週${w}</div>`;
-      el.onclick = () => {
-        document.querySelectorAll('.week-day').forEach(e => e.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('selectedDate').value = str;
-        // 修復：切換日期重置表單
-        document.getElementById('serviceSelect').innerHTML = '<option value="">載入中...</option>';
-        document.getElementById('staffSelect').innerHTML = '<option value="">請先選擇服務</option>';
-        document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
-        loadServices(str);
-      };
-      wrap.appendChild(el);
-    });
-    loadServices(firstDate);
-  };
-
-  // 服務回調
-  window.cbServices = (res) => {
-    const sel = document.getElementById('serviceSelect');
-    sel.innerHTML = '<option value="">請選擇服務</option>';
-    if (res.status !== "success" || !res.services.length) {
-      sel.innerHTML = '<option value="">當日無服務</option>';
-      return;
-    }
-    res.services.forEach(item => sel.add(new Option(`${item.name} (${item.duration}分)`, item.name)));
-  };
-
-  // 美容師回調
-  window.cbStaff = (res) => {
-    const sel = document.getElementById('staffSelect');
-    sel.innerHTML = '<option value="">請選擇美容師</option>';
-    if (res.status !== "success" || !res.staff.length) {
-      sel.innerHTML = '<option value="">當日無美容師</option>';
-      return;
-    }
-    res.staff.forEach(x => sel.add(new Option(`${x.name} (${x.start}~${x.end})`, x.name)));
-  };
-
-  // 時段回調
-  window.cbSlots = (res) => {
-    const grid = document.getElementById('timeGrid');
-    grid.innerHTML = '';
-    document.getElementById('selectedTime').value = '';
-    if (res.status !== "success" || !res.slots.length) {
-      grid.innerHTML = '<div class="loading">當日已滿單</div>';
-      return;
-    }
-    res.slots.forEach(time => {
-      const btn = document.createElement('div');
-      btn.className = 'time-btn';
-      btn.textContent = time;
-      btn.onclick = () => {
-        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('selectedTime').value = time;
-      };
-      grid.appendChild(btn);
-    });
-  };
-
-  // 預約結果回調
-  window.cbSubmit = (res) => {
-    document.getElementById('submitBtn').classList.remove('disabled');
-    alert(res.message);
-    if (res.status === "success") {
-      document.getElementById('reserveForm').reset();
-      document.getElementById('selectedTime').value = '';
-      loadSlots();
-    }
-  };
-
-  // ==================== LIFF 登錄（優化：徹底解決404報錯） ====================
+  // LIFF 登錄
   async function initLiff() {
     try {
-      // 強制關閉多餘API，避免404
-      await liff.init({ 
-        liffId: CONFIG.LIFF_ID,
-        withLoginOnExternalBrowser: true
-      });
-      
+      await liff.init({ liffId: CONFIG.LIFF_ID, withLoginOnExternalBrowser: true });
       if (liff.isLoggedIn()) {
         const profile = await liff.getProfile();
         userId = profile.userId;
         userName = profile.displayName;
       }
     } catch (e) {
-      console.log("LIFF初始化完成，訪客模式運行");
+      console.log("訪客模式");
     } finally {
-      // 無論登錄與否，都賦值保證預約正常
       document.getElementById('lineId').value = userId;
       document.getElementById('lineName').value = userName;
     }
   }
 
-  // 初始化
-  document.addEventListener('DOMContentLoaded', () => {
-    initLiff();
-    loadDates();
+  // 初始化：預加載完成後才開放使用
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await initLiff();
+      const dates = await loadAllDates();
+      await preloadAllData(dates); // 關鍵：預加載所有數據
+      
+      // 預加載完成，隱藏提示，開放操作
+      document.getElementById('preloadTip').remove();
+      document.querySelector('main').classList.remove('disabled');
+      renderDates();
+    } catch (e) {
+      alert("加載失敗，請刷新頁面");
+      document.getElementById('preloadTip').textContent = "加載失敗，請刷新";
+    }
 
-    // 綁定事件
+    // 綁定事件（全部本地讀取，瞬間響應）
     document.getElementById('serviceSelect').addEventListener('change', () => {
       const date = document.getElementById('selectedDate').value;
       const service = document.getElementById('serviceSelect').value;
-      loadStaff(date, service);
+      renderStaff(date, service);
     });
 
-    document.getElementById('staffSelect').addEventListener('change', loadSlots);
+    document.getElementById('staffSelect').addEventListener('change', () => {
+      const date = document.getElementById('selectedDate').value;
+      const staff = document.getElementById('staffSelect').value;
+      const service = document.getElementById('serviceSelect').value;
+      renderSlots(date, staff, service);
+    });
+
     document.getElementById('submitBtn').addEventListener('click', submit);
   });
 </script>
