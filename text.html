@@ -130,47 +130,33 @@
       color: #555;
     }
 
-    /* 🔥 手机端一周日期选择器（核心修改） */
-    .week-slider {
+    .date-nav-row {
       display: flex;
+      align-items: center;
       gap: 8px;
-      overflow-x: auto;
-      padding: 4px 0;
       margin-bottom: 25px;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
     }
-    .week-slider::-webkit-scrollbar {
-      display: none;
-    }
-    .week-day {
-      min-width: 60px;
-      padding: 12px 8px;
-      border-radius: 14px;
-      background: #fafbfc;
-      border: 1px solid #f3f3f3;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-size: 13px;
-    }
-    .week-day .date {
+    .date-nav-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #eee;
       font-weight: 700;
-      margin-bottom: 4px;
-      color: #333;
+      color: #ff4d88;
+      cursor: pointer;
     }
-    .week-day .week {
-      color: #888;
-      font-size: 12px;
-    }
-    .week-day.active {
-      background: linear-gradient(135deg, #FF5D8F, #FF3377);
-      border-color: #ff4d88;
-      color: #fff !important;
-    }
-    .week-day.active .date,
-    .week-day.active .week {
-      color: #fff;
+    .week-box {
+      width: 70px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid #f3f3f3;
+      background: #fafbfc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #666;
     }
 
     input, select, textarea {
@@ -288,7 +274,6 @@
       <input type="hidden" id="lineId">
       <input type="hidden" id="lineName">
       <input type="hidden" id="appointTime" name="appointTime">
-      <input type="hidden" id="selectedDate"> <!-- 存储选中的日期 -->
 
       <!-- 🔥 新增：美容師選擇 -->
       <label>選擇美容師</label>
@@ -302,8 +287,12 @@
       </select>
 
       <label>預約日期</label>
-      <!-- 🔥 一周7天横向选择器 -->
-      <div class="week-slider" id="weekSlider"></div>
+      <div class="date-nav-row">
+        <button type="button" class="date-nav-btn" id="prevDateBtn">&lt;</button>
+        <input type="date" id="appointDate" required>
+        <button type="button" class="date-nav-btn" id="nextDateBtn">&gt;</button>
+        <div class="week-box" id="weekText">星期幾</div>
+      </div>
 
       <label>預約時段</label>
       <div class="time-grid" id="timeGrid">
@@ -371,56 +360,15 @@
   let LINE_USER_ID = "guest_" + Date.now();
   let LINE_USER_NAME = "LINE使用者";
   let isAdmin = false;
-  let weekDays = ['日', '一', '二', '三', '四', '五', '六'];
 
   // 初始化
   document.addEventListener('DOMContentLoaded', async () => {
     await loadStaffAndService();
     initElements();
-    renderWeekSlider(); // 渲染一周日期选择器
+    initDate();
     bindEvents();
     initLiff();
   });
-
-  // 🔥 渲染一周7天日期选择器（核心功能）
-  function renderWeekSlider() {
-    const slider = document.getElementById('weekSlider');
-    slider.innerHTML = '';
-    const today = new Date();
-
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      const dateStr = `${y}-${m}-${d}`;
-      const week = weekDays[date.getDay()];
-
-      const dayEl = document.createElement('div');
-      dayEl.className = 'week-day';
-      if (i === 0) dayEl.classList.add('active'); // 默认选中今天
-      dayEl.innerHTML = `
-        <div class="date">${m}/${d}</div>
-        <div class="week">週${week}</div>
-      `;
-      dayEl.dataset.date = dateStr;
-
-      // 点击切换日期
-      dayEl.onclick = () => {
-        document.querySelectorAll('.week-day').forEach(el => el.classList.remove('active'));
-        dayEl.classList.add('active');
-        document.getElementById('selectedDate').value = dateStr;
-        loadTimeData(); // 重新加载时段
-      };
-
-      slider.appendChild(dayEl);
-    }
-    // 默认赋值今天日期
-    const firstDate = document.querySelector('.week-day').dataset.date;
-    document.getElementById('selectedDate').value = firstDate;
-  }
 
   // 🔥 加載美容師+項目配置
   async function loadStaffAndService() {
@@ -458,7 +406,16 @@
     window.submitBtn = document.getElementById('submitBtn');
     window.staffSelect = document.getElementById('staffName');
     window.serviceSelect = document.getElementById('serviceType');
+    window.appointDate = document.getElementById('appointDate');
     window.timeGrid = document.getElementById('timeGrid');
+  }
+
+  // 初始化日期
+  function initDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('appointDate').min = today;
+    document.getElementById('appointDate').value = today;
+    document.getElementById('manageDate').min = today;
   }
 
   // 綁定事件
@@ -468,6 +425,8 @@
       filterServiceByStaff();
       loadTimeData();
     });
+    // 日期切換
+    document.getElementById('appointDate').addEventListener('change', loadTimeData);
     // 表單提交
     document.getElementById('infoForm').addEventListener('submit', submitForm);
   }
@@ -475,9 +434,7 @@
   // 加載可預約時段
   function loadTimeData() {
     const staff = document.getElementById('staffName').value;
-    const date = document.getElementById('selectedDate').value;
-    if (!staff || !date) return;
-
+    if (!staff) return;
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=getDates&staffName=${staff}&pageId=美容預約系統&callback=callback`;
     document.body.appendChild(script);
@@ -492,7 +449,6 @@
     if (response.status === "success") {
       alert("✅ 預約成功！");
       document.getElementById('infoForm').reset();
-      renderWeekSlider(); // 重置日期选择器
     }
     if (response.status === "error") {
       alert("❌ " + response.message);
@@ -501,7 +457,7 @@
 
   // 渲染時段
   function renderTimeList() {
-    const date = document.getElementById('selectedDate').value;
+    const date = document.getElementById('appointDate').value;
     const grid = document.getElementById('timeGrid');
     grid.innerHTML = "";
 
@@ -533,7 +489,7 @@
       lineName: LINE_USER_NAME,
       staffName: document.getElementById('staffName').value,
       serviceType: document.getElementById('serviceType').value,
-      appointDate: document.getElementById('selectedDate').value, // 使用选中的日期
+      appointDate: document.getElementById('appointDate').value,
       appointTime: document.getElementById('appointTime').value,
       name: document.getElementById('name').value,
       phone: document.getElementById('phone').value,
