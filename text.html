@@ -292,7 +292,7 @@
 
       <label>選擇美容師</label>
       <select id="staffName" required>
-        <option value="">請選擇美容師</option>
+        <option value="">載入美容師中...</option>
       </select>
 
       <label>服務項目</label>
@@ -336,7 +336,7 @@
         <h3>⏰ 美容師時段設定</h3>
         <label>選擇美容師</label>
         <select id="manageStaff">
-          <option value="">請選擇美容師</option>
+          <option value="">請先選擇美容師</option>
         </select>
         <div class="date-nav-row">
           <button class="date-nav-btn" id="prevManageDateBtn">&lt;</button>
@@ -359,7 +359,7 @@
 <script>
   const CONFIG = {
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwgKFHvVz6ZrPN4gkFGP4DMJ6Gwi8DFpLZ5JlMlC-TgL0NnSClqLZvHgtgvlKr1FljcoA/exec",
-    LIFF_ID: "2009598216-ZsS47DM8"
+    LIFF_ID: "2009598216-MmBS77sp"
   };
 
   let STAFF_LIST = [];
@@ -367,24 +367,92 @@
   let timeDataMap = {};
   let LINE_USER_ID = "guest_" + Date.now();
   let LINE_USER_NAME = "LINE使用者";
-  let isAdmin = false;
   let weekDays = ['日', '一', '二', '三', '四', '五', '六'];
 
-  // 初始化（无fetch，无跨域）
+  // 初始化 - 纯JSONP，无任何fetch
   document.addEventListener('DOMContentLoaded', async () => {
     initElements();
     renderWeekSlider();
     bindEvents();
     initLiff();
-    // 用JSONP加载美容师数据（修复跨域核心）
-    loadStaffAndServiceByJsonp();
+    // 核心：JSONP加载美容师+服务项目
+    loadStaffService();
   });
 
-  // 核心修复：JSONP请求 替代fetch（解决CORS/404）
-  function loadStaffAndServiceByJsonp() {
+  // ✅ 纯JSONP请求：加载美容师+服务配置
+  function loadStaffService() {
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=getStaffAndService&callback=callback`;
     document.body.appendChild(script);
+  }
+
+  // ✅ 纯JSONP请求：加载预约时段
+  function loadTimeData() {
+    const staff = document.getElementById('staffName').value;
+    const date = document.getElementById('selectedDate').value;
+    if (!staff || !date) return;
+
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=getDates&staffName=${staff}&pageId=美容預約系統&callback=callback`;
+    document.body.appendChild(script);
+  }
+
+  // ✅ 修复核心：统一JSONP回调函数（区分美容师/时段/预约返回）
+  window.callback = (response) => {
+    // 1. 加载 美容师+服务项目 成功
+    if (response.status === "success" && response.staff && response.serviceConfig) {
+      STAFF_LIST = response.staff;
+      SERVICE_CONFIG = response.serviceConfig;
+      renderStaffSelect();
+      return;
+    }
+    // 2. 加载 预约时段 成功
+    if (response.status === "init") {
+      timeDataMap = response.timeMap || {};
+      renderTimeList();
+      return;
+    }
+    // 3. 预约提交结果
+    if (response.status === "success") {
+      alert("✅ 預約成功！");
+      document.getElementById('infoForm').reset();
+      renderWeekSlider();
+      return;
+    }
+    // 4. 错误提示
+    if (response.status === "error") {
+      alert("❌ " + response.message);
+    }
+  };
+
+  // ✅ 修复：渲染美容师下拉框
+  function renderStaffSelect() {
+    const staffSelect = document.getElementById('staffName');
+    const manageStaff = document.getElementById('manageStaff');
+    
+    // 清空原有选项
+    staffSelect.innerHTML = '<option value="">請選擇美容師</option>';
+    manageStaff.innerHTML = '<option value="">請選擇美容師</option>';
+    
+    // 追加美容师选项
+    STAFF_LIST.forEach(staff => {
+      staffSelect.add(new Option(staff, staff));
+      manageStaff.add(new Option(staff, staff));
+    });
+  }
+
+  // ✅ 修复：根据美容师筛选服务项目
+  function filterServiceByStaff() {
+    const staff = document.getElementById('staffName').value;
+    const serviceSelect = document.getElementById('serviceType');
+    serviceSelect.innerHTML = '<option value="">請選擇服務項目</option>';
+    
+    if (!staff || !SERVICE_CONFIG[staff]) return;
+    
+    // 追加服务项目
+    SERVICE_CONFIG[staff].forEach(item => {
+      serviceSelect.add(new Option(`${item.name} (${item.duration}分鐘)`, item.name));
+    });
   }
 
   // 渲染一周7天日期选择器
@@ -421,82 +489,10 @@
 
       slider.appendChild(dayEl);
     }
-    const firstDate = document.querySelector('.week-day').dataset.date;
-    document.getElementById('selectedDate').value = firstDate;
+    document.getElementById('selectedDate').value = document.querySelector('.week-day').dataset.date;
   }
 
-  // 渲染美容师下拉框
-  function renderStaffSelect() {
-    const staffSelect = document.getElementById('staffName');
-    const manageStaff = document.getElementById('manageStaff');
-    STAFF_LIST.forEach(staff => {
-      staffSelect.add(new Option(staff, staff));
-      manageStaff.add(new Option(staff, staff));
-    });
-  }
-
-  // 根据美容师筛选服务
-  function filterServiceByStaff() {
-    const staff = document.getElementById('staffName').value;
-    const serviceSelect = document.getElementById('serviceType');
-    serviceSelect.innerHTML = '<option value="">請選擇服務項目</option>';
-    
-    if (!staff) return;
-    SERVICE_CONFIG[staff].forEach(item => {
-      serviceSelect.add(new Option(`${item.name} (${item.duration}分鐘)`, item.name));
-    });
-  }
-
-  function initElements() {
-    window.submitBtn = document.getElementById('submitBtn');
-    window.staffSelect = document.getElementById('staffName');
-    window.serviceSelect = document.getElementById('serviceType');
-    window.timeGrid = document.getElementById('timeGrid');
-  }
-
-  function bindEvents() {
-    document.getElementById('staffName').addEventListener('change', () => {
-      filterServiceByStaff();
-      loadTimeData();
-    });
-    document.getElementById('infoForm').addEventListener('submit', submitForm);
-  }
-
-  // 加载时段（JSONP）
-  function loadTimeData() {
-    const staff = document.getElementById('staffName').value;
-    const date = document.getElementById('selectedDate').value;
-    if (!staff || !date) return;
-
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=getDates&staffName=${staff}&pageId=美容預約系統&callback=callback`;
-    document.body.appendChild(script);
-  }
-
-  // 统一回调函数（所有GAS请求走这里）
-  window.callback = (response) => {
-    if (response.status === "init") {
-      // 加载美容师/服务配置
-      if(response.staff && response.serviceConfig){
-        STAFF_LIST = response.staff;
-        SERVICE_CONFIG = response.serviceConfig;
-        renderStaffSelect();
-      }
-      // 加载时段
-      timeDataMap = response.timeMap || {};
-      renderTimeList();
-    }
-    if (response.status === "success") {
-      alert("✅ 預約成功！");
-      document.getElementById('infoForm').reset();
-      renderWeekSlider();
-    }
-    if (response.status === "error") {
-      alert("❌ " + response.message);
-    }
-  };
-
-  // 渲染时段
+  // 渲染预约时段
   function renderTimeList() {
     const date = document.getElementById('selectedDate').value;
     const grid = document.getElementById('timeGrid');
@@ -521,7 +517,7 @@
     });
   }
 
-  // 提交预约（JSONP）
+  // ✅ 纯JSONP提交预约表单
   function submitForm(e) {
     e.preventDefault();
     const data = {
@@ -541,6 +537,23 @@
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?${params}&callback=callback`;
     document.body.appendChild(script);
+  }
+
+  // 初始化DOM元素
+  function initElements() {
+    window.staffSelect = document.getElementById('staffName');
+    window.serviceSelect = document.getElementById('serviceType');
+  }
+
+  // 绑定事件
+  function bindEvents() {
+    // 切换美容师 → 刷新服务项目+时段
+    document.getElementById('staffName').addEventListener('change', () => {
+      filterServiceByStaff();
+      loadTimeData();
+    });
+    // 表单提交
+    document.getElementById('infoForm').addEventListener('submit', submitForm);
   }
 
   // LIFF登录
