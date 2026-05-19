@@ -32,7 +32,6 @@
   </style>
 </head>
 <body>
-<!-- 初始加载遮罩 -->
 <div id="loadingOverlay">
   <div class="loading">系統初始化中，請稍候...</div>
 </div>
@@ -85,62 +84,38 @@
     LIFF_ID: "2009598216-MmBS77sp"
   };
 
-  // 全局变量 + 本地缓存（修复版：轻量缓存，不卡死）
   let userId = "guest_" + Date.now();
   let userName = "訪客";
   const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
   let scriptLoading = false;
-  // 轻量缓存：只缓存当前操作数据，不预加载全部
-  const CACHE = {
-    dates: [],
-    services: {},
-    staff: {},
-    slots: {}
-  };
+  const CACHE = { dates: [], services: {}, staff: {}, slots: {} };
 
-  // 修复：安全JSONP请求（函数名无横杠，杜绝报错）
   function request(action, params = {}, callback) {
     if (scriptLoading) return;
     scriptLoading = true;
-
-    // 生成安全回调名（替换横杠为下划线，彻底修复JS报错）
     const cbName = "cb_" + Date.now() + "_" + Math.random().toString(36).slice(2);
     window[cbName] = (res) => {
       scriptLoading = false;
       delete window[cbName];
       callback(res);
     };
-
-    // 拼接参数
     let url = `${CONFIG.SCRIPT_URL}?action=${action}&callback=${cbName}&_=${Date.now()}`;
     for (let k in params) url += `&${k}=${encodeURIComponent(params[k])}`;
-
     const s = document.createElement('script');
     s.src = url;
     s.onload = () => setTimeout(() => s.remove(), 100);
-    s.onerror = () => {
-      scriptLoading = false;
-      delete window[cbName];
-      alert("網路異常，請重試");
-    };
+    s.onerror = () => { scriptLoading = false; delete window[cbName]; alert("網路異常，請重試"); };
     document.body.appendChild(s);
   }
 
-  // 1. 加载排班日期（仅加载日期，超快）
   function loadDates() {
     request("getAllData", {}, (res) => {
       const wrap = document.getElementById('weekSlider');
       wrap.innerHTML = '';
-      if (res.status !== "success" || !res.dateList.length) {
-        wrap.innerHTML = '<div class="loading">暫無排班</div>';
-        return;
-      }
-
+      if (res.status !== "success" || !res.dateList.length) { wrap.innerHTML = '<div class="loading">暫無排班</div>'; return; }
       CACHE.dates = res.dateList;
       const firstDate = res.dateList[0];
       document.getElementById('selectedDate').value = firstDate;
-
-      // 渲染日期
       res.dateList.forEach((str, i) => {
         const [y, m, d] = str.split('-');
         const w = weekDays[new Date(str).getDay()];
@@ -163,12 +138,8 @@
     });
   }
 
-  // 2. 加载服务（缓存机制，秒加载）
   function loadServices(date) {
-    if (CACHE.services[date]) {
-      renderServices(date, CACHE.services[date]);
-      return;
-    }
+    if (CACHE.services[date]) { renderServices(date, CACHE.services[date]); return; }
     request("getServices", { date }, (res) => {
       CACHE.services[date] = res.status === "success" ? res.services : [];
       renderServices(date, CACHE.services[date]);
@@ -177,20 +148,13 @@
   function renderServices(date, services) {
     const sel = document.getElementById('serviceSelect');
     sel.innerHTML = '<option value="">請選擇服務</option>';
-    if (!services.length) {
-      sel.innerHTML = '<option value="">當日無服務</option>';
-      return;
-    }
+    if (!services.length) { sel.innerHTML = '<option value="">當日無服務</option>'; return; }
     services.forEach(item => sel.add(new Option(`${item.name} (${item.duration}分)`, item.name)));
   }
 
-  // 3. 加载美容师（缓存机制，秒加载）
   function loadStaff(date, service) {
     const key = `${date}_${service}`;
-    if (CACHE.staff[key]) {
-      renderStaff(CACHE.staff[key]);
-      return;
-    }
+    if (CACHE.staff[key]) { renderStaff(CACHE.staff[key]); return; }
     request("getStaff", { date, service }, (res) => {
       CACHE.staff[key] = res.status === "success" ? res.staff : [];
       renderStaff(CACHE.staff[key]);
@@ -199,26 +163,17 @@
   function renderStaff(staff) {
     const sel = document.getElementById('staffSelect');
     sel.innerHTML = '<option value="">請選擇美容師</option>';
-    if (!staff.length) {
-      sel.innerHTML = '<option value="">當日無美容師</option>';
-      return;
-    }
+    if (!staff.length) { sel.innerHTML = '<option value="">當日無美容師</option>'; return; }
     staff.forEach(x => sel.add(new Option(`${x.name} (${x.start}~${x.end})`, x.name)));
   }
 
-  // 4. 加载时段（缓存机制，秒加载）
   function loadSlots() {
     const d = document.getElementById('selectedDate').value;
     const s = document.getElementById('staffSelect').value;
     const sv = document.getElementById('serviceSelect').value;
     if (!d || !s || !sv) return;
-
     const key = `${d}_${s}_${sv}`;
-    if (CACHE.slots[key]) {
-      renderSlots(CACHE.slots[key]);
-      return;
-    }
-
+    if (CACHE.slots[key]) { renderSlots(CACHE.slots[key]); return; }
     document.getElementById('timeGrid').innerHTML = '<div class="loading">載入時段中...</div>';
     document.getElementById('selectedTime').value = '';
     request("getSlots", { date: d, staff: s, service: sv }, (res) => {
@@ -230,10 +185,7 @@
     const grid = document.getElementById('timeGrid');
     grid.innerHTML = '';
     document.getElementById('selectedTime').value = '';
-    if (!slots.length) {
-      grid.innerHTML = '<div class="loading">當日已滿單</div>';
-      return;
-    }
+    if (!slots.length) { grid.innerHTML = '<div class="loading">當日已滿單</div>'; return; }
     slots.forEach(time => {
       const btn = document.createElement('div');
       btn.className = 'time-btn';
@@ -247,7 +199,6 @@
     });
   }
 
-  // 提交预约
   function submit() {
     const data = {
       lineId: document.getElementById('lineId').value,
@@ -261,13 +212,11 @@
       email: document.getElementById('email').value.trim(),
       extraInfo: document.getElementById('extraInfo').value.trim()
     };
-
     if (!data.date) return alert("請選擇預約日期");
     if (!data.service) return alert("請選擇服務項目");
     if (!data.staff) return alert("請選擇美容師");
     if (!data.appointTime) return alert("請選擇預約時段");
     if (!data.name || !data.phone) return alert("請填寫姓名與聯絡電話");
-
     document.getElementById('submitBtn').classList.add('disabled');
     request("submit", data, (res) => {
       document.getElementById('submitBtn').classList.remove('disabled');
@@ -279,7 +228,6 @@
     });
   }
 
-  // LIFF 登录
   async function initLiff() {
     try {
       await liff.init({ liffId: CONFIG.LIFF_ID, withLoginOnExternalBrowser: true });
@@ -288,30 +236,23 @@
         userId = profile.userId;
         userName = profile.displayName;
       }
-    } catch (e) {
-      console.log("訪客模式運行");
+    } catch (e) { console.log("訪客模式運行");
     } finally {
       document.getElementById('lineId').value = userId;
       document.getElementById('lineName').value = userName;
     }
   }
 
-  // 初始化（修复：仅加载日期，不卡死，秒开）
   document.addEventListener('DOMContentLoaded', async () => {
     await initLiff();
     loadDates();
-
-    // 初始化完成，移除遮罩，开放操作
     document.getElementById('loadingOverlay').remove();
     document.querySelector('main').classList.remove('disabled');
-
-    // 绑定事件
     document.getElementById('serviceSelect').addEventListener('change', () => {
       const date = document.getElementById('selectedDate').value;
       const service = document.getElementById('serviceSelect').value;
       loadStaff(date, service);
     });
-
     document.getElementById('staffSelect').addEventListener('change', loadSlots);
     document.getElementById('submitBtn').addEventListener('click', submit);
   });
