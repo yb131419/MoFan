@@ -73,7 +73,7 @@
 </main>
 
 <script>
-  // ⚠️ 部署後 替換成你的GAS網址
+  // ⚠️ 務必替換成你的GAS部署網址
   const CONFIG = {
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwgKFHvVz6ZrPN4gkFGP4DMJ6Gwi8DFpLZ5JlMlC-TgL0NnSClqLZvHgtgvlKr1FljcoA/exec",
     LIFF_ID: "2009598216-MmBS77sp"
@@ -82,45 +82,42 @@
   let LINE_USER_ID = "guest_" + Date.now();
   let LINE_USER_NAME = "訪客";
   let weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-  let isLoading = false;
 
-  // 全局錯誤捕獲
-  window.onerror = function(msg){alert("系統異常：" + msg);};
-
-  // JSONP 請求封裝
-  function jsonpRequest(url, callbackName) {
-    if (isLoading) return;
-    isLoading = true;
+  // 簡化JSONP，刪除鎖死代碼（核心修復）
+  function sendRequest(url) {
     const script = document.createElement('script');
-    script.src = url;
-    script.onload = () => { isLoading = false; };
-    script.onerror = () => { isLoading = false; alert("載入失敗，請重試"); };
+    script.src = url + '&_=' + new Date().getTime(); // 強制刷新，避免快取
     document.body.appendChild(script);
+    // 請求完成後移除標籤
+    setTimeout(() => script.remove(), 2000);
   }
 
-  // 請求方法
-  function loadAllData(){ jsonpRequest(CONFIG.SCRIPT_URL+"?action=getAllData&callback=initAllData", "initAllData"); }
-  function loadServicesByDate(d){ 
-    if(!d) return; 
-    document.getElementById('serviceSelect').innerHTML = '<option value="">載入中...</option>';
-    jsonpRequest(CONFIG.SCRIPT_URL+"?action=getServicesByDate&date="+d+"&callback=renderServices", "renderServices"); 
+  // 請求函數
+  function loadAllData() {
+    sendRequest(`${CONFIG.SCRIPT_URL}?action=getAllData&callback=initAllData`);
   }
-  function loadStaffByService(d,s){ if(!d||!s) return; jsonpRequest(CONFIG.SCRIPT_URL+"?action=getStaffByService&date="+d+"&service="+encodeURIComponent(s)+"&callback=renderStaff", "renderStaff"); }
-  function loadAvailableSlots(){
+  function loadServicesByDate(d) {
+    if (!d) return;
+    document.getElementById('serviceSelect').innerHTML = '<option value="">載入中...</option>';
+    sendRequest(`${CONFIG.SCRIPT_URL}?action=getServicesByDate&date=${d}&callback=renderServices`);
+  }
+  function loadStaffByService(d, s) {
+    if (!d || !s) return;
+    sendRequest(`${CONFIG.SCRIPT_URL}?action=getStaffByService&date=${d}&service=${encodeURIComponent(s)}&callback=renderStaff`);
+  }
+  function loadAvailableSlots() {
     const d = document.getElementById('selectedDate').value;
     const s = document.getElementById('staffSelect').value;
     const sv = document.getElementById('serviceSelect').value;
-    if(!d||!s||!sv) return;
-    document.getElementById('timeGrid').innerHTML='<div class="loading">載入時段中...</div>';
-    jsonpRequest(CONFIG.SCRIPT_URL+"?action=getAvailableSlots&date="+d+"&staff="+encodeURIComponent(s)+"&service="+encodeURIComponent(sv)+"&callback=renderSlots", "renderSlots");
+    if (!d || !s || !sv) return;
+    document.getElementById('timeGrid').innerHTML = '<div class="loading">載入時段中...</div>';
+    sendRequest(`${CONFIG.SCRIPT_URL}?action=getAvailableSlots&date=${d}&staff=${encodeURIComponent(s)}&service=${encodeURIComponent(sv)}&callback=renderSlots`);
   }
-  
+
   // 提交預約
-  function submitReservation(){
+  function submitReservation() {
     const data = {
-      action: "submit",
-      lineId: LINE_USER_ID,
-      lineName: LINE_USER_NAME,
+      action: "submit", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
       date: document.getElementById('selectedDate').value,
       service: document.getElementById('serviceSelect').value,
       staff: document.getElementById('staffSelect').value,
@@ -130,58 +127,50 @@
       email: document.getElementById('email').value.trim(),
       extraInfo: document.getElementById('extraInfo').value.trim()
     };
-    if(!data.appointTime){alert("請選擇預約時段");return;}
-    if(!data.name||!data.phone){alert("請填寫姓名/電話");return;}
+    if (!data.appointTime) { alert("請選擇預約時段"); return; }
+    if (!data.name || !data.phone) { alert("請填寫姓名/電話"); return; }
     const params = new URLSearchParams(data);
-    jsonpRequest(CONFIG.SCRIPT_URL+"?"+params.toString()+"&callback=submitCallback", "submitCallback");
+    sendRequest(`${CONFIG.SCRIPT_URL}?${params.toString()}&callback=submitCallback`);
   }
 
   // 回調函數
-  window.initAllData = function(res){
-    if(res.status!=="success"){alert("載入失敗："+res.message);return;}
+  window.initAllData = function (res) {
+    if (res.status !== "success") { alert("載入失敗：" + res.message); return; }
     renderScheduleDates(res.dateList);
   };
-
-  window.renderServices = function(res){
+  window.renderServices = function (res) {
     const select = document.getElementById('serviceSelect');
     select.innerHTML = '<option value="">請選擇服務</option>';
-    if(!res.services.length){
+    if (!res.services.length) {
       select.innerHTML = '<option value="">當日無服務</option>';
       document.getElementById('staffSelect').innerHTML = '<option value="">請先選擇服務</option>';
-      document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
       return;
     }
     res.services.forEach(item => {
       select.add(new Option(`${item.name} (${item.duration}分鐘)`, item.name));
     });
   };
-
-  window.renderStaff = function(res){
+  window.renderStaff = function (res) {
     const select = document.getElementById('staffSelect');
     select.innerHTML = '<option value="">請選擇美容師</option>';
-    if(!res.staff.length){
+    if (!res.staff.length) {
       select.innerHTML = '<option value="">無美容師可服務</option>';
-      document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
       return;
     }
     res.staff.forEach(x => {
       select.add(new Option(`${x.name} (${x.start}-${x.end})`, x.name));
     });
   };
-
-  window.renderSlots = function(res){
+  window.renderSlots = function (res) {
     const grid = document.getElementById('timeGrid');
     grid.innerHTML = '';
     document.getElementById('selectedTime').value = '';
-    if(!res.slots.length){
-      grid.innerHTML = '<div class="loading">當日已滿單</div>';
-      return;
-    }
+    if (!res.slots.length) { grid.innerHTML = '<div class="loading">當日已滿單</div>'; return; }
     res.slots.forEach(time => {
       const btn = document.createElement('div');
       btn.className = 'time-btn';
       btn.textContent = time;
-      btn.onclick = function(){
+      btn.onclick = function () {
         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('selectedTime').value = time;
@@ -189,87 +178,64 @@
       grid.appendChild(btn);
     });
   };
-
-  window.submitCallback = function(res){
+  window.submitCallback = function (res) {
     alert(res.message);
-    if(res.status==="success"){
+    if (res.status === "success") {
       document.getElementById('reserveForm').reset();
       document.getElementById('selectedTime').value = '';
-      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
     }
     loadAvailableSlots();
   };
 
-  // 🔥 核心修改：只渲染班表中有排班的日期
-  function renderScheduleDates(dateList){
+  // 渲染排班日期
+  function renderScheduleDates(dateList) {
     const slider = document.getElementById('weekSlider');
     slider.innerHTML = '';
-
-    if(!dateList || dateList.length === 0){
+    if (!dateList || dateList.length === 0) {
       slider.innerHTML = '<div class="loading">暫無排班日期</div>';
       return;
     }
-
-    let firstDate = dateList[0];
+    const firstDate = dateList[0];
     dateList.forEach((dateStr, index) => {
       const date = new Date(dateStr);
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-      const week = weekDays[date.getDay()];
-      
       const el = document.createElement('div');
       el.className = 'week-day' + (index === 0 ? ' active' : '');
       el.dataset.date = dateStr;
-      el.innerHTML = `<div>${month}/${day}</div><div>週${week}</div>`;
-      
-      el.onclick = function(){
+      el.innerHTML = `<div>${date.getMonth() + 1}/${date.getDate()}</div><div>週${weekDays[date.getDay()]}</div>`;
+      el.onclick = function () {
         document.querySelectorAll('.week-day').forEach(e => e.classList.remove('active'));
         el.classList.add('active');
         const selected = el.dataset.date;
         document.getElementById('selectedDate').value = selected;
-        
-        // 重置表單
         document.getElementById('serviceSelect').innerHTML = '<option value="">載入中...</option>';
         document.getElementById('staffSelect').innerHTML = '<option value="">請先選擇服務</option>';
-        document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
         loadServicesByDate(selected);
       };
       slider.appendChild(el);
     });
-
-    // 設置默認日期
     document.getElementById('selectedDate').value = firstDate;
     loadServicesByDate(firstDate);
   }
 
   // LIFF 初始化
-  async function initLiff(){
-    try{
-      await liff.init({liffId:CONFIG.LIFF_ID});
-      if(liff.isLoggedIn()){
-        const profile = await liff.getProfile();
-        LINE_USER_ID = profile.userId;
-        LINE_USER_NAME = profile.displayName;
-        document.getElementById('lineId').value = LINE_USER_ID;
-        document.getElementById('lineName').value = LINE_USER_NAME;
+  async function initLiff() {
+    try {
+      await liff.init({ liffId: CONFIG.LIFF_ID });
+      if (liff.isLoggedIn()) {
+        const p = await liff.getProfile();
+        LINE_USER_ID = p.userId;
+        LINE_USER_NAME = p.displayName;
       }
-    }catch(e){
-      console.log("LIFF 初始化失敗，使用訪客模式");
-    }
+    } catch (e) { console.log("LIFF 加載失敗"); }
   }
 
-  // 頁面加載完成
-  document.addEventListener('DOMContentLoaded',function(){
+  // 頁面加載
+  document.addEventListener('DOMContentLoaded', function () {
     initLiff();
     loadAllData();
-    
-    // 綁定事件
-    document.getElementById('serviceSelect').addEventListener('change', function(){
-      const date = document.getElementById('selectedDate').value;
-      const service = this.value;
-      loadStaffByService(date, service);
+    document.getElementById('serviceSelect').addEventListener('change', function () {
+      loadStaffByService(document.getElementById('selectedDate').value, this.value);
     });
-
     document.getElementById('staffSelect').addEventListener('change', loadAvailableSlots);
     document.getElementById('submitBtn').addEventListener('click', submitReservation);
   });
