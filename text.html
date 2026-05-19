@@ -71,14 +71,13 @@
       background:#ff4d88;border-radius:2px;
     }
 
-/* 分类标签 */
-.category-tabs{
-  display:flex;gap:10px;overflow-x:auto;
-  padding-bottom:10px;margin-bottom:15px;
-  justify-content: center; /* 新增：水平置中 */
-  align-items: center;     /* 新增：垂直置中 */
-}
-
+    /* 分类标签 */
+    .category-tabs{
+      display:flex;gap:10px;overflow-x:auto;
+      padding-bottom:10px;margin-bottom:15px;
+      justify-content: center;
+      align-items: center;
+    }
     .category-tabs::-webkit-scrollbar{height:0}
     .tab{
       padding:8px 16px;border-radius:20px;
@@ -93,6 +92,7 @@
       display:grid;grid-template-columns:1fr 1fr;
       gap:10px;max-height:320px;overflow-y:auto;
       padding-right:5px;
+      min-height: 280px;
     }
     .service-card{
       padding:12px 10px;border-radius:16px;
@@ -105,6 +105,62 @@
     .service-card:hover{border-color:#ff8da1;background:#fdf2f8}
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
+
+    /* ================================== */
+    /* 🔥 百萬級質感分頁樣式（毛玻璃+漸層+發光） */
+    /* ================================== */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 15px 0;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(255, 77, 136, 0.1);
+    }
+    .page-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #f8f9fa, #ffffff);
+      color: #666;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .page-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ff4d88, #ff8da1);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(255, 77, 136, 0.3);
+      transform: translateY(-2px);
+    }
+    .page-btn.active {
+      background: linear-gradient(135deg, #ff4d88, #ff8da1);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(255, 77, 136, 0.4);
+    }
+    .page-btn:disabled {
+      background: #e9ecef;
+      color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .page-text {
+      min-width: 40px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
 
     /* 日期滑动选择 */
     .week-slider{
@@ -213,7 +269,7 @@
     </div>
   </div>
 
-  <!-- 步骤1：选择服务 -->
+  <!-- 步骤1：选择服务 + 質感分頁 -->
   <div class="section active" id="step1">
     <div class="section-title">服務項目分類</div>
     <div class="category-tabs">
@@ -225,6 +281,8 @@
     <div class="service-grid" id="serviceGrid">
       <div class="loading">載入服務中...</div>
     </div>
+    <!-- 🔥 百萬級質感分頁容器 -->
+    <div class="pagination" id="pagination"></div>
     <button class="btn-next" id="nextToDate" disabled>下一步：選擇預約日期</button>
   </div>
 
@@ -289,8 +347,13 @@
   let userName = "訪客";
   const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
   let scriptLoading = false;
-  const CACHE = { dates: [], services: [], staff: {} };
   
+  // 分頁全局變量
+  const PAGE_SIZE = 8; // 每頁8筆
+  let currentPage = 1;
+  let totalPage = 1;
+  let currentServiceList = []; // 當前分類服務列表
+
   // 服务分类
   const CATEGORIES = {
     "面部": ["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
@@ -299,7 +362,7 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛"]
   };
 
-  // 接口请求
+  // 接口请求（強制實時，杜絕快取）
   function request(action, params = {}, callback) {
     if (scriptLoading) return;
     scriptLoading = true;
@@ -309,6 +372,7 @@
       delete window[cbName];
       callback(res);
     };
+    // 強制添加時間戳，永遠獲取最新數據
     let url = `${CONFIG.SCRIPT_URL}?action=${action}&callback=${cbName}&_=${Date.now()}`;
     for(let k in params) url += `&${k}=${encodeURIComponent(params[k])}`;
     const s = document.createElement('script');
@@ -329,24 +393,46 @@
   // 加载所有服务
   function loadAllServices() {
     request("getAllData", {}, (res) => {
-      if(res.status==="success") CACHE.dates = res.dateList;
-      request("getServices", {date:CACHE.dates[0]||''}, (res) => {
-        if(res.status==="success") CACHE.services = res.services;
-        renderServices('面部');
-      });
+      if(res.status==="success") {
+        request("getServices", {date:res.dateList[0]||''}, (res2) => {
+          if(res2.status==="success") {
+            renderServices('面部');
+          }
+        });
+      }
     });
   }
 
-  // 渲染分类服务
-  function renderServices(cate) {
+  // ================================== */
+  // 🔥 分頁渲染函數（質感分頁核心）
+  // ================================== */
+  function renderPagination() {
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = `
+      <button class="page-btn" id="firstPage" ${currentPage === 1 ? 'disabled' : ''}}>首頁</button>
+      <button class="page-btn" id="prevPage" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>
+      <span class="page-text">${currentPage} / ${totalPage}</span>
+      <button class="page-btn" id="nextPage" ${currentPage === totalPage ? 'disabled' : ''}>下一頁</button>
+      <button class="page-btn" id="lastPage" ${currentPage === totalPage ? 'disabled' : ''}>末頁</button>
+    `;
+
+    // 綁定分頁事件
+    document.getElementById('firstPage').onclick = () => { currentPage = 1; renderCurrentPage(); };
+    document.getElementById('prevPage').onclick = () => { currentPage--; renderCurrentPage(); };
+    document.getElementById('nextPage').onclick = () => { currentPage++; renderCurrentPage(); };
+    document.getElementById('lastPage').onclick = () => { currentPage = totalPage; renderCurrentPage(); };
+  }
+
+  // 渲染當前頁服務
+  function renderCurrentPage() {
     const grid = document.getElementById('serviceGrid');
     grid.innerHTML = '';
-    const list = CATEGORIES[cate] || [];
-    const services = CACHE.services || [];
-    
-    list.forEach(name => {
-      const item = services.find(s=>s.name===name);
-      if(!item) return;
+    // 計算當前頁數據
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageData = currentServiceList.slice(start, end);
+
+    pageData.forEach(item => {
       const card = document.createElement('div');
       card.className = 'service-card';
       card.dataset.name = item.name;
@@ -359,31 +445,48 @@
       };
       grid.appendChild(card);
     });
-    if(!grid.children.length) grid.innerHTML = '<div class="loading">暫無服務</div>';
+    renderPagination();
+  }
+
+  // 渲染分类服务（整合分頁）
+  function renderServices(cate) {
+    currentPage = 1; // 切換分類重置為第一頁
+    const list = CATEGORIES[cate] || [];
+    // 獲取可用服務
+    request("getServices", {date: document.getElementById('selectedDate').value || ''}, (res) => {
+      if(res.status==="success") {
+        currentServiceList = res.services.filter(s => list.includes(s.name));
+        totalPage = Math.ceil(currentServiceList.length / PAGE_SIZE);
+        renderCurrentPage();
+      }
+    });
   }
 
   // 加载日期
   function loadDates() {
     const wrap = document.getElementById('weekSlider');
     wrap.innerHTML = '';
-    if(!CACHE.dates.length){ wrap.innerHTML='<div class="loading">暫無排班</div>';return;}
-    
-    CACHE.dates.forEach((str,i)=>{
-      const [y,m,d] = str.split('-');
-      const w = weekDays[new Date(str).getDay()];
-      const el = document.createElement('div');
-      el.className = `week-day ${i===0?'active':''}`;
-      el.dataset.date = str;
-      el.innerHTML = `<div class="week-day-date">${m}/${d}</div><div class="week-day-week">週${w}</div>`;
-      el.onclick = () => {
-        document.querySelectorAll('.week-day').forEach(e=>e.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('selectedDate').value = str;
-        loadStaff(str, document.getElementById('selectedService').value);
-      };
-      wrap.appendChild(el);
+    request("getAllData", {}, (res) => {
+      if(res.status!=="success"||!res.dateList.length){ 
+        wrap.innerHTML='<div class="loading">暫無排班</div>';return;
+      }
+      res.dateList.forEach((str,i)=>{
+        const [y,m,d] = str.split('-');
+        const w = weekDays[new Date(str).getDay()];
+        const el = document.createElement('div');
+        el.className = `week-day ${i===0?'active':''}`;
+        el.dataset.date = str;
+        el.innerHTML = `<div class="week-day-date">${m}/${d}</div><div class="week-day-week">週${w}</div>`;
+        el.onclick = () => {
+          document.querySelectorAll('.week-day').forEach(e=>e.classList.remove('active'));
+          el.classList.add('active');
+          document.getElementById('selectedDate').value = str;
+          loadStaff(str, document.getElementById('selectedService').value);
+        };
+        wrap.appendChild(el);
+      });
+      loadStaff(res.dateList[0], document.getElementById('selectedService').value);
     });
-    loadStaff(CACHE.dates[0], document.getElementById('selectedService').value);
   }
 
   // 加载美容师
@@ -416,19 +519,21 @@
     });
   }
 
-  // 加载时段（修复核心：移除缓存，实时获取最新数据）
+  // ================================== */
+  // ✅ 修復：加載時段（強制實時，無快取）
+  // ================================== */
   function loadSlots() {
     const d = document.getElementById('selectedDate').value;
     const s = document.getElementById('selectedStaff').value;
     const sv = document.getElementById('selectedService').value;
     const grid = document.getElementById('timeGrid');
     
-    // 清空旧时段，强制请求最新数据
+    // 清空舊數據
     grid.innerHTML = '<div class="loading">載入時段中...</div>';
     document.getElementById('selectedTime').value = '';
     document.getElementById('nextToInfo').disabled = true;
 
-    // 无缓存，实时请求后端最新可用时段（包含30分钟缓冲）
+    // 強制獲取最新時段數據
     request("getSlots",{date:d,staff:s,service:sv},(res)=>{
       if(res.status!=="success"||!res.slots.length){
         grid.innerHTML = '<div class="loading">當日已滿單</div>';return;
@@ -449,7 +554,7 @@
     });
   }
 
-  // 提交预约（修复：成功后强制刷新，确保下次加载最新时段）
+  // 提交预约
   function submit() {
     const data = {
       lineId:document.getElementById('lineId').value,
@@ -470,7 +575,6 @@
       alert(res.message);
       document.getElementById('submitBtn').disabled = false;
       if(res.status==="success") {
-        // 预约成功，刷新页面获取最新时段数据
         location.reload();
       }
     });
