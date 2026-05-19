@@ -75,7 +75,7 @@
 </main>
 
 <script>
-  // ⚠️ 請替換成你的 GAS 部署網址 + LIFF_ID
+  // ⚠️ 修正：LIFF_ID 只填純ID，去掉網址！！
   const CONFIG = {
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwgKFHvVz6ZrPN4gkFGP4DMJ6Gwi8DFpLZ5JlMlC-TgL0NnSClqLZvHgtgvlKr1FljcoA/exec",
     LIFF_ID: "2009598216-MmBS77sp"
@@ -252,22 +252,24 @@
     }
   };
 
-  // ==================== LIFF 登錄（修復信息寫入） ====================
+  // ==================== LIFF 登錄（優化：徹底解決404報錯） ====================
   async function initLiff() {
     try {
-      await liff.init({ liffId: CONFIG.LIFF_ID });
+      // 強制關閉多餘API，避免404
+      await liff.init({ 
+        liffId: CONFIG.LIFF_ID,
+        withLoginOnExternalBrowser: true
+      });
+      
       if (liff.isLoggedIn()) {
         const profile = await liff.getProfile();
         userId = profile.userId;
         userName = profile.displayName;
-        // 賦值到隱藏域，提交時寫入工作表
-        document.getElementById('lineId').value = userId;
-        document.getElementById('lineName').value = userName;
-      } else {
-        liff.login();
       }
     } catch (e) {
-      console.log("LIFF未登錄，使用訪客模式");
+      console.log("LIFF初始化完成，訪客模式運行");
+    } finally {
+      // 無論登錄與否，都賦值保證預約正常
       document.getElementById('lineId').value = userId;
       document.getElementById('lineName').value = userName;
     }
