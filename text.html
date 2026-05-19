@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>莫凡韓式皮膚管理 | 線上預約</title>
+  <!-- 修复favicon 404报错 -->
+  <link rel="icon" href="data:,">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
@@ -117,47 +119,31 @@
       background: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(10px);
       border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(255, 77, 136, 0.1);
+      box-shadow:0 4px 15px rgba(255,77,136,0.1);
     }
     .page-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      border: none;
-      background: linear-gradient(135deg, #f8f9fa, #ffffff);
-      color: #666;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width:36px;height:36px;border-radius:12px;border:none;
+      background:linear-gradient(135deg,#f8f9fa,#ffffff);
+      color:#666;font-size:14px;font-weight:600;
+      cursor:pointer;transition:all 0.3s ease;
+      display:flex;align-items:center;justify-content:center;
     }
     .page-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #ff4d88, #ff8da1);
-      color: #fff;
-      box-shadow: 0 0 10px rgba(255, 77, 136, 0.3);
-      transform: translateY(-2px);
+      background:linear-gradient(135deg,#ff4d88,#ff8da1);
+      color:#fff;box-shadow:0 0 10px rgba(255,77,136,0.3);
+      transform:translateY(-2px);
     }
     .page-btn.active {
-      background: linear-gradient(135deg, #ff4d88, #ff8da1);
-      color: #fff;
-      box-shadow: 0 0 12px rgba(255, 77, 136, 0.4);
+      background:linear-gradient(135deg,#ff4d88,#ff8da1);
+      color:#fff;box-shadow:0 0 12px rgba(255,77,136,0.4);
     }
     .page-btn:disabled {
-      background: #e9ecef;
-      color: #ccc;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
+      background:#e9ecef;color:#ccc;cursor:not-allowed;
+      transform:none;box-shadow:none;
     }
     .page-text {
-      min-width: 40px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
+      min-width:40px;text-align:center;font-size:14px;
+      font-weight:600;color:#333;
     }
 
     /* 日期滑动选择 */
@@ -202,10 +188,8 @@
     }
     .time-btn.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
 	.time-btn.disabled {
-      background: #e9ecef !important;
-      color: #ccc !important;
-      cursor: not-allowed !important;
-      border-color: #eee !important;
+      background:#e9ecef!important;color:#ccc!important;
+      cursor:not-allowed!important;border-color:#eee!important;
     }
 
     /* 表单样式 */
@@ -357,13 +341,13 @@
   let totalPage = 1;
   let currentServiceList = [];
 
-  // 全域緩存（一次性加載所有數據，無二次請求）
+  // 全域緩存
   const GLOBAL_DATA = {
     dateList: [],
     allServices: [],
     staffData: {},
     slotsData: {},
-    bookedSlots: [] // 已預約時段
+    bookedSlots: []
   };
 
   // 服务分类
@@ -374,22 +358,27 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛"]
   };
 
-  // 優化請求函數：修復網路異常，僅請求一次
+  // 🔥 修复请求函数：开启日志+错误提示
   function request(action, params = {}, callback) {
     if (scriptLoading) return;
     scriptLoading = true;
     const cbName = "cb_" + Date.now() + Math.random().toString(36).slice(2);
     window[cbName] = (res) => {
       scriptLoading = false;
+      console.log("接口返回数据:", action, res); // 关键：打印接口数据
       delete window[cbName];
       if(callback) callback(res);
     };
-    let url = `${CONFIG.SCRIPT_URL}?action=${action}&callback=${cbName}`;
+    let url = `${CONFIG.SCRIPT_URL}?action=${action}&callback=${cbName}&_=${Date.now()}`;
     for(let k in params) url += `&${k}=${encodeURIComponent(params[k])}`;
     const s = document.createElement('script');
     s.src = url;
     s.onload = () => setTimeout(()=>s.remove(), 100);
-    s.onerror = () => { scriptLoading=false; }; // 屏蔽網路異常提示
+    s.onerror = () => { 
+      scriptLoading=false; 
+      alert("載入失敗：網路異常，請重新整理頁面");
+      document.getElementById('loadingOverlay').remove();
+    };
     document.body.appendChild(s);
   }
 
@@ -404,6 +393,10 @@
   // 分頁渲染
   function renderPagination() {
     const pagination = document.getElementById('pagination');
+    if(totalPage <=1){
+      pagination.innerHTML = "";
+      return;
+    }
     pagination.innerHTML = `
       <button class="page-btn" id="firstPage" ${currentPage === 1 ? 'disabled' : ''}}>首頁</button>
       <button class="page-btn" id="prevPage" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>
@@ -421,6 +414,14 @@
   function renderCurrentPage() {
     const grid = document.getElementById('serviceGrid');
     grid.innerHTML = '';
+
+    // 🔥 空数据兜底
+    if(!currentServiceList.length){
+      grid.innerHTML = '<div class="loading">該分類暫無服務項目</div>';
+      renderPagination();
+      return;
+    }
+
     const start = (currentPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;
     const pageData = currentServiceList.slice(start, end);
@@ -441,16 +442,23 @@
     renderPagination();
   }
 
-  // 渲染分類服務（使用緩存數據）
+  // 🔥 修复分类渲染逻辑
   function renderServices(cate) {
     currentPage = 1;
     const list = CATEGORIES[cate] || [];
+    
+    // 关键：如果全局没有服务数据，直接提示
+    if(!GLOBAL_DATA.allServices.length){
+      document.getElementById('serviceGrid').innerHTML = '<div class="loading">後端未返回服務數據</div>';
+      return;
+    }
+
     currentServiceList = GLOBAL_DATA.allServices.filter(s => list.includes(s.name));
     totalPage = Math.ceil(currentServiceList.length / PAGE_SIZE);
     renderCurrentPage();
   }
 
-  // 渲染日期（緩存數據）
+  // 渲染日期
   function renderDates() {
     const wrap = document.getElementById('weekSlider');
     wrap.innerHTML = '';
@@ -474,7 +482,7 @@
     renderStaff(GLOBAL_DATA.dateList[0]);
   }
 
-  // 渲染美容師（緩存數據）
+  // 渲染美容師
   function renderStaff(date) {
     const list = document.getElementById('staffList');
     list.innerHTML = '<div class="loading">載入美容師中...</div>';
@@ -501,7 +509,7 @@
     });
   }
 
-  // 渲染時段：過濾已預約，不顯示
+  // 渲染時段
   function renderSlots(date, staff) {
     const grid = document.getElementById('timeGrid');
     grid.innerHTML = '<div class="loading">載入時段中...</div>';
@@ -529,20 +537,27 @@
     });
   }
 
-  // 一次性加載所有數據（核心：無二次請求）
+  // 🔥 一次性加载所有数据（核心修复）
   function loadAllData() {
     request("getAllData", {}, (res) => {
       if(res.status==="success") {
-        GLOBAL_DATA.dateList = res.dateList;
+        // 存入全局缓存
+        GLOBAL_DATA.dateList = res.dateList || [];
         GLOBAL_DATA.allServices = res.services || [];
         GLOBAL_DATA.staffData = res.staffData || {};
         GLOBAL_DATA.slotsData = res.slotsData || {};
         GLOBAL_DATA.bookedSlots = res.bookedSlots || [];
 
+        // 打印关键数据，排查问题
+        console.log("全局服务数据：", GLOBAL_DATA.allServices);
+        
+        // 渲染默认分类
         renderServices('面部');
         renderDates();
-        document.getElementById('loadingOverlay').remove();
+      }else{
+        alert("載入失敗："+res.message);
       }
+      document.getElementById('loadingOverlay').remove();
     });
   }
 
@@ -588,7 +603,7 @@
   // 页面加载
   document.addEventListener('DOMContentLoaded',async()=>{
     await initLiff();
-    loadAllData(); // 一次性加載所有數據
+    loadAllData();
     
     // 分类切换
     document.querySelectorAll('.tab').forEach(tab=>{
