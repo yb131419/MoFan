@@ -73,7 +73,7 @@
 </main>
 
 <script>
-  // ⚠️ 務必替換成你的GAS部署網址
+  // ⚠️ 替換成你自己部署的 GAS 網址
   const CONFIG = {
     SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwgKFHvVz6ZrPN4gkFGP4DMJ6Gwi8DFpLZ5JlMlC-TgL0NnSClqLZvHgtgvlKr1FljcoA/exec",
     LIFF_ID: "2009598216-MmBS77sp"
@@ -83,28 +83,34 @@
   let LINE_USER_NAME = "訪客";
   let weekDays = ['日', '一', '二', '三', '四', '五', '六'];
 
-  // 簡化JSONP，刪除鎖死代碼（核心修復）
+  // 簡化請求，無鎖死，修復所有加載問題
   function sendRequest(url) {
     const script = document.createElement('script');
-    script.src = url + '&_=' + new Date().getTime(); // 強制刷新，避免快取
+    script.src = `${url}&_=${new Date().getTime()}`; // 防快取
     document.body.appendChild(script);
-    // 請求完成後移除標籤
-    setTimeout(() => script.remove(), 2000);
+    setTimeout(() => script.remove(), 3000);
   }
 
-  // 請求函數
+  // 加載排班日期
   function loadAllData() {
     sendRequest(`${CONFIG.SCRIPT_URL}?action=getAllData&callback=initAllData`);
   }
+
+  // 加載當日服務
   function loadServicesByDate(d) {
     if (!d) return;
     document.getElementById('serviceSelect').innerHTML = '<option value="">載入中...</option>';
     sendRequest(`${CONFIG.SCRIPT_URL}?action=getServicesByDate&date=${d}&callback=renderServices`);
   }
+
+  // 🔥 修復：選擇服務後加載美容師
   function loadStaffByService(d, s) {
     if (!d || !s) return;
+    document.getElementById('staffSelect').innerHTML = '<option value="">載入美容師中...</option>';
     sendRequest(`${CONFIG.SCRIPT_URL}?action=getStaffByService&date=${d}&service=${encodeURIComponent(s)}&callback=renderStaff`);
   }
+
+  // 加載可用時段
   function loadAvailableSlots() {
     const d = document.getElementById('selectedDate').value;
     const s = document.getElementById('staffSelect').value;
@@ -117,7 +123,9 @@
   // 提交預約
   function submitReservation() {
     const data = {
-      action: "submit", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
+      action: "submit",
+      lineId: LINE_USER_ID,
+      lineName: LINE_USER_NAME,
       date: document.getElementById('selectedDate').value,
       service: document.getElementById('serviceSelect').value,
       staff: document.getElementById('staffSelect').value,
@@ -128,40 +136,45 @@
       extraInfo: document.getElementById('extraInfo').value.trim()
     };
     if (!data.appointTime) { alert("請選擇預約時段"); return; }
-    if (!data.name || !data.phone) { alert("請填寫姓名/電話"); return; }
+    if (!data.name || !data.phone) { alert("請填寫姓名與電話"); return; }
     const params = new URLSearchParams(data);
-    sendRequest(`${CONFIG.SCRIPT_URL}?${params.toString()}&callback=submitCallback`);
+    sendRequest(`${CONFIG.SCRIPT_URL}?${params}&callback=submitCallback`);
   }
 
-  // 回調函數
-  window.initAllData = function (res) {
-    if (res.status !== "success") { alert("載入失敗：" + res.message); return; }
+  // 回調：初始化排班日期
+  window.initAllData = function(res) {
+    if (res.status !== "success") { alert("錯誤："+res.message); return; }
     renderScheduleDates(res.dateList);
   };
-  window.renderServices = function (res) {
+
+  // 回調：渲染服務項目
+  window.renderServices = function(res) {
     const select = document.getElementById('serviceSelect');
     select.innerHTML = '<option value="">請選擇服務</option>';
     if (!res.services.length) {
       select.innerHTML = '<option value="">當日無服務</option>';
-      document.getElementById('staffSelect').innerHTML = '<option value="">請先選擇服務</option>';
       return;
     }
     res.services.forEach(item => {
       select.add(new Option(`${item.name} (${item.duration}分鐘)`, item.name));
     });
   };
-  window.renderStaff = function (res) {
+
+  // 回調：渲染美容師
+  window.renderStaff = function(res) {
     const select = document.getElementById('staffSelect');
     select.innerHTML = '<option value="">請選擇美容師</option>';
     if (!res.staff.length) {
-      select.innerHTML = '<option value="">無美容師可服務</option>';
+      select.innerHTML = '<option value="">無可預約美容師</option>';
       return;
     }
     res.staff.forEach(x => {
-      select.add(new Option(`${x.name} (${x.start}-${x.end})`, x.name));
+      select.add(new Option(`${x.name} (${x.start}~${x.end})`, x.name));
     });
   };
-  window.renderSlots = function (res) {
+
+  // 回調：渲染時段
+  window.renderSlots = function(res) {
     const grid = document.getElementById('timeGrid');
     grid.innerHTML = '';
     document.getElementById('selectedTime').value = '';
@@ -170,7 +183,7 @@
       const btn = document.createElement('div');
       btn.className = 'time-btn';
       btn.textContent = time;
-      btn.onclick = function () {
+      btn.onclick = () => {
         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('selectedTime').value = time;
@@ -178,31 +191,36 @@
       grid.appendChild(btn);
     });
   };
-  window.submitCallback = function (res) {
+
+  // 回調：預約結果
+  window.submitCallback = function(res) {
     alert(res.message);
     if (res.status === "success") {
       document.getElementById('reserveForm').reset();
       document.getElementById('selectedTime').value = '';
+      loadAvailableSlots();
     }
-    loadAvailableSlots();
   };
 
-  // 渲染排班日期
+  // 🔥 修復：渲染日期（對應工作表真實日期，無偏移）
   function renderScheduleDates(dateList) {
     const slider = document.getElementById('weekSlider');
     slider.innerHTML = '';
-    if (!dateList || dateList.length === 0) {
-      slider.innerHTML = '<div class="loading">暫無排班日期</div>';
-      return;
-    }
+    if (!dateList.length) { slider.innerHTML = '<div class="loading">暫無排班</div>'; return; }
+    
     const firstDate = dateList[0];
-    dateList.forEach((dateStr, index) => {
-      const date = new Date(dateStr);
+    document.getElementById('selectedDate').value = firstDate;
+
+    dateList.forEach((dateStr, idx) => {
+      const [y, m, d] = dateStr.split('-');
+      const week = weekDays[new Date(dateStr).getDay()];
+      
       const el = document.createElement('div');
-      el.className = 'week-day' + (index === 0 ? ' active' : '');
+      el.className = `week-day ${idx === 0 ? 'active' : ''}`;
       el.dataset.date = dateStr;
-      el.innerHTML = `<div>${date.getMonth() + 1}/${date.getDate()}</div><div>週${weekDays[date.getDay()]}</div>`;
-      el.onclick = function () {
+      el.innerHTML = `<div>${m}/${d}</div><div>週${week}</div>`;
+      
+      el.onclick = () => {
         document.querySelectorAll('.week-day').forEach(e => e.classList.remove('active'));
         el.classList.add('active');
         const selected = el.dataset.date;
@@ -213,7 +231,7 @@
       };
       slider.appendChild(el);
     });
-    document.getElementById('selectedDate').value = firstDate;
+
     loadServicesByDate(firstDate);
   }
 
@@ -229,13 +247,16 @@
     } catch (e) { console.log("LIFF 加載失敗"); }
   }
 
-  // 頁面加載
-  document.addEventListener('DOMContentLoaded', function () {
+  // 頁面加載 & 綁定事件
+  document.addEventListener('DOMContentLoaded', () => {
     initLiff();
     loadAllData();
-    document.getElementById('serviceSelect').addEventListener('change', function () {
+    
+    // 🔥 核心修復：服務改變時加載美容師
+    document.getElementById('serviceSelect').addEventListener('change', function() {
       loadStaffByService(document.getElementById('selectedDate').value, this.value);
     });
+
     document.getElementById('staffSelect').addEventListener('change', loadAvailableSlots);
     document.getElementById('submitBtn').addEventListener('click', submitReservation);
   });
