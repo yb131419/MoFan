@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title> 莫凡韓式皮膚管理 </title>
+  <title>莫凡韓式皮膚管理</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
@@ -130,33 +130,47 @@
       color: #555;
     }
 
-    .date-nav-row {
+    /* 手机端一周日期选择器 */
+    .week-slider {
       display: flex;
-      align-items: center;
       gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0;
       margin-bottom: 25px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
-    .date-nav-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: #fff;
-      border: 1px solid #eee;
-      font-weight: 700;
-      color: #ff4d88;
-      cursor: pointer;
+    .week-slider::-webkit-scrollbar {
+      display: none;
     }
-    .week-box {
-      width: 70px;
-      height: 44px;
-      border-radius: 12px;
-      border: 1px solid #f3f3f3;
+    .week-day {
+      min-width: 60px;
+      padding: 12px 8px;
+      border-radius: 14px;
       background: #fafbfc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      color: #666;
+      border: 1px solid #f3f3f3;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 13px;
+    }
+    .week-day .date {
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #333;
+    }
+    .week-day .week {
+      color: #888;
+      font-size: 12px;
+    }
+    .week-day.active {
+      background: linear-gradient(135deg, #FF5D8F, #FF3377);
+      border-color: #ff4d88;
+      color: #fff !important;
+    }
+    .week-day.active .date,
+    .week-day.active .week {
+      color: #fff;
     }
 
     input, select, textarea {
@@ -274,8 +288,8 @@
       <input type="hidden" id="lineId">
       <input type="hidden" id="lineName">
       <input type="hidden" id="appointTime" name="appointTime">
+      <input type="hidden" id="selectedDate">
 
-      <!-- 🔥 新增：美容師選擇 -->
       <label>選擇美容師</label>
       <select id="staffName" required>
         <option value="">請選擇美容師</option>
@@ -287,12 +301,7 @@
       </select>
 
       <label>預約日期</label>
-      <div class="date-nav-row">
-        <button type="button" class="date-nav-btn" id="prevDateBtn">&lt;</button>
-        <input type="date" id="appointDate" required>
-        <button type="button" class="date-nav-btn" id="nextDateBtn">&gt;</button>
-        <div class="week-box" id="weekText">星期幾</div>
-      </div>
+      <div class="week-slider" id="weekSlider"></div>
 
       <label>預約時段</label>
       <div class="time-grid" id="timeGrid">
@@ -312,7 +321,6 @@
     </form>
   </div>
 
-  <!-- 管理後台（已自動适配美容師） -->
   <div id="adminPage" class="admin-section" style="display:none;">
     <div class="admin-title">📊 預約管理後台</div>
     <p class="tip-text">雙美容師獨立排程｜自動衝突檢測｜一週自動清理</p>
@@ -360,26 +368,64 @@
   let LINE_USER_ID = "guest_" + Date.now();
   let LINE_USER_NAME = "LINE使用者";
   let isAdmin = false;
+  let weekDays = ['日', '一', '二', '三', '四', '五', '六'];
 
-  // 初始化
+  // 初始化（无fetch，无跨域）
   document.addEventListener('DOMContentLoaded', async () => {
-    await loadStaffAndService();
     initElements();
-    initDate();
+    renderWeekSlider();
     bindEvents();
     initLiff();
+    // 用JSONP加载美容师数据（修复跨域核心）
+    loadStaffAndServiceByJsonp();
   });
 
-  // 🔥 加載美容師+項目配置
-  async function loadStaffAndService() {
-    const res = await fetch(`${CONFIG.SCRIPT_URL}?action=getStaffAndService&callback=callback`);
-    const data = await res.json();
-    STAFF_LIST = data.staff;
-    SERVICE_CONFIG = data.serviceConfig;
-    renderStaffSelect();
+  // 核心修复：JSONP请求 替代fetch（解决CORS/404）
+  function loadStaffAndServiceByJsonp() {
+    const script = document.createElement('script');
+    script.src = `${CONFIG.SCRIPT_URL}?action=getStaffAndService&callback=callback`;
+    document.body.appendChild(script);
   }
 
-  // 渲染美容師下拉選單
+  // 渲染一周7天日期选择器
+  function renderWeekSlider() {
+    const slider = document.getElementById('weekSlider');
+    slider.innerHTML = '';
+    const today = new Date();
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
+      const week = weekDays[date.getDay()];
+
+      const dayEl = document.createElement('div');
+      dayEl.className = 'week-day';
+      if (i === 0) dayEl.classList.add('active');
+      dayEl.innerHTML = `
+        <div class="date">${m}/${d}</div>
+        <div class="week">週${week}</div>
+      `;
+      dayEl.dataset.date = dateStr;
+
+      dayEl.onclick = () => {
+        document.querySelectorAll('.week-day').forEach(el => el.classList.remove('active'));
+        dayEl.classList.add('active');
+        document.getElementById('selectedDate').value = dateStr;
+        loadTimeData();
+      };
+
+      slider.appendChild(dayEl);
+    }
+    const firstDate = document.querySelector('.week-day').dataset.date;
+    document.getElementById('selectedDate').value = firstDate;
+  }
+
+  // 渲染美容师下拉框
   function renderStaffSelect() {
     const staffSelect = document.getElementById('staffName');
     const manageStaff = document.getElementById('manageStaff');
@@ -389,7 +435,7 @@
     });
   }
 
-  // 🔥 根據美容師篩選項目
+  // 根据美容师筛选服务
   function filterServiceByStaff() {
     const staff = document.getElementById('staffName').value;
     const serviceSelect = document.getElementById('serviceType');
@@ -401,63 +447,58 @@
     });
   }
 
-  // 初始化DOM
   function initElements() {
     window.submitBtn = document.getElementById('submitBtn');
     window.staffSelect = document.getElementById('staffName');
     window.serviceSelect = document.getElementById('serviceType');
-    window.appointDate = document.getElementById('appointDate');
     window.timeGrid = document.getElementById('timeGrid');
   }
 
-  // 初始化日期
-  function initDate() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('appointDate').min = today;
-    document.getElementById('appointDate').value = today;
-    document.getElementById('manageDate').min = today;
-  }
-
-  // 綁定事件
   function bindEvents() {
-    // 美容師切換
     document.getElementById('staffName').addEventListener('change', () => {
       filterServiceByStaff();
       loadTimeData();
     });
-    // 日期切換
-    document.getElementById('appointDate').addEventListener('change', loadTimeData);
-    // 表單提交
     document.getElementById('infoForm').addEventListener('submit', submitForm);
   }
 
-  // 加載可預約時段
+  // 加载时段（JSONP）
   function loadTimeData() {
     const staff = document.getElementById('staffName').value;
-    if (!staff) return;
+    const date = document.getElementById('selectedDate').value;
+    if (!staff || !date) return;
+
     const script = document.createElement('script');
     script.src = `${CONFIG.SCRIPT_URL}?action=getDates&staffName=${staff}&pageId=美容預約系統&callback=callback`;
     document.body.appendChild(script);
   }
 
-  // 回調函數
+  // 统一回调函数（所有GAS请求走这里）
   window.callback = (response) => {
     if (response.status === "init") {
+      // 加载美容师/服务配置
+      if(response.staff && response.serviceConfig){
+        STAFF_LIST = response.staff;
+        SERVICE_CONFIG = response.serviceConfig;
+        renderStaffSelect();
+      }
+      // 加载时段
       timeDataMap = response.timeMap || {};
       renderTimeList();
     }
     if (response.status === "success") {
       alert("✅ 預約成功！");
       document.getElementById('infoForm').reset();
+      renderWeekSlider();
     }
     if (response.status === "error") {
       alert("❌ " + response.message);
     }
   };
 
-  // 渲染時段
+  // 渲染时段
   function renderTimeList() {
-    const date = document.getElementById('appointDate').value;
+    const date = document.getElementById('selectedDate').value;
     const grid = document.getElementById('timeGrid');
     grid.innerHTML = "";
 
@@ -480,7 +521,7 @@
     });
   }
 
-  // 提交預約
+  // 提交预约（JSONP）
   function submitForm(e) {
     e.preventDefault();
     const data = {
@@ -489,7 +530,7 @@
       lineName: LINE_USER_NAME,
       staffName: document.getElementById('staffName').value,
       serviceType: document.getElementById('serviceType').value,
-      appointDate: document.getElementById('appointDate').value,
+      appointDate: document.getElementById('selectedDate').value,
       appointTime: document.getElementById('appointTime').value,
       name: document.getElementById('name').value,
       phone: document.getElementById('phone').value,
@@ -502,7 +543,7 @@
     document.body.appendChild(script);
   }
 
-  // LIFF登入
+  // LIFF登录
   async function initLiff() {
     try {
       await liff.init({ liffId: CONFIG.LIFF_ID });
