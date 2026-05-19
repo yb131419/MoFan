@@ -429,6 +429,7 @@
       card.onclick = () => {
         document.querySelectorAll('.service-card').forEach(c=>c.classList.remove('active'));
         card.classList.add('active');
+        // 強制賦值服務名稱，杜絕參數空值
         document.getElementById('selectedService').value = item.name;
         document.getElementById('nextToDate').disabled = false;
       };
@@ -466,6 +467,7 @@
       el.onclick = () => {
         document.querySelectorAll('.week-day').forEach(e=>e.classList.remove('active'));
         el.classList.add('active');
+        // 強制賦值日期
         document.getElementById('selectedDate').value = str;
         renderStaff(str);
       };
@@ -494,23 +496,30 @@
       item.onclick = () => {
         document.querySelectorAll('.staff-item').forEach(i=>i.classList.remove('active'));
         item.classList.add('active');
+        // 強制賦值美容師
         document.getElementById('selectedStaff').value = s.name;
-        // 🔥 修复：调用后端正确接口获取可用时段
+        // 加載可用時段
         renderSlots();
       };
       list.appendChild(item);
     });
   }
 
-  // 🔥 核心修复：调用后端getSlots接口，自动过滤已预约+时长+缓冲
+  // 🔥 修復：參數異常問題 + 強制校驗參數
   function renderSlots() {
-    const date = document.getElementById('selectedDate').value;
-    const staff = document.getElementById('selectedStaff').value;
-    const service = document.getElementById('selectedService').value;
+    // 強制獲取所有參數
+    const date = document.getElementById('selectedDate').value.trim();
+    const staff = document.getElementById('selectedStaff').value.trim();
+    const service = document.getElementById('selectedService').value.trim();
     const grid = document.getElementById('timeGrid');
-    
-    if(!date || !staff || !service){
-      grid.innerHTML = '<div class="loading">參數異常</div>';
+
+    // 參數校驗（友好提示，不直接報錯）
+    if(!service){
+      grid.innerHTML = '<div class="loading">❌ 請返回第一步選擇服務</div>';
+      return;
+    }
+    if(!date || !staff){
+      grid.innerHTML = '<div class="loading">❌ 請選擇日期與美容師</div>';
       return;
     }
 
@@ -518,12 +527,12 @@
     document.getElementById('selectedTime').value = '';
     document.getElementById('nextToInfo').disabled = true;
 
-    // 调用后端正确的时段接口（自带冲突检测+30分钟缓冲）
+    // 調用後端接口
     request("getSlots", { date, staff, service }, (res) => {
       if(res.status === "success"){
         const slots = res.slots || [];
         if(slots.length === 0){
-          grid.innerHTML = '<div class="loading">當日已滿單</div>';
+          grid.innerHTML = '<div class="loading">✅ 當日已滿單</div>';
           return;
         }
         grid.innerHTML = '';
@@ -540,7 +549,7 @@
           grid.appendChild(btn);
         });
       } else {
-        grid.innerHTML = `<div class="loading">${res.message}</div>`;
+        grid.innerHTML = `<div class="loading">⚠️ ${res.message}</div>`;
       }
     });
   }
@@ -620,5 +629,6 @@
     document.getElementById('submitBtn').onclick=submit;
   });
 </script>
+
 </body>
 </html>
