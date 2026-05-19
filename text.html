@@ -19,7 +19,7 @@
     input:focus,select:focus{background:#FDF2F8;border:2px solid #D894A7;outline:none}
     .week-slider{display:flex;gap:8px;overflow-x:auto;padding:4px 0;margin-bottom:20px}
     .week-slider::-webkit-scrollbar{display:none}
-    .week-day{min-width:60px;padding:12px 8px;border-radius:14px;background:#fafbfc;border:1px solid #f3f3f3;text-align:center;cursor:pointer}
+    .week-day{min-width:80px;padding:12px 8px;border-radius:14px;background:#fafbfc;border:1px solid #f3f3f3;text-align:center;cursor:pointer}
     .week-day.active{background:linear-gradient(135deg,#FF5D8F,#FF3377);color:#fff;border-color:#ff4d88}
     .time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
     .time-btn{height:52px;display:flex;align-items:center;justify-content:center;border-radius:14px;border:1px solid #eee;background:#fff;font-weight:600;cursor:pointer}
@@ -41,8 +41,8 @@
     <input type="hidden" id="selectedDate">
     <input type="hidden" id="selectedTime">
 
-    <label>預約日期</label>
-    <div class="week-slider" id="weekSlider">載入日期中...</div>
+    <label>預約日期（僅顯示有排班日期）</label>
+    <div class="week-slider" id="weekSlider">載入排班日期中...</div>
 
     <label>服務項目</label>
     <select id="serviceSelect">
@@ -100,7 +100,11 @@
 
   // 請求方法
   function loadAllData(){ jsonpRequest(CONFIG.SCRIPT_URL+"?action=getAllData&callback=initAllData", "initAllData"); }
-  function loadServicesByDate(d){ if(!d) return; jsonpRequest(CONFIG.SCRIPT_URL+"?action=getServicesByDate&date="+d+"&callback=renderServices", "renderServices"); }
+  function loadServicesByDate(d){ 
+    if(!d) return; 
+    document.getElementById('serviceSelect').innerHTML = '<option value="">載入中...</option>';
+    jsonpRequest(CONFIG.SCRIPT_URL+"?action=getServicesByDate&date="+d+"&callback=renderServices", "renderServices"); 
+  }
   function loadStaffByService(d,s){ if(!d||!s) return; jsonpRequest(CONFIG.SCRIPT_URL+"?action=getStaffByService&date="+d+"&service="+encodeURIComponent(s)+"&callback=renderStaff", "renderStaff"); }
   function loadAvailableSlots(){
     const d = document.getElementById('selectedDate').value;
@@ -135,7 +139,7 @@
   // 回調函數
   window.initAllData = function(res){
     if(res.status!=="success"){alert("載入失敗："+res.message);return;}
-    renderWeekSlider();
+    renderScheduleDates(res.dateList);
   };
 
   window.renderServices = function(res){
@@ -196,22 +200,27 @@
     loadAvailableSlots();
   };
 
-  // 渲染日期滑動條（核心修復）
-  function renderWeekSlider(){
+  // 🔥 核心修改：只渲染班表中有排班的日期
+  function renderScheduleDates(dateList){
     const slider = document.getElementById('weekSlider');
     slider.innerHTML = '';
-    const today = new Date();
-    let firstDate = '';
 
-    for(let i=0;i<7;i++){
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    if(!dateList || dateList.length === 0){
+      slider.innerHTML = '<div class="loading">暫無排班日期</div>';
+      return;
+    }
+
+    let firstDate = dateList[0];
+    dateList.forEach((dateStr, index) => {
+      const date = new Date(dateStr);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const week = weekDays[date.getDay()];
       
       const el = document.createElement('div');
-      el.className = 'week-day' + (i === 0 ? ' active' : '');
+      el.className = 'week-day' + (index === 0 ? ' active' : '');
       el.dataset.date = dateStr;
-      el.innerHTML = `<div>${date.getMonth()+1}/${date.getDate()}</div><div>週${weekDays[date.getDay()]}</div>`;
+      el.innerHTML = `<div>${month}/${day}</div><div>週${week}</div>`;
       
       el.onclick = function(){
         document.querySelectorAll('.week-day').forEach(e => e.classList.remove('active'));
@@ -226,10 +235,9 @@
         loadServicesByDate(selected);
       };
       slider.appendChild(el);
-      if(i === 0) firstDate = dateStr;
-    }
+    });
 
-    // 設置默認日期並加載服務
+    // 設置默認日期
     document.getElementById('selectedDate').value = firstDate;
     loadServicesByDate(firstDate);
   }
