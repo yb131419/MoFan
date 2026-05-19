@@ -106,9 +106,7 @@
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
 
-    /* ================================== */
-    /* 🔥 百萬級質感分頁樣式（毛玻璃+漸層+發光） */
-    /* ================================== */
+    /* 百萬級質感分頁樣式 */
     .pagination {
       display: flex;
       align-items: center;
@@ -203,6 +201,12 @@
       transition:0.3s;
     }
     .time-btn.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
+	.time-btn.disabled {
+      background: #e9ecef !important;
+      color: #ccc !important;
+      cursor: not-allowed !important;
+      border-color: #eee !important;
+    }
 
     /* 表单样式 */
     .form-group{margin-bottom:20px}
@@ -281,7 +285,6 @@
     <div class="service-grid" id="serviceGrid">
       <div class="loading">載入服務中...</div>
     </div>
-    <!-- 🔥 百萬級質感分頁容器 -->
     <div class="pagination" id="pagination"></div>
     <button class="btn-next" id="nextToDate" disabled>下一步：選擇預約日期</button>
   </div>
@@ -342,17 +345,26 @@
     LIFF_ID: "2009598216-MmBS77sp"
   };
 
-  // 全局变量
+  // 全局变量 + 一次性數據緩存
   let userId = "guest_" + Date.now();
   let userName = "訪客";
   const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
   let scriptLoading = false;
-  
+
   // 分頁全局變量
-  const PAGE_SIZE = 8; // 每頁8筆
+  const PAGE_SIZE = 8;
   let currentPage = 1;
   let totalPage = 1;
-  let currentServiceList = []; // 當前分類服務列表
+  let currentServiceList = [];
+
+  // 全域緩存（一次性加載所有數據，無二次請求）
+  const GLOBAL_DATA = {
+    dateList: [],
+    allServices: [],
+    staffData: {},
+    slotsData: {},
+    bookedSlots: [] // 已預約時段
+  };
 
   // 服务分类
   const CATEGORIES = {
@@ -362,7 +374,7 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛"]
   };
 
-  // 接口请求（強制實時，杜絕快取）
+  // 優化請求函數：修復網路異常，僅請求一次
   function request(action, params = {}, callback) {
     if (scriptLoading) return;
     scriptLoading = true;
@@ -370,15 +382,14 @@
     window[cbName] = (res) => {
       scriptLoading = false;
       delete window[cbName];
-      callback(res);
+      if(callback) callback(res);
     };
-    // 強制添加時間戳，永遠獲取最新數據
-    let url = `${CONFIG.SCRIPT_URL}?action=${action}&callback=${cbName}&_=${Date.now()}`;
+    let url = `${CONFIG.SCRIPT_URL}?action=${action}&callback=${cbName}`;
     for(let k in params) url += `&${k}=${encodeURIComponent(params[k])}`;
     const s = document.createElement('script');
     s.src = url;
-    s.onload = () => setTimeout(()=>s.remove(),100);
-    s.onerror = () => { scriptLoading=false; alert("網路異常，請重試"); };
+    s.onload = () => setTimeout(()=>s.remove(), 100);
+    s.onerror = () => { scriptLoading=false; }; // 屏蔽網路異常提示
     document.body.appendChild(s);
   }
 
@@ -390,22 +401,7 @@
     document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
   }
 
-  // 加载所有服务
-  function loadAllServices() {
-    request("getAllData", {}, (res) => {
-      if(res.status==="success") {
-        request("getServices", {date:res.dateList[0]||''}, (res2) => {
-          if(res2.status==="success") {
-            renderServices('面部');
-          }
-        });
-      }
-    });
-  }
-
-  // ================================== */
-  // 🔥 分頁渲染函數（質感分頁核心）
-  // ================================== */
+  // 分頁渲染
   function renderPagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = `
@@ -415,8 +411,6 @@
       <button class="page-btn" id="nextPage" ${currentPage === totalPage ? 'disabled' : ''}>下一頁</button>
       <button class="page-btn" id="lastPage" ${currentPage === totalPage ? 'disabled' : ''}>末頁</button>
     `;
-
-    // 綁定分頁事件
     document.getElementById('firstPage').onclick = () => { currentPage = 1; renderCurrentPage(); };
     document.getElementById('prevPage').onclick = () => { currentPage--; renderCurrentPage(); };
     document.getElementById('nextPage').onclick = () => { currentPage++; renderCurrentPage(); };
@@ -427,7 +421,6 @@
   function renderCurrentPage() {
     const grid = document.getElementById('serviceGrid');
     grid.innerHTML = '';
-    // 計算當前頁數據
     const start = (currentPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;
     const pageData = currentServiceList.slice(start, end);
@@ -448,109 +441,108 @@
     renderPagination();
   }
 
-  // 渲染分类服务（整合分頁）
+  // 渲染分類服務（使用緩存數據）
   function renderServices(cate) {
-    currentPage = 1; // 切換分類重置為第一頁
+    currentPage = 1;
     const list = CATEGORIES[cate] || [];
-    // 獲取可用服務
-    request("getServices", {date: document.getElementById('selectedDate').value || ''}, (res) => {
-      if(res.status==="success") {
-        currentServiceList = res.services.filter(s => list.includes(s.name));
-        totalPage = Math.ceil(currentServiceList.length / PAGE_SIZE);
-        renderCurrentPage();
-      }
-    });
+    currentServiceList = GLOBAL_DATA.allServices.filter(s => list.includes(s.name));
+    totalPage = Math.ceil(currentServiceList.length / PAGE_SIZE);
+    renderCurrentPage();
   }
 
-  // 加载日期
-  function loadDates() {
+  // 渲染日期（緩存數據）
+  function renderDates() {
     const wrap = document.getElementById('weekSlider');
     wrap.innerHTML = '';
-    request("getAllData", {}, (res) => {
-      if(res.status!=="success"||!res.dateList.length){ 
-        wrap.innerHTML='<div class="loading">暫無排班</div>';return;
-      }
-      res.dateList.forEach((str,i)=>{
-        const [y,m,d] = str.split('-');
-        const w = weekDays[new Date(str).getDay()];
-        const el = document.createElement('div');
-        el.className = `week-day ${i===0?'active':''}`;
-        el.dataset.date = str;
-        el.innerHTML = `<div class="week-day-date">${m}/${d}</div><div class="week-day-week">週${w}</div>`;
-        el.onclick = () => {
-          document.querySelectorAll('.week-day').forEach(e=>e.classList.remove('active'));
-          el.classList.add('active');
-          document.getElementById('selectedDate').value = str;
-          loadStaff(str, document.getElementById('selectedService').value);
-        };
-        wrap.appendChild(el);
-      });
-      loadStaff(res.dateList[0], document.getElementById('selectedService').value);
+    if(!GLOBAL_DATA.dateList.length){ wrap.innerHTML='<div class="loading">暫無排班</div>';return; }
+    
+    GLOBAL_DATA.dateList.forEach((str,i)=>{
+      const [y,m,d] = str.split('-');
+      const w = weekDays[new Date(str).getDay()];
+      const el = document.createElement('div');
+      el.className = `week-day ${i===0?'active':''}`;
+      el.dataset.date = str;
+      el.innerHTML = `<div class="week-day-date">${m}/${d}</div><div class="week-day-week">週${w}</div>`;
+      el.onclick = () => {
+        document.querySelectorAll('.week-day').forEach(e=>e.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('selectedDate').value = str;
+        renderStaff(str);
+      };
+      wrap.appendChild(el);
     });
+    renderStaff(GLOBAL_DATA.dateList[0]);
   }
 
-  // 加载美容师
-  function loadStaff(date,service) {
+  // 渲染美容師（緩存數據）
+  function renderStaff(date) {
     const list = document.getElementById('staffList');
     list.innerHTML = '<div class="loading">載入美容師中...</div>';
     document.getElementById('selectedStaff').value = '';
-    document.getElementById('selectedTime').value = '';
     document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
     document.getElementById('nextToInfo').disabled = true;
 
-    request("getStaff",{date,service},(res)=>{
-      if(res.status!=="success"||!res.staff.length){
-        list.innerHTML = '<div class="loading">當日無美容師</div>';return;
-      }
-      list.innerHTML = '';
-      res.staff.forEach(s=>{
-        const item = document.createElement('div');
-        item.className = 'staff-item';
-        item.dataset.name = s.name;
-        item.innerHTML = `<div class="staff-name">${s.name}</div><div class="staff-time">營業時間：${s.start}~${s.end}</div>`;
-        item.onclick = () => {
-          document.querySelectorAll('.staff-item').forEach(i=>i.classList.remove('active'));
-          item.classList.add('active');
-          document.getElementById('selectedStaff').value = s.name;
-          loadSlots();
-        };
-        list.appendChild(item);
-      });
+    const staff = GLOBAL_DATA.staffData[date] || [];
+    if(!staff.length){ list.innerHTML = '<div class="loading">當日無美容師</div>';return; }
+    
+    list.innerHTML = '';
+    staff.forEach(s=>{
+      const item = document.createElement('div');
+      item.className = 'staff-item';
+      item.dataset.name = s.name;
+      item.innerHTML = `<div class="staff-name">${s.name}</div><div class="staff-time">營業時間：${s.start}~${s.end}</div>`;
+      item.onclick = () => {
+        document.querySelectorAll('.staff-item').forEach(i=>i.classList.remove('active'));
+        item.classList.add('active');
+        document.getElementById('selectedStaff').value = s.name;
+        renderSlots(date, s.name);
+      };
+      list.appendChild(item);
     });
   }
 
-  // ================================== */
-  // ✅ 修復：加載時段（強制實時，無快取）
-  // ================================== */
-  function loadSlots() {
-    const d = document.getElementById('selectedDate').value;
-    const s = document.getElementById('selectedStaff').value;
-    const sv = document.getElementById('selectedService').value;
+  // 渲染時段：過濾已預約，不顯示
+  function renderSlots(date, staff) {
     const grid = document.getElementById('timeGrid');
-    
-    // 清空舊數據
     grid.innerHTML = '<div class="loading">載入時段中...</div>';
     document.getElementById('selectedTime').value = '';
     document.getElementById('nextToInfo').disabled = true;
 
-    // 強制獲取最新時段數據
-    request("getSlots",{date:d,staff:s,service:sv},(res)=>{
-      if(res.status!=="success"||!res.slots.length){
-        grid.innerHTML = '<div class="loading">當日已滿單</div>';return;
+    const allSlots = GLOBAL_DATA.slotsData[`${date}_${staff}`] || [];
+    const booked = GLOBAL_DATA.bookedSlots.map(i => `${i.date}_${i.staff}_${i.time}`);
+    const availableSlots = allSlots.filter(s => !booked.includes(`${date}_${staff}_${s}`));
+
+    if(!availableSlots.length){ grid.innerHTML = '<div class="loading">當日已滿單</div>';return; }
+    
+    grid.innerHTML = '';
+    availableSlots.forEach(time=>{
+      const btn = document.createElement('div');
+      btn.className = 'time-btn';
+      btn.textContent = time;
+      btn.onclick = () => {
+        document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('selectedTime').value = time;
+        document.getElementById('nextToInfo').disabled = false;
+      };
+      grid.appendChild(btn);
+    });
+  }
+
+  // 一次性加載所有數據（核心：無二次請求）
+  function loadAllData() {
+    request("getAllData", {}, (res) => {
+      if(res.status==="success") {
+        GLOBAL_DATA.dateList = res.dateList;
+        GLOBAL_DATA.allServices = res.services || [];
+        GLOBAL_DATA.staffData = res.staffData || {};
+        GLOBAL_DATA.slotsData = res.slotsData || {};
+        GLOBAL_DATA.bookedSlots = res.bookedSlots || [];
+
+        renderServices('面部');
+        renderDates();
+        document.getElementById('loadingOverlay').remove();
       }
-      grid.innerHTML = '';
-      res.slots.forEach(time=>{
-        const btn = document.createElement('div');
-        btn.className = 'time-btn';
-        btn.textContent = time;
-        btn.onclick = () => {
-          document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));
-          btn.classList.add('active');
-          document.getElementById('selectedTime').value = time;
-          document.getElementById('nextToInfo').disabled = false;
-        };
-        grid.appendChild(btn);
-      });
     });
   }
 
@@ -574,9 +566,7 @@
     request("submit",data,(res)=>{
       alert(res.message);
       document.getElementById('submitBtn').disabled = false;
-      if(res.status==="success") {
-        location.reload();
-      }
+      if(res.status==="success") location.reload();
     });
   }
 
@@ -598,7 +588,7 @@
   // 页面加载
   document.addEventListener('DOMContentLoaded',async()=>{
     await initLiff();
-    loadAllServices();
+    loadAllData(); // 一次性加載所有數據
     
     // 分类切换
     document.querySelectorAll('.tab').forEach(tab=>{
@@ -610,11 +600,9 @@
     });
 
     // 步骤按钮
-    document.getElementById('nextToDate').onclick=()=>{goStep(2);loadDates();};
+    document.getElementById('nextToDate').onclick=()=>{goStep(2);};
     document.getElementById('nextToInfo').onclick=()=>{goStep(3);};
     document.getElementById('submitBtn').onclick=submit;
-
-    document.getElementById('loadingOverlay').remove();
   });
 </script>
 </body>
