@@ -80,55 +80,37 @@
       padding: 0 18px;
       background: #ffffff;
       border-radius: 22px;
-      box-shadow: 0 6px 18px rgba(255,77,136,0.1);
-      border: 1px solid #f8e5eb;
+      box-shadow:0 6px 18px rgba(255,77,136,0.1);
+      border:1px solid #f8e5eb;
       transition: all 0.3s ease;
     }
     .search-container:focus-within {
       border-color: #ff8da1;
-      box-shadow: 0 0 15px rgba(255,77,136,0.18);
+      box-shadow:0 0 15px rgba(255,77,136,0.18);
     }
     .search-icon {
-      font-size: 16px;
-      color: #ff4d88;
-      margin-right: 12px;
+      font-size:16px;color:#ff4d88;margin-right:12px;
     }
     .search-input {
-      flex: 1;
-      height: 52px;
-      border: none;
-      outline: none;
-      background: transparent;
-      font-size: 15px;
-      color: #444;
-      padding: 0 5px;
+      flex:1;height:52px;border:none;outline:none;
+      background:transparent;font-size:15px;color:#444;
+      padding:0 5px;
     }
     .search-input::placeholder {
-      color: #c0c0c0;
-      font-weight: 500;
+      color:#c0c0c0;font-weight:500;
     }
     .search-clear {
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      color: #999;
-      background: #f8f9fa;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: 0.3s;
-      opacity: 0;
-      pointer-events: none;
+      width:24px;height:24px;display:flex;
+      align-items:center;justify-content:center;
+      font-size:12px;color:#999;background:#f8f9fa;
+      border-radius:50%;cursor:pointer;transition:0.3s;
+      opacity:0;pointer-events:none;
     }
     .search-clear.show {
-      opacity: 1;
-      pointer-events: all;
+      opacity:1;pointer-events:all;
     }
     .search-clear:hover {
-      background: #ff4d88;
-      color: #fff;
+      background:#ff4d88;color:#fff;
     }
 
     .category-tabs{
@@ -264,16 +246,40 @@
     }
     .btn-next:disabled{opacity:0.6;cursor:not-allowed}
     .loading{text-align:center;color:#999;padding:20px}
+
+    /* ✅ 高級質感加載浮窗 */
     #loadingOverlay{
-      position:fixed;inset:0;background:#fff;
-      display:flex;align-items:center;justify-content:center;
+      position:fixed;inset:0;
+      background:rgba(255, 255, 255, 0.92);
+      backdrop-filter:blur(10px);
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
       z-index:9999;
+      gap:20px;
+    }
+    .loading-spinner{
+      width:60px;height:60px;
+      border:5px solid #fce8f3;
+      border-top:5px solid #ff4d88;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+    .loading-text{
+      font-size:16px;font-weight:500;
+      color:#ff4d88;
+      letter-spacing:1px;
+    }
+    @keyframes spin{
+      0%{transform:rotate(0deg)}
+      100%{transform:rotate(360deg)}
     }
   </style>
 </head>
 <body>
+<!-- ✅ 高級質感加載浮窗 -->
 <div id="loadingOverlay">
-  <div class="loading">🌸 系統初始化中，請稍候...</div>
+  <div class="loading-spinner"></div>
+  <div class="loading-text">🌸 系統初始化中，請稍候...</div>
 </div>
 
 <main>
@@ -388,36 +394,30 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
   };
 
-  // ====================== 核心：動態表單無跨域請求 ======================
+  // ✅ 修復前端第272行錯誤：穩定JSONP請求函數
   function request(action, params, callback) {
-    const uniqueCallback = "cb_" + Date.now() + Math.random().toString(36).slice(2);
-    window[uniqueCallback] = function(res) {
+    const uniqueCallback = "cb_" + Date.now() + Math.random().toString(36).slice(2, 10);
+    window[uniqueCallback] = (res) => {
       delete window[uniqueCallback];
-      document.body.removeChild(form);
+      document.body.removeChild(script);
       callback(res);
     };
 
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = CONFIG.SCRIPT_URL;
-    form.target = "_blank";
-    form.style.display = "none";
-
-    const inputs = {
-      action: action,
-      callback: uniqueCallback,
-      ...params
-    };
-
-    for (const key in inputs) {
-      const input = document.createElement("input");
-      input.name = key;
-      input.value = inputs[key] || "";
-      form.appendChild(input);
+    const url = new URL(CONFIG.SCRIPT_URL);
+    url.searchParams.append("action", action);
+    url.searchParams.append("callback", uniqueCallback);
+    for (const key in params) {
+      if (params[key]) url.searchParams.append(key, params[key]);
     }
 
-    document.body.appendChild(form);
-    form.submit();
+    const script = document.createElement("script");
+    script.src = url.toString();
+    script.onerror = () => {
+      delete window[uniqueCallback];
+      document.body.removeChild(script);
+      callback({ status: "error", message: "網路請求失敗" });
+    };
+    document.body.appendChild(script);
   }
 
   // ====================== 頁面功能函數 ======================
