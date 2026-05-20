@@ -463,21 +463,25 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
   };
 
-  // 🔥 徹底修復：動態表單請求（無跨域、無回調錯誤、100%兼容 GAS/GitHub）
+  // 🔥 安全移除節点函數（徹底解決 removeChild 報錯）
+  function safeRemove(element) {
+    if (element && element.parentNode) {
+      element.parentNode.removeChild(element);
+    }
+  }
+
+  // 🔥 徹底修復：動態表單請求（無跨域、無節点報錯、100%兼容）
   function gasRequest(action, params, callback) {
-    // 創建隱藏 iframe 接收響應
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     const iframeName = 'gas_iframe_' + Date.now();
     iframe.name = iframeName;
 
-    // 創建表單
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = CONFIG.SCRIPT_URL;
     form.target = iframeName;
 
-    // 加入參數
     const inputAction = document.createElement('input');
     inputAction.type = 'hidden';
     inputAction.name = 'action';
@@ -492,22 +496,20 @@
       form.appendChild(input);
     }
 
-    // 加載完成解析數據
     iframe.onload = function() {
       try {
-        const content = iframe.contentDocument.body.textContent.trim();
-        const res = JSON.parse(content);
+        const content = iframe.contentDocument?.body?.textContent?.trim() || '';
+        const res = content ? JSON.parse(content) : { status: 'error', message: '網路異常' };
         callback(res);
       } catch (e) {
         callback({ status: 'error', message: '網路異常，請重試' });
       } finally {
-        // 清理 DOM
-        document.body.removeChild(form);
-        document.body.removeChild(iframe);
+        // 安全清理，不報錯
+        safeRemove(form);
+        safeRemove(iframe);
       }
     };
 
-    // 加入頁面並提交
     document.body.appendChild(iframe);
     document.body.appendChild(form);
     form.submit();
@@ -645,7 +647,6 @@
     document.getElementById('selectedTime').value = '';
     document.getElementById('nextToInfo').disabled = true;
 
-    // 🔥 替換為新請求函數
     gasRequest("getSlots", { date, staff, service }, (res) => {
       if (res.status === "success") {
         const slots = res.slots || [];
@@ -670,8 +671,11 @@
   }
 
   function loadAllData() {
-    // 🔥 替換為新請求函數
     gasRequest("getAllData", {}, (res) => {
+      // 🔥 安全移除加載遮罩（解決 null 報錯）
+      const loading = document.getElementById('loadingOverlay');
+      if (loading) safeRemove(loading);
+
       if (res.status === "success") {
         GLOBAL_DATA.dateList = res.dateList;
         GLOBAL_DATA.allServices = res.services;
@@ -681,7 +685,6 @@
       } else {
         showModal('error', '載入失敗', '系統初始化失敗，請重新整理頁面');
       }
-      document.getElementById('loadingOverlay').remove();
     });
   }
 
@@ -706,7 +709,6 @@
     }
 
     document.getElementById('submitBtn').disabled = true;
-    // 🔥 替換為新請求函數
     gasRequest("submit", data, (res) => {
       document.getElementById('submitBtn').disabled = false;
       if (res.status === "success") {
