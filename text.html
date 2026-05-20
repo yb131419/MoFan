@@ -394,31 +394,44 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
   };
 
-  // ✅ 修复：网络请求失败 - 修正JSONP请求函数
+  // ✅ 终极修复：预约时段网络请求失败（兼容GAS+中文编码+作用域安全）
 function request(action, params, callback) {
-  const uniqueCallback = "cb_" + Date.now() + Math.random().toString(36).slice(2, 10);
-  // 提前创建script标签，解决作用域问题
-  const script = document.createElement("script");
+  // 生成唯一回调函数名
+  const callbackName = 'cb_' + Date.now() + Math.random().toString(36).slice(2, 10);
   
-  window[uniqueCallback] = (res) => {
-    delete window[uniqueCallback];
-    document.body.removeChild(script);
+  // 构建请求URL（全参数编码，兼容GAS）
+  const url = new URL(CONFIG.SCRIPT_URL);
+  url.searchParams.append('action', action);
+  url.searchParams.append('callback', callbackName);
+  
+  // 遍历参数，强制编码所有值（解决中文乱码/请求失败）
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.append(key, encodeURIComponent(value || ''));
+  });
+
+  // 注册全局回调
+  window[callbackName] = function (res) {
+    // 延迟清理，避免脚本未加载完成报错
+    setTimeout(() => {
+      delete window[callbackName];
+      const script = document.querySelector(`[data-cb="${callbackName}"]`);
+      if (script) document.body.removeChild(script);
+    }, 100);
     callback(res);
   };
 
-  const url = new URL(CONFIG.SCRIPT_URL);
-  url.searchParams.append("action", action);
-  url.searchParams.append("callback", uniqueCallback);
-  for (const key in params) {
-    if (params[key]) url.searchParams.append(key, encodeURIComponent(params[key]));
-  }
-
+  // 创建script标签
+  const script = document.createElement('script');
   script.src = url.toString();
-  script.onerror = () => {
-    delete window[uniqueCallback];
+  script.dataset.cb = callbackName; // 标记用于清理
+
+  // 错误处理
+  script.onerror = function () {
+    delete window[callbackName];
     document.body.removeChild(script);
-    callback({ status: "error", message: "網路請求失敗" });
+    callback({ status: 'error', message: '網路請求失敗，請重試' });
   };
+
   document.body.appendChild(script);
 }
 
