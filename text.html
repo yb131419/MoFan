@@ -70,6 +70,68 @@
       background:#ff4d88;border-radius:2px;
     }
 
+    /* 🔥 高質感搜尋框樣式 */
+    .search-wrapper {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .search-container {
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      background: #ffffff;
+      border-radius: 22px;
+      box-shadow: 0 6px 18px rgba(255,77,136,0.1);
+      border: 1px solid #f8e5eb;
+      transition: all 0.3s ease;
+    }
+    .search-container:focus-within {
+      border-color: #ff8da1;
+      box-shadow: 0 0 15px rgba(255,77,136,0.18);
+    }
+    .search-icon {
+      font-size: 16px;
+      color: #ff4d88;
+      margin-right: 12px;
+    }
+    .search-input {
+      flex: 1;
+      height: 52px;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 15px;
+      color: #444;
+      padding: 0 5px;
+    }
+    .search-input::placeholder {
+      color: #c0c0c0;
+      font-weight: 500;
+    }
+    .search-clear {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #999;
+      background: #f8f9fa;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: 0.3s;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .search-clear.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .search-clear:hover {
+      background: #ff4d88;
+      color: #fff;
+    }
+
     .category-tabs{
       display:flex;gap:10px;overflow-x:auto;
       padding-bottom:10px;margin-bottom:15px;
@@ -239,6 +301,16 @@
   <!-- 步驟1 -->
   <div class="section active" id="step1">
     <div class="section-title">服務項目分類</div>
+    
+    <!-- 🔥 新增：高質感搜尋介面 -->
+    <div class="search-wrapper">
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="serviceSearch" placeholder="輸入關鍵字搜尋服務項目...">
+        <span class="search-clear" id="searchClear">✕</span>
+      </div>
+    </div>
+
     <div class="category-tabs">
       <div class="tab active" data-cate="面部">面部<br>管理</div>
       <div class="tab" data-cate="美甲">美甲<br>手足</div>
@@ -317,14 +389,16 @@
   let currentPage = 1;
   let totalPage = 1;
   let currentServiceList = [];
+  let searchKeyword = ""; // 🔥 搜尋關鍵字
 
   const GLOBAL_DATA = { dateList: [], allServices: [], staffData: {} };
 
+  // 修復語法錯誤 + 完整分類
   const CATEGORIES = {
     "面部": ["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
     "美甲": ["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
     "眉眼": ["霧眉","霧唇","洗眉","角蛋白","接睫毛"],
-    "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛"]
+    "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下除毛"]
   };
 
   // 請求函數
@@ -392,9 +466,14 @@
     renderPagination();
   }
 
+  // 🔥 支援搜尋篩選的服務渲染
   function renderServices(cate) {
     currentPage = 1;
-    currentServiceList = GLOBAL_DATA.allServices.filter(s => CATEGORIES[cate].includes(s.name));
+    // 分類 + 搜尋 雙重篩選
+    currentServiceList = GLOBAL_DATA.allServices.filter(s => 
+      CATEGORIES[cate].includes(s.name) && 
+      s.name.includes(searchKeyword)
+    );
     totalPage = Math.ceil(currentServiceList.length / PAGE_SIZE);
     renderCurrentPage();
   }
@@ -445,7 +524,7 @@
     });
   }
 
-  // 🔥 核心修復：加載可用時段
+  // 加載可用時段
   function renderSlots() {
     const date = document.getElementById('selectedDate').value.trim();
     const staff = document.getElementById('selectedStaff').value.trim();
@@ -459,7 +538,6 @@
     document.getElementById('selectedTime').value = '';
     document.getElementById('nextToInfo').disabled = true;
 
-    // 調用後端
     request("getSlots", { date, staff, service }, (res) => {
       if(res.status === "success"){
         const slots = res.slots || [];
@@ -537,11 +615,33 @@
     }
   }
 
-  // 頁面加載
+  // 頁面加載 + 搜尋功能綁定
   document.addEventListener('DOMContentLoaded',async()=>{
     await initLiff();
     loadAllData();
     
+    // 🔥 搜尋功能
+    const searchInput = document.getElementById('serviceSearch');
+    const searchClear = document.getElementById('searchClear');
+
+    // 實時搜尋
+    searchInput.addEventListener('input', (e) => {
+      searchKeyword = e.target.value.trim();
+      searchClear.classList.toggle('show', searchKeyword !== '');
+      const activeCate = document.querySelector('.tab.active').dataset.cate;
+      renderServices(activeCate);
+    });
+
+    // 一鍵清除
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchKeyword = '';
+      searchClear.classList.remove('show');
+      const activeCate = document.querySelector('.tab.active').dataset.cate;
+      renderServices(activeCate);
+    });
+
+    // 分類切換
     document.querySelectorAll('.tab').forEach(tab=>{
       tab.onclick=()=>{
         document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
