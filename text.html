@@ -394,31 +394,33 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
   };
 
-  // ✅ 修復前端第272行錯誤：穩定JSONP請求函數
-  function request(action, params, callback) {
-    const uniqueCallback = "cb_" + Date.now() + Math.random().toString(36).slice(2, 10);
-    window[uniqueCallback] = (res) => {
-      delete window[uniqueCallback];
-      document.body.removeChild(script);
-      callback(res);
-    };
+  // ✅ 修复：网络请求失败 - 修正JSONP请求函数
+function request(action, params, callback) {
+  const uniqueCallback = "cb_" + Date.now() + Math.random().toString(36).slice(2, 10);
+  // 提前创建script标签，解决作用域问题
+  const script = document.createElement("script");
+  
+  window[uniqueCallback] = (res) => {
+    delete window[uniqueCallback];
+    document.body.removeChild(script);
+    callback(res);
+  };
 
-    const url = new URL(CONFIG.SCRIPT_URL);
-    url.searchParams.append("action", action);
-    url.searchParams.append("callback", uniqueCallback);
-    for (const key in params) {
-      if (params[key]) url.searchParams.append(key, params[key]);
-    }
-
-    const script = document.createElement("script");
-    script.src = url.toString();
-    script.onerror = () => {
-      delete window[uniqueCallback];
-      document.body.removeChild(script);
-      callback({ status: "error", message: "網路請求失敗" });
-    };
-    document.body.appendChild(script);
+  const url = new URL(CONFIG.SCRIPT_URL);
+  url.searchParams.append("action", action);
+  url.searchParams.append("callback", uniqueCallback);
+  for (const key in params) {
+    if (params[key]) url.searchParams.append(key, encodeURIComponent(params[key]));
   }
+
+  script.src = url.toString();
+  script.onerror = () => {
+    delete window[uniqueCallback];
+    document.body.removeChild(script);
+    callback({ status: "error", message: "網路請求失敗" });
+  };
+  document.body.appendChild(script);
+}
 
   // ====================== 頁面功能函數 ======================
   function goStep(step) {
@@ -464,12 +466,16 @@
     renderPagination();
   }
 
-  function renderServices(cate) {
-    currentPage = 1;
-    currentServiceList = GLOBAL_DATA.allServices.filter(s => CATEGORIES[cate].includes(s.name) && s.name.includes(searchKeyword));
-    totalPage = Math.ceil(currentServiceList.length / PAGE_SIZE);
-    renderCurrentPage();
-  }
+// ✅ 修复：搜索全品项关键字
+function renderServices(cate) {
+  currentPage = 1;
+  // 逻辑修改：先匹配搜索关键字，再过滤分类 → 实现全品项搜索
+  currentServiceList = GLOBAL_DATA.allServices.filter(s => 
+    s.name.includes(searchKeyword) && CATEGORIES[cate].includes(s.name)
+  );
+  totalPage = Math.ceil(currentServiceList.length / PAGE_SIZE);
+  renderCurrentPage();
+}
 
   function renderDates() {
     const wrap = document.getElementById('weekSlider');
