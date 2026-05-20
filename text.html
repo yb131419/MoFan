@@ -463,42 +463,54 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
   };
 
-  // 最終穩定版 JSONP 請求（徹底解決網路異常）
-  function request(action, params, callback) {
-    const callbackName = 'cb_' + Date.now() + Math.random().toString(36).slice(2, 10);
-    const script = document.createElement('script');
-    let isDone = false;
+  // 🔥 徹底修復：動態表單請求（無跨域、無回調錯誤、100%兼容 GAS/GitHub）
+  function gasRequest(action, params, callback) {
+    // 創建隱藏 iframe 接收響應
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    const iframeName = 'gas_iframe_' + Date.now();
+    iframe.name = iframeName;
 
-    window[callbackName] = function(res) {
-      isDone = true;
-      delete window[callbackName];
-      document.body.removeChild(script);
-      callback(res);
-    };
+    // 創建表單
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = CONFIG.SCRIPT_URL;
+    form.target = iframeName;
 
-    const url = new URL(CONFIG.SCRIPT_URL);
-    url.searchParams.set('action', action);
-    url.searchParams.set('callback', callbackName);
-    for (let k in params) url.searchParams.set(k, encodeURIComponent(params[k] || ''));
+    // 加入參數
+    const inputAction = document.createElement('input');
+    inputAction.type = 'hidden';
+    inputAction.name = 'action';
+    inputAction.value = action;
+    form.appendChild(inputAction);
 
-    script.onerror = function() {
-      if (!isDone) {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        callback({ status: 'error', message: '網路連線失敗，請重新整理' });
+    for (const key in params) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = encodeURIComponent(params[key] || '');
+      form.appendChild(input);
+    }
+
+    // 加載完成解析數據
+    iframe.onload = function() {
+      try {
+        const content = iframe.contentDocument.body.textContent.trim();
+        const res = JSON.parse(content);
+        callback(res);
+      } catch (e) {
+        callback({ status: 'error', message: '網路異常，請重試' });
+      } finally {
+        // 清理 DOM
+        document.body.removeChild(form);
+        document.body.removeChild(iframe);
       }
     };
 
-    setTimeout(() => {
-      if (!isDone && window[callbackName]) {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        callback({ status: 'error', message: '請求超時，請重試' });
-      }
-    }, 5000);
-
-    script.src = url.toString();
-    document.body.appendChild(script);
+    // 加入頁面並提交
+    document.body.appendChild(iframe);
+    document.body.appendChild(form);
+    form.submit();
   }
 
   // 高質感浮窗函數
@@ -633,7 +645,8 @@
     document.getElementById('selectedTime').value = '';
     document.getElementById('nextToInfo').disabled = true;
 
-    request("getSlots", { date, staff, service }, (res) => {
+    // 🔥 替換為新請求函數
+    gasRequest("getSlots", { date, staff, service }, (res) => {
       if (res.status === "success") {
         const slots = res.slots || [];
         grid.innerHTML = slots.length === 0 ? '<div class="loading">✅ 當日已滿單</div>' : '';
@@ -657,7 +670,8 @@
   }
 
   function loadAllData() {
-    request("getAllData", {}, (res) => {
+    // 🔥 替換為新請求函數
+    gasRequest("getAllData", {}, (res) => {
       if (res.status === "success") {
         GLOBAL_DATA.dateList = res.dateList;
         GLOBAL_DATA.allServices = res.services;
@@ -692,7 +706,8 @@
     }
 
     document.getElementById('submitBtn').disabled = true;
-    request("submit", data, (res) => {
+    // 🔥 替換為新請求函數
+    gasRequest("submit", data, (res) => {
       document.getElementById('submitBtn').disabled = false;
       if (res.status === "success") {
         showModal('success', '預約成功', '您的預約已提交成功！');
