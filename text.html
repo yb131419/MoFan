@@ -344,7 +344,7 @@
     <button class="btn-next" id="nextToInfo" disabled>下一步：填寫預約資訊</button>
   </div>
 
-  <!-- 步驟3 -->
+  <!-- 步驟3：修改信箱為生日 -->
   <div class="section" id="step3">
     <div class="form-group">
       <label>姓名 *</label>
@@ -355,8 +355,8 @@
       <input type="tel" id="phone" placeholder="請輸入手機號碼" required>
     </div>
     <div class="form-group">
-      <label>電子信箱（選填）</label>
-      <input type="email" id="email" placeholder="請輸入電子信箱">
+      <label>生日（選填，享生日優惠）</label>
+      <input type="date" id="birthday" placeholder="請選擇生日">
     </div>
     <div class="form-group">
       <label>備註（肌膚狀況/特殊需求）</label>
@@ -389,11 +389,10 @@
   let currentPage = 1;
   let totalPage = 1;
   let currentServiceList = [];
-  let searchKeyword = ""; // 🔥 搜尋關鍵字
+  let searchKeyword = "";
 
   const GLOBAL_DATA = { dateList: [], allServices: [], staffData: {} };
 
-  // 修復語法錯誤 + 完整分類
   const CATEGORIES = {
     "面部": ["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
     "美甲": ["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
@@ -466,10 +465,8 @@
     renderPagination();
   }
 
-  // 🔥 支援搜尋篩選的服務渲染
   function renderServices(cate) {
     currentPage = 1;
-    // 分類 + 搜尋 雙重篩選
     currentServiceList = GLOBAL_DATA.allServices.filter(s => 
       CATEGORIES[cate].includes(s.name) && 
       s.name.includes(searchKeyword)
@@ -524,7 +521,7 @@
     });
   }
 
-  // 加載可用時段
+  // 加載可用時段（僅渲染未被預約的時段）
   function renderSlots() {
     const date = document.getElementById('selectedDate').value.trim();
     const staff = document.getElementById('selectedStaff').value.trim();
@@ -542,6 +539,7 @@
       if(res.status === "success"){
         const slots = res.slots || [];
         grid.innerHTML = slots.length === 0 ? '<div class="loading">✅ 當日已滿單</div>' : '';
+        // 僅渲染後端返回的可用時段，已預約時段完全不顯示
         slots.forEach(time => {
           const btn = document.createElement('div');
           btn.className = 'time-btn';
@@ -576,7 +574,7 @@
     });
   }
 
-  // 提交預約
+  // 提交預約（修改為生日參數）
   function submit() {
     const data = {
       lineId:document.getElementById('lineId').value,
@@ -587,7 +585,7 @@
       appointTime:document.getElementById('selectedTime').value,
       name:document.getElementById('name').value.trim(),
       phone:document.getElementById('phone').value.trim(),
-      email:document.getElementById('email').value.trim(),
+      birthday:document.getElementById('birthday').value.trim(),
       extraInfo:document.getElementById('extraInfo').value.trim()
     };
     if(!data.name||!data.phone){alert("請填寫姓名與電話");return;}
@@ -615,16 +613,15 @@
     }
   }
 
-  // 頁面加載 + 搜尋功能綁定
+  // 頁面加載
   document.addEventListener('DOMContentLoaded',async()=>{
     await initLiff();
     loadAllData();
     
-    // 🔥 搜尋功能
+    // 搜尋功能
     const searchInput = document.getElementById('serviceSearch');
     const searchClear = document.getElementById('searchClear');
 
-    // 實時搜尋
     searchInput.addEventListener('input', (e) => {
       searchKeyword = e.target.value.trim();
       searchClear.classList.toggle('show', searchKeyword !== '');
@@ -632,7 +629,6 @@
       renderServices(activeCate);
     });
 
-    // 一鍵清除
     searchClear.addEventListener('click', () => {
       searchInput.value = '';
       searchKeyword = '';
