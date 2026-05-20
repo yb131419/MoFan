@@ -400,53 +400,31 @@ const CATEGORIES = {
   "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
 };
 
-  // 請求函數 - 修復版（解決網路錯誤、超時、緩存問題）
-function request(action, params, callback) {
-  if (scriptLoading) return;
-  scriptLoading = true;
-  
-  // 生成唯一回調函數名
-  const cbName = "cb_" + Date.now() + Math.random().toString(36).slice(2, 10);
-  // 超時計時器（8秒超時，Google Script 響應慢）
-  let timeoutTimer = setTimeout(() => {
-    scriptLoading = false;
-    delete window[cbName];
-    alert("網路請求超時，請重試！");
-    document.querySelectorAll('script[src*="' + cbName + '"]').forEach(s => s.remove());
-  }, 8000);
+  // 🔥 全新稳定请求函数 - Fetch 版本（彻底解决网络错误）
+async function request(action, params) {
+  try {
+    // 构建请求URL
+    let url = `${CONFIG.SCRIPT_URL}?action=${action}&_=${Date.now()}`;
+    for (let k in params) {
+      if (params[k] !== undefined && params[k] !== null) {
+        url += `&${k}=${encodeURIComponent(params[k])}`;
+      }
+    }
 
-  // 回調函數
-  window[cbName] = (res) => {
-    clearTimeout(timeoutTimer); // 清除超時
-    scriptLoading = false;
-    console.log(action, res);
-    delete window[cbName];
-    callback(res);
-    // 延遲移除腳本
-    setTimeout(() => {
-      document.querySelectorAll('script[src*="' + cbName + '"]').forEach(s => s.remove());
-    }, 100);
-  };
+    // 原生Fetch请求（无跨域、无拦截、LIFF兼容）
+    const res = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
 
-  // 構建URL + 強制禁用緩存（防止瀏覽器緩存導致加載失敗）
-  let url = `${CONFIG.SCRIPT_URL}?action=${action}&callback=${cbName}&_=${Date.now()}`;
-  for(let k in params) {
-    if(params[k]) url += `&${k}=${encodeURIComponent(params[k])}`;
+    const data = await res.json();
+    console.log(action, data);
+    return data;
+  } catch (err) {
+    console.error("請求失敗：", err);
+    return { status: "error", message: "網路異常，請重試" };
   }
-
-  // 創建腳本
-  const s = document.createElement('script');
-  s.src = url;
-  // 錯誤處理優化
-  s.onerror = (err) => {
-    clearTimeout(timeoutTimer);
-    scriptLoading = false;
-    delete window[cbName];
-    console.error("請求失敗:", err);
-    // 屏蔽誤報的網路錯誤，只在真實網路異常時提示
-    setTimeout(() => alert("網路連線異常，請刷新頁面重試！"), 100);
-  };
-  document.body.appendChild(s);
 }
 
   // 切換步驟
@@ -551,81 +529,79 @@ function request(action, params, callback) {
   }
 
   // 加載可用時段（僅渲染未被預約的時段）
-  function renderSlots() {
-    const date = document.getElementById('selectedDate').value.trim();
-    const staff = document.getElementById('selectedStaff').value.trim();
-    const service = document.getElementById('selectedService').value.trim();
-    const grid = document.getElementById('timeGrid');
+async function renderSlots() {
+  const date = document.getElementById('selectedDate').value.trim();
+  const staff = document.getElementById('selectedStaff').value.trim();
+  const service = document.getElementById('selectedService').value.trim();
+  const grid = document.getElementById('timeGrid');
 
-    if(!service){ grid.innerHTML='<div class="loading">❌ 請選擇服務</div>'; return; }
-    if(!date || !staff){ grid.innerHTML='<div class="loading">❌ 請選擇日期/美容師</div>'; return; }
+  if (!service) { grid.innerHTML = '<div class="loading">❌ 請選擇服務</div>'; return; }
+  if (!date || !staff) { grid.innerHTML = '<div class="loading">❌ 請選擇日期/美容師</div>'; return; }
 
-    grid.innerHTML = '<div class="loading">🔍 載入可用時段中...</div>';
-    document.getElementById('selectedTime').value = '';
-    document.getElementById('nextToInfo').disabled = true;
+  grid.innerHTML = '<div class="loading">🔍 載入可用時段中...</div>';
+  document.getElementById('selectedTime').value = '';
+  document.getElementById('nextToInfo').disabled = true;
 
-    request("getSlots", { date, staff, service }, (res) => {
-      if(res.status === "success"){
-        const slots = res.slots || [];
-        grid.innerHTML = slots.length === 0 ? '<div class="loading">✅ 當日已滿單</div>' : '';
-        // 僅渲染後端返回的可用時段，已預約時段完全不顯示
-        slots.forEach(time => {
-          const btn = document.createElement('div');
-          btn.className = 'time-btn';
-          btn.textContent = time;
-          btn.onclick = () => {
-            document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('selectedTime').value = time;
-            document.getElementById('nextToInfo').disabled = false;
-          };
-          grid.appendChild(btn);
-        });
-      } else {
-        grid.innerHTML = `<div class="loading">⚠️ ${res.message}</div>`;
-      }
+  // 🔥 使用新的Fetch請求
+  const res = await request("getSlots", { date, staff, service });
+  if (res.status === "success") {
+    const slots = res.slots || [];
+    grid.innerHTML = slots.length === 0 ? '<div class="loading">✅ 當日已滿單</div>' : '';
+    slots.forEach(time => {
+      const btn = document.createElement('div');
+      btn.className = 'time-btn';
+      btn.textContent = time;
+      btn.onclick = () => {
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('selectedTime').value = time;
+        document.getElementById('nextToInfo').disabled = false;
+      };
+      grid.appendChild(btn);
     });
+  } else {
+    grid.innerHTML = `<div class="loading">⚠️ ${res.message}</div>`;
   }
+}
 
-  // 初始化數據
-  function loadAllData() {
-    request("getAllData", {}, (res) => {
-      if(res.status==="success") {
-        GLOBAL_DATA.dateList = res.dateList;
-        GLOBAL_DATA.allServices = res.services;
-        GLOBAL_DATA.staffData = res.staffData;
-        renderServices('面部');
-        renderDates();
-      }else{
-        alert("載入失敗："+res.message);
-      }
-      document.getElementById('loadingOverlay').remove();
-    });
+  // 初始化數據 - 異步優化
+async function loadAllData() {
+  const res = await request("getAllData", {});
+  if (res.status === "success") {
+    GLOBAL_DATA.dateList = res.dateList;
+    GLOBAL_DATA.allServices = res.services;
+    GLOBAL_DATA.staffData = res.staffData;
+    renderServices('面部');
+    renderDates();
+  } else {
+    alert("載入失敗：" + (res.message || "未知錯誤"));
   }
+  document.getElementById('loadingOverlay').remove();
+}
 
-  // 提交預約（修改為生日參數）
-  function submit() {
-    const data = {
-      lineId:document.getElementById('lineId').value,
-      lineName:document.getElementById('lineName').value,
-      date:document.getElementById('selectedDate').value,
-      service:document.getElementById('selectedService').value,
-      staff:document.getElementById('selectedStaff').value,
-      appointTime:document.getElementById('selectedTime').value,
-      name:document.getElementById('name').value.trim(),
-      phone:document.getElementById('phone').value.trim(),
-      birthday:document.getElementById('birthday').value.trim(),
-      extraInfo:document.getElementById('extraInfo').value.trim()
-    };
-    if(!data.name||!data.phone){alert("請填寫姓名與電話");return;}
-    
-    document.getElementById('submitBtn').disabled = true;
-    request("submit",data,(res)=>{
-      alert(res.message);
-      document.getElementById('submitBtn').disabled = false;
-      if(res.status==="success") location.reload();
-    });
-  }
+ // 提交預約（修改為生日參數）
+async function submit() {
+  const data = {
+    lineId: document.getElementById('lineId').value,
+    lineName: document.getElementById('lineName').value,
+    date: document.getElementById('selectedDate').value,
+    service: document.getElementById('selectedService').value,
+    staff: document.getElementById('selectedStaff').value,
+    appointTime: document.getElementById('selectedTime').value,
+    name: document.getElementById('name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    birthday: document.getElementById('birthday').value.trim(),
+    extraInfo: document.getElementById('extraInfo').value.trim()
+  };
+  if (!data.name || !data.phone) { alert("請填寫姓名與電話"); return; }
+
+  document.getElementById('submitBtn').disabled = true;
+  // 🔥 新請求方式
+  const res = await request("submit", data);
+  alert(res.message);
+  document.getElementById('submitBtn').disabled = false;
+  if (res.status === "success") location.reload();
+}
 
   // LIFF初始化
   async function initLiff() {
