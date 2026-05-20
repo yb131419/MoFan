@@ -463,34 +463,41 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
   };
 
-  // ✅ 终极修复：网络请求异常（100%兼容GAS+中文编码）
+  // 最終穩定版 JSONP 請求（徹底解決網路異常）
   function request(action, params, callback) {
     const callbackName = 'cb_' + Date.now() + Math.random().toString(36).slice(2, 10);
     const script = document.createElement('script');
-    
-    window[callbackName] = (res) => {
-      setTimeout(() => {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        callback(res);
-      }, 50);
+    let isDone = false;
+
+    window[callbackName] = function(res) {
+      isDone = true;
+      delete window[callbackName];
+      document.body.removeChild(script);
+      callback(res);
     };
 
     const url = new URL(CONFIG.SCRIPT_URL);
-    url.searchParams.append('action', action);
-    url.searchParams.append('callback', callbackName);
-    
-    Object.entries(params).forEach(([k, v]) => {
-      url.searchParams.append(k, encodeURIComponent(v || ''));
-    });
+    url.searchParams.set('action', action);
+    url.searchParams.set('callback', callbackName);
+    for (let k in params) url.searchParams.set(k, encodeURIComponent(params[k] || ''));
 
-    script.src = url.toString();
-    script.onerror = () => {
-      delete window[callbackName];
-      document.body.removeChild(script);
-      callback({ status: 'error', message: '網路異常，請重試' });
+    script.onerror = function() {
+      if (!isDone) {
+        delete window[callbackName];
+        document.body.removeChild(script);
+        callback({ status: 'error', message: '網路連線失敗，請重新整理' });
+      }
     };
 
+    setTimeout(() => {
+      if (!isDone && window[callbackName]) {
+        delete window[callbackName];
+        document.body.removeChild(script);
+        callback({ status: 'error', message: '請求超時，請重試' });
+      }
+    }, 5000);
+
+    script.src = url.toString();
     document.body.appendChild(script);
   }
 
@@ -558,12 +565,12 @@
     renderPagination();
   }
 
-  // ✅ 修复：服务分类切换失效（分类+搜索双重过滤）
+  // 服務分類渲染（容錯加強）
   function renderServices(cate) {
     currentPage = 1;
-    // 核心修复：切换分类时，只显示当前分类下的服务 + 搜索过滤
-    currentServiceList = GLOBAL_DATA.allServices.filter(s => 
-      CATEGORIES[cate]?.includes(s.name) && s.name.includes(searchKeyword)
+    const categoryServices = CATEGORIES[cate] || [];
+    currentServiceList = (GLOBAL_DATA.allServices || []).filter(s => 
+      categoryServices.includes(s.name) && (searchKeyword === "" || s.name.includes(searchKeyword))
     );
     totalPage = Math.ceil(currentServiceList.length / PAGE_SIZE);
     renderCurrentPage();
@@ -626,7 +633,6 @@
     document.getElementById('selectedTime').value = '';
     document.getElementById('nextToInfo').disabled = true;
 
-    // ✅ 修复：调用无网络异常的请求函数
     request("getSlots", { date, staff, service }, (res) => {
       if (res.status === "success") {
         const slots = res.slots || [];
@@ -645,7 +651,7 @@
         });
       } else {
         showModal('error', '加載失敗', res.message || '網路異常，請重試');
-        grid.innerHTML = `<div class="loading">⚠️ ${res.message}</div>`;
+        grid.innerHTML = `<div class="loading">⚠️ 載入失敗</div>`;
       }
     });
   }
@@ -659,13 +665,13 @@
         renderServices('面部');
         renderDates();
       } else {
-        showModal('error', '載入失敗', res.message || "系統異常，請重新整理頁面");
+        showModal('error', '載入失敗', '系統初始化失敗，請重新整理頁面');
       }
       document.getElementById('loadingOverlay').remove();
     });
   }
 
-  // 提交預約（高質感浮窗）
+  // 提交預約
   function submit() {
     const data = {
       lineId: document.getElementById('lineId').value,
@@ -689,7 +695,7 @@
     request("submit", data, (res) => {
       document.getElementById('submitBtn').disabled = false;
       if (res.status === "success") {
-        showModal('success', '預約成功', '您的預約已提交成功！我們將盡快與您確認');
+        showModal('success', '預約成功', '您的預約已提交成功！');
         setTimeout(() => location.reload(), 2000);
       } else {
         showModal('error', '預約失敗', res.message || '網路異常，請重新提交');
@@ -734,7 +740,6 @@
       renderServices(document.querySelector('.tab.active').dataset.cate);
     });
 
-    // ✅ 修复：分类切换绑定
     document.querySelectorAll('.tab').forEach(tab=>{
       tab.onclick=()=>{
         document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
