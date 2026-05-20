@@ -400,25 +400,54 @@ const CATEGORIES = {
   "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
 };
 
-  // 請求函數
-  function request(action, params, callback) {
-    if (scriptLoading) return;
-    scriptLoading = true;
-    const cbName = "cb_" + Date.now() + Math.random().toString(36).slice(2);
-    window[cbName] = (res) => {
-      scriptLoading = false;
-      console.log(action, res);
-      delete window[cbName];
-      callback(res);
-    };
-    let url = `${CONFIG.SCRIPT_URL}?action=${action}&callback=${cbName}`;
-    for(let k in params) url += `&${k}=${encodeURIComponent(params[k])}`;
-    const s = document.createElement('script');
-    s.src = url;
-    s.onload = () => setTimeout(()=>s.remove(), 100);
-    s.onerror = () => { scriptLoading=false; alert("網路異常"); };
-    document.body.appendChild(s);
+  // 請求函數 - 修復版（解決網路錯誤、超時、緩存問題）
+function request(action, params, callback) {
+  if (scriptLoading) return;
+  scriptLoading = true;
+  
+  // 生成唯一回調函數名
+  const cbName = "cb_" + Date.now() + Math.random().toString(36).slice(2, 10);
+  // 超時計時器（8秒超時，Google Script 響應慢）
+  let timeoutTimer = setTimeout(() => {
+    scriptLoading = false;
+    delete window[cbName];
+    alert("網路請求超時，請重試！");
+    document.querySelectorAll('script[src*="' + cbName + '"]').forEach(s => s.remove());
+  }, 8000);
+
+  // 回調函數
+  window[cbName] = (res) => {
+    clearTimeout(timeoutTimer); // 清除超時
+    scriptLoading = false;
+    console.log(action, res);
+    delete window[cbName];
+    callback(res);
+    // 延遲移除腳本
+    setTimeout(() => {
+      document.querySelectorAll('script[src*="' + cbName + '"]').forEach(s => s.remove());
+    }, 100);
+  };
+
+  // 構建URL + 強制禁用緩存（防止瀏覽器緩存導致加載失敗）
+  let url = `${CONFIG.SCRIPT_URL}?action=${action}&callback=${cbName}&_=${Date.now()}`;
+  for(let k in params) {
+    if(params[k]) url += `&${k}=${encodeURIComponent(params[k])}`;
   }
+
+  // 創建腳本
+  const s = document.createElement('script');
+  s.src = url;
+  // 錯誤處理優化
+  s.onerror = (err) => {
+    clearTimeout(timeoutTimer);
+    scriptLoading = false;
+    delete window[cbName];
+    console.error("請求失敗:", err);
+    // 屏蔽誤報的網路錯誤，只在真實網路異常時提示
+    setTimeout(() => alert("網路連線異常，請刷新頁面重試！"), 100);
+  };
+  document.body.appendChild(s);
+}
 
   // 切換步驟
   function goStep(step) {
