@@ -20,6 +20,7 @@
       box-shadow:0 20px 60px rgba(255,133,162,0.15);
       width:100%;max-width:480px;padding:40px 28px;
       position:relative;overflow:hidden;
+      border: 1px solid #333; /* 整體黑框 */
     }
     main::before{
       content:'';position:absolute;top:0;left:0;
@@ -52,6 +53,7 @@
       background:#f0f0f0;color:#999;
       display:flex;align-items:center;justify-content:center;
       font-weight:700;margin-bottom:8px;
+      border: 1px solid #333; /* 黑框 */
       transition:0.3s;
     }
     .step-text{font-size:12px;color:#999;font-weight:500}
@@ -81,12 +83,11 @@
       background: #ffffff;
       border-radius: 22px;
       box-shadow:0 6px 18px rgba(255,77,136,0.1);
-      border:1px solid #f8e5eb;
+      border:1px solid #333; /* 黑框 */
       transition: all 0.3s ease;
     }
     .search-container:focus-within {
       border-color: #ff8da1;
-      box-shadow:0 0 15px rgba(255,77,136,0.18);
     }
     .search-icon {
       font-size:16px;color:#ff4d88;margin-right:12px;
@@ -104,6 +105,7 @@
       align-items:center;justify-content:center;
       font-size:12px;color:#999;background:#f8f9fa;
       border-radius:50%;cursor:pointer;transition:0.3s;
+      border: 1px solid #333; /* 黑框 */
       opacity:0;pointer-events:none;
     }
     .search-clear.show {
@@ -113,18 +115,22 @@
       background:#ff4d88;color:#fff;
     }
 
+    /* ✅ 優化：分類標籤 置中+黑框+不換行 */
     .category-tabs{
-      display:flex;gap:10px;overflow-x:auto;
-      padding-bottom:10px;margin-bottom:15px;
+      display:flex;gap:8px;overflow-x:auto;
+      padding:10px 0;margin-bottom:15px;
       justify-content: center;
       align-items: center;
+      flex-wrap: nowrap;
     }
     .category-tabs::-webkit-scrollbar{height:0}
     .tab{
-      padding:8px 16px;border-radius:20px;
-      background:#f8f9fa;border:1px solid #eee;
+      padding:8px 14px;border-radius:20px;
+      background:#f8f9fa;border:1px solid #333; /* 黑框 */
       font-size:14px;font-weight:500;cursor:pointer;
       white-space:nowrap;transition:0.3s;
+      text-align: center;
+      line-height: 1.2;
     }
     .tab.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
 
@@ -136,7 +142,7 @@
     }
     .service-card{
       padding:12px 10px;border-radius:16px;
-      background:#fafbfc;border:1px solid #eee;
+      background:#fafbfc;border:1px solid #333; /* 黑框 */
       text-align:center;font-size:13px;font-weight:500;
       cursor:pointer;transition:0.3s;
       min-height:60px;display:flex;
@@ -146,19 +152,25 @@
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
 
+    /* ✅ 優化：分頁 不換行+黑框 */
     .pagination {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
       margin: 15px 0;
-      padding: 10px
+      padding: 10px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
     }
+    .pagination::-webkit-scrollbar {display: none;}
     .page-btn {
-      width:36px;height:36px;border-radius:12px;border:none;
+      width:36px;height:36px;border-radius:12px;
+      border:1px solid #333; /* 黑框 */
       background:#f8f9fa;
       color:#666;font-size:14px;font-weight:600;
       cursor:pointer;
+      flex-shrink: 0;
     }
     .page-btn:hover:not(:disabled) {
       background:#ff4d88;color:#fff;
@@ -169,6 +181,7 @@
     .page-text {
       min-width:40px;text-align:center;font-size:14px;
       font-weight:600;color:#333;
+      flex-shrink: 0;
     }
 
     .week-slider{
@@ -178,7 +191,8 @@
     .week-day{
       min-width:85px;padding:15px 10px;
       border-radius:18px;background:#fafbfc;
-      border:1px solid #eee;text-align:center;
+      border:1px solid #333; /* 黑框 */
+      text-align:center;
       cursor:pointer;
     }
     .week-day.active{background:#ff4d88;color:#fff;}
@@ -190,7 +204,7 @@
     }
     .staff-item{
       padding:15px 20px;border-radius:16px;
-      background:#fafbfc;border:1px solid #eee;
+      background:#fafbfc;border:1px solid #333; /* 黑框 */
       cursor:pointer;
     }
     .staff-item.active{background:#fdf2f8;border-color:#ff8da1}
@@ -203,7 +217,7 @@
     }
     .time-btn{
       padding:12px 5px;border-radius:14px;
-      background:#fafbfc;border:1px solid #eee;
+      background:#fafbfc;border:1px solid #333; /* 黑框 */
       text-align:center;font-weight:500;cursor:pointer;
     }
     .time-btn.active{background:#ff4d88;color:#fff;}
@@ -213,7 +227,8 @@
     input,textarea{
       width:100%;height:54px;
       padding:0 20px;border-radius:16px;
-      border:1px solid #eee;background:#fafbfc;
+      border:1px solid #333; /* 黑框 */
+      background:#fafbfc;
       font-size:15px;
     }
     input:focus,textarea:focus{
@@ -225,7 +240,8 @@
     .btn-next{
       width:100%;height:58px;
       background:linear-gradient(135deg,#FF5D8F,#FF3377);
-      border:none;border-radius:20px;
+      border:1px solid #333; /* 黑框 */
+      border-radius:20px;
       color:#fff;font-size:16px;font-weight:700;
       cursor:pointer;
     }
@@ -257,13 +273,14 @@
     .modal-box {
       background:#fff;border-radius:20px;padding:30px 25px;
       width:90%;max-width:380px;text-align:center;
+      border: 1px solid #333; /* 黑框 */
     }
     .modal-icon{font-size:40px;margin-bottom:15px}
     .modal-title{font-size:18px;font-weight:700;margin-bottom:10px}
     .modal-desc{margin-bottom:25px}
     .modal-btn{
       width:100%;height:50px;
-      border-radius:12px;border:none;
+      border-radius:12px;border:1px solid #333; /* 黑框 */
       background:#ff4d88;color:#fff;
       font-size:15px;font-weight:600;
     }
@@ -307,10 +324,10 @@
       </div>
     </div>
     <div class="category-tabs">
-      <div class="tab active" data-cate="面部">面部管理</div>
-      <div class="tab" data-cate="美甲">美甲手足</div>
+      <div class="tab active" data-cate="面部">面部<br>管理</div>
+      <div class="tab" data-cate="美甲">美甲<br>手足</div>
       <div class="tab" data-cate="眉眼">眉眼唇</div>
-      <div class="tab" data-cate="身體">身體護理</div>
+      <div class="tab" data-cate="身體">身體<br>護理</div>
     </div>
     <div class="service-grid" id="serviceGrid"><div class="loading">載入服務中...</div></div>
     <div class="pagination" id="pagination"></div>
