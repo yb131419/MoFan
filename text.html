@@ -363,9 +363,7 @@ const CATEGORIES = {
   "身體":["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"]
 };
 
-// ✅ 增強請求錯誤處理
 function gasRequest(action, params, callback) {
-  // 防護 params 為空
   const safeParams = params || {};
   let url = CONFIG.SCRIPT_URL + "?action=" + encodeURIComponent(action);
   for(let k in safeParams) {
@@ -375,26 +373,20 @@ function gasRequest(action, params, callback) {
   
   const xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
-  // 超時處理
   xhr.timeout = 10000;
   xhr.ontimeout = function() {
-    console.error('請求超時');
     callback({status:"error",message:"請求超時，請稍後再試"});
   };
   xhr.onload = function(){
     try{ 
-      const response = xhr.responseText || "{}";
-      const resData = JSON.parse(response);
-      // 防護後端返回非標準格式
+      const resData = JSON.parse(xhr.responseText || "{}");
       callback(resData || {status:"error",message:"數據格式異常"}); 
     }
     catch(e){ 
-      console.error('解析回應失敗:', e);
       callback({status:"error",message:"系統異常："+e.message}); 
     }
   };
   xhr.onerror = function(){ 
-    console.error('請求失敗');
     callback({status:"error",message:"網路異常，請檢查網路連接"}) 
   };
   xhr.send();
@@ -438,7 +430,7 @@ function renderCurrentPage(){
   }
   const list = currentServiceList.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
   list.forEach(item=>{
-    if(!item || !item.name) return; // 防護空數據
+    if(!item || !item.name) return;
     const c = document.createElement('div');
     c.className='service-card';
     c.innerHTML = `${item.name}<span class="service-duration">${item.duration || 0}分</span>`;
@@ -455,7 +447,6 @@ function renderCurrentPage(){
 
 function renderServices(cate){
   currentPage=1;
-  // 嚴格防護：確保所有數據都存在且為正確類型
   const allServices = Array.isArray(GLOBAL_DATA.allServices) ? GLOBAL_DATA.allServices : [];
   const cateList = CATEGORIES[cate] || [];
   currentServiceList = allServices.filter(s=>{
@@ -469,10 +460,7 @@ function renderServices(cate){
 function renderDates(){
   const w = document.getElementById('weekSlider');
   w.innerHTML = '';
-  // 嚴格過濾：只保留有效字符串日期
-  const dateList = (GLOBAL_DATA.dateList || []).filter(d => {
-    return d && typeof d === 'string' && d.trim() !== '';
-  });
+  const dateList = (GLOBAL_DATA.dateList || []).filter(d => d && typeof d === 'string' && d.trim() !== '');
   
   if(!dateList.length){
     w.innerHTML='<div class="loading">暫無排班</div>';
@@ -481,33 +469,25 @@ function renderDates(){
   
   dateList.forEach((d,i)=>{
     const el = document.createElement('div');
-    // 移除默認active：不再給第一個日期加active類
     el.className = `week-day`;
     
-    // 加強防護：確保split前是有效字符串
     let month = "", day = "";
-    if (d && typeof d === 'string' && d.includes('-')) {
+    if (d && d.includes('-')) {
       const arr = d.split('-');
-      if (arr.length >=3) {
-        month = arr[1] || "";
-        day = arr[2] || "";
-      }
+      month = arr[1] || "";
+      day = arr[2] || "";
     }
 
-    // 防護Date構造函數入參
     let weekDay = '一';
     try {
       const dateObj = new Date(d);
       if (!isNaN(dateObj.getTime())) {
         weekDay = weekDays[dateObj.getDay()] || '一';
       }
-    } catch (e) {
-      weekDay = '一';
-    }
+    } catch (e) {}
 
     el.innerHTML = `<div>${month}/${day}</div><div>週${weekDay}</div>`;
     el.onclick = ()=>{
-      // 點擊時才添加active
       document.querySelectorAll('.week-day').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('selectedDate').value = d || "";
@@ -516,7 +496,6 @@ function renderDates(){
     w.appendChild(el);
   });
   
-  // 移除默認選中日期：不再主動設置selectedDate和調用renderStaff
   document.getElementById('selectedDate').value = "";
 }
 
@@ -527,8 +506,7 @@ function renderStaff(date){
   document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
   document.getElementById('nextToInfo').disabled = true;
   
-  // 嚴格防護：確保date有效且staffData存在
-  if(!date || typeof date !== 'string' || !GLOBAL_DATA.staffData || typeof GLOBAL_DATA.staffData !== 'object'){
+  if(!date || !GLOBAL_DATA.staffData){
     s.innerHTML='<div class="loading">請選擇有效日期</div>';
     return;
   }
@@ -541,7 +519,7 @@ function renderStaff(date){
   
   s.innerHTML = '';
   list.forEach(st=>{
-    if(!st) return; // 防護空數據
+    if(!st) return;
     const el = document.createElement('div');
     el.className='staff-item';
     const name = st.name || "";
@@ -559,9 +537,9 @@ function renderStaff(date){
 }
 
 function renderSlots(){
-  const date = (document.getElementById('selectedDate').value || "").trim();
-  const staff = (document.getElementById('selectedStaff').value || "").trim();
-  const service = (document.getElementById('selectedService').value || "").trim();
+  const date = document.getElementById('selectedDate').value.trim();
+  const staff = document.getElementById('selectedStaff').value.trim();
+  const service = document.getElementById('selectedService').value.trim();
   const g = document.getElementById('timeGrid');
 
   if(!service){
@@ -579,10 +557,10 @@ function renderSlots(){
 
   gasRequest("getSlots", { date, staff, service }, res=>{
     if(res && res.status==="success"){
-      const slots = Array.isArray(res.slots) ? res.slots : [];
+      const slots = res.slots || [];
       g.innerHTML = slots.length===0?'✅ 當日已滿單':'';
       slots.forEach(t=>{
-        if(!t || typeof t !== 'string') return; // 防護空時段
+        if(!t) return;
         const b = document.createElement('div');
         b.className='time-btn';
         b.textContent = t;
@@ -604,10 +582,9 @@ function loadAllData(){
   gasRequest("getAllData",{},res=>{
     document.getElementById('loadingOverlay').style.display='none';
     if(res && res.status==="success"){
-      // 嚴格類型檢查：確保數據是正確類型
-      GLOBAL_DATA.dateList = Array.isArray(res.dateList) ? res.dateList : [];
-      GLOBAL_DATA.allServices = Array.isArray(res.services) ? res.services : [];
-      GLOBAL_DATA.staffData = typeof res.staffData === 'object' && res.staffData !== null ? res.staffData : {};
+      GLOBAL_DATA.dateList = res.dateList || [];
+      GLOBAL_DATA.allServices = res.services || [];
+      GLOBAL_DATA.staffData = res.staffData || {};
       renderServices('面部');
       renderDates();
     }else{
@@ -618,16 +595,16 @@ function loadAllData(){
 
 function submit(){
   const data = {
-    lineId: userId || "",
-    lineName: userName || "",
-    date: document.getElementById('selectedDate').value || "",
-    service: document.getElementById('selectedService').value || "",
-    staff: document.getElementById('selectedStaff').value || "",
-    appointTime: document.getElementById('selectedTime').value || "",
-    name: (document.getElementById('name').value || "").trim(),
-    phone: (document.getElementById('phone').value || "").trim(),
-    birthday: (document.getElementById('birthday').value || "").trim(),
-    extraInfo: (document.getElementById('extraInfo').value || "").trim()
+    lineId: userId,
+    lineName: userName,
+    date: document.getElementById('selectedDate').value,
+    service: document.getElementById('selectedService').value,
+    staff: document.getElementById('selectedStaff').value,
+    appointTime: document.getElementById('selectedTime').value,
+    name: document.getElementById('name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    birthday: document.getElementById('birthday').value.trim(),
+    extraInfo: document.getElementById('extraInfo').value.trim()
   };
   if(!data.name||!data.phone){
     showModal('error','填寫錯誤','請填寫姓名與電話');
@@ -655,9 +632,6 @@ async function initLiff(){
     }
   }catch(e){
     console.error('LIFF初始化失敗:', e);
-    // LIFF失敗不影響核心功能
-    userId = "guest_"+Date.now();
-    userName = "訪客";
   }
   finally{
     document.getElementById('lineId').value = userId;
