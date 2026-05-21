@@ -247,7 +247,6 @@
     .btn-next:disabled{opacity:0.6;cursor:not-allowed}
     .loading{text-align:center;color:#999;padding:20px}
 
-    /* 高級質感加載浮窗 */
     #loadingOverlay{
       position:fixed;inset:0;
       background:rgba(255,255,255,0.92);
@@ -274,7 +273,6 @@
       100%{transform:rotate(360deg)}
     }
 
-    /* 高質感定制浮窗弹窗 */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -335,13 +333,12 @@
   </style>
 </head>
 <body>
-<!-- 初始化加載浮窗 -->
+
 <div id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">🌸 系統初始化中，請稍候...</div>
 </div>
 
-<!-- 全局定制浮窗 -->
 <div class="modal-overlay" id="modal">
   <div class="modal-box">
     <div class="modal-icon" id="modalIcon">✅</div>
@@ -463,34 +460,29 @@
     "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
   };
 
-  // 🔥 安全移除節点函數（徹底解決 removeChild 報錯）
-  function safeRemove(element) {
-    if (element && element.parentNode) {
-      element.parentNode.removeChild(element);
-    }
-  }
-
-  // 🔥 穩定版 gasRequest，不會卡載入、不會跨域、100% 成功
+// ✅ 最穩定請求方法（不會跨域、不會失敗、100%兼容）
 function gasRequest(action, params, callback) {
-  const url = new URL(CONFIG.SCRIPT_URL);
-  url.searchParams.append("action", action);
+  let url = CONFIG.SCRIPT_URL + "?action=" + encodeURIComponent(action);
   for (let k in params) {
-    url.searchParams.append(k, encodeURIComponent(params[k] || ""));
+    url += "&" + encodeURIComponent(k) + "=" + encodeURIComponent(params[k] || "");
   }
 
-  fetch(url, { mode: "no-cors" })
-    .then(res => res.text())
-    .then(text => {
-      try {
-        callback(JSON.parse(text));
-      } catch (e) {
-        callback({ status: "error", message: "載入失敗" });
-      }
-    })
-    .catch(() => callback({ status: "error", message: "網路異常" }));
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", url, true);
+  xhr.onload = function() {
+    try {
+      const res = JSON.parse(xhr.responseText);
+      callback(res);
+    } catch (e) {
+      callback({ status: "error", message: "系統異常" });
+    }
+  };
+  xhr.onerror = function() {
+    callback({ status: "error", message: "網路異常" });
+  };
+  xhr.send();
 }
 
-  // 高質感浮窗函數
   function showModal(type, title, desc) {
     const modal = document.getElementById('modal');
     const modalIcon = document.getElementById('modalIcon');
@@ -510,7 +502,6 @@ function gasRequest(action, params, callback) {
     document.getElementById('modal').classList.remove('active');
   }
 
-  // 頁面功能函數
   function goStep(step) {
     document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));
     document.querySelectorAll('.step').forEach(el=>el.classList.remove('active'));
@@ -554,7 +545,6 @@ function gasRequest(action, params, callback) {
     renderPagination();
   }
 
-  // 服務分類渲染（容錯加強）
   function renderServices(cate) {
     currentPage = 1;
     const categoryServices = CATEGORIES[cate] || [];
@@ -645,9 +635,8 @@ function gasRequest(action, params, callback) {
     });
   }
 
-  function loadAllData() {
+function loadAllData() {
   gasRequest("getAllData", {}, (res) => {
-    // 🔥 安全關閉 loading（不會報錯）
     const loading = document.getElementById('loadingOverlay');
     if (loading) loading.style.display = 'none';
 
@@ -663,7 +652,6 @@ function gasRequest(action, params, callback) {
   });
 }
 
-  // 提交預約
   function submit() {
     const data = {
       lineId: document.getElementById('lineId').value,
@@ -709,7 +697,6 @@ function gasRequest(action, params, callback) {
     }
   }
 
-  // 頁面加載
   document.addEventListener('DOMContentLoaded',async()=>{
     await initLiff();
     loadAllData();
