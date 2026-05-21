@@ -335,7 +335,6 @@
     <button class="btn-next" id="submitBtn">確認提交預約</button>
   </div>
 
-  <!-- 隱藏欄位：修復錯誤用 -->
   <input type="hidden" id="selectedService">
   <input type="hidden" id="selectedDate">
   <input type="hidden" id="selectedStaff">
@@ -418,7 +417,7 @@ function renderCurrentPage(){
     c.onclick = ()=>{
       document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));
       c.classList.add('active');
-      document.getElementById('selectedService').value = item.name;
+      document.getElementById('selectedService').value = item.name || "";
       document.getElementById('nextToDate').disabled = false;
     };
     g.appendChild(c);
@@ -438,20 +437,35 @@ function renderServices(cate){
 function renderDates(){
   const w = document.getElementById('weekSlider');
   w.innerHTML = '';
-  if(!GLOBAL_DATA.dateList.length){w.innerHTML='<div class="loading">暫無排班</div>';return;}
-  GLOBAL_DATA.dateList.forEach((d,i)=>{
+  const dateList = (GLOBAL_DATA.dateList || []).filter(d => d && typeof d === 'string');
+  if(!dateList.length){w.innerHTML='<div class="loading">暫無排班</div>';return;}
+  
+  dateList.forEach((d,i)=>{
     const el = document.createElement('div');
     el.className = `week-day ${i===0?'active':''}`;
-    el.innerHTML = `<div>${d.split('-')[1]}/${d.split('-')[2]}</div><div>週${weekDays[new Date(d).getDay()]}</div>`;
+    
+    // ✅ 關鍵修復：確保 d 是字串才 split
+    let month = "", day = "";
+    if (d && typeof d === 'string') {
+      const arr = d.split('-');
+      if (arr.length >=3) {
+        month = arr[1];
+        day = arr[2];
+      }
+    }
+
+    el.innerHTML = `<div>${month}/${day}</div><div>週${weekDays[new Date(d).getDay()] || '一'}</div>`;
     el.onclick = ()=>{
       document.querySelectorAll('.week-day').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
-      document.getElementById('selectedDate').value = d;
+      document.getElementById('selectedDate').value = d || "";
       renderStaff(d);
     };
     w.appendChild(el);
   });
-  renderStaff(GLOBAL_DATA.dateList[0]);
+  const firstDate = dateList[0] || "";
+  document.getElementById('selectedDate').value = firstDate;
+  renderStaff(firstDate);
 }
 
 function renderStaff(date){
@@ -460,17 +474,22 @@ function renderStaff(date){
   document.getElementById('selectedStaff').value = '';
   document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
   document.getElementById('nextToInfo').disabled = true;
-  const list = GLOBAL_DATA.staffData[date]||[];
+  
+  const list = (date && GLOBAL_DATA.staffData && GLOBAL_DATA.staffData[date]) || [];
   if(!list.length){s.innerHTML='<div class="loading">當日無美容師</div>';return;}
+  
   s.innerHTML = '';
   list.forEach(st=>{
     const el = document.createElement('div');
     el.className='staff-item';
-    el.innerHTML = `<div class="staff-name">${st.name}</div><div>營業時間：${st.start}~${st.end}</div>`;
+    const name = st?.name || "";
+    const start = st?.start || "";
+    const end = st?.end || "";
+    el.innerHTML = `<div class="staff-name">${name}</div><div>營業時間：${start}~${end}</div>`;
     el.onclick = ()=>{
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
-      document.getElementById('selectedStaff').value = st.name;
+      document.getElementById('selectedStaff').value = name;
       renderSlots();
     };
     s.appendChild(el);
@@ -478,9 +497,9 @@ function renderStaff(date){
 }
 
 function renderSlots(){
-  const date = document.getElementById('selectedDate').value.trim();
-  const staff = document.getElementById('selectedStaff').value.trim();
-  const service = document.getElementById('selectedService').value.trim();
+  const date = (document.getElementById('selectedDate').value || "").trim();
+  const staff = (document.getElementById('selectedStaff').value || "").trim();
+  const service = (document.getElementById('selectedService').value || "").trim();
   const g = document.getElementById('timeGrid');
 
   if(!service){g.innerHTML='❌ 請選擇服務';return;}
@@ -497,11 +516,11 @@ function renderSlots(){
       slots.forEach(t=>{
         const b = document.createElement('div');
         b.className='time-btn';
-        b.textContent = t;
+        b.textContent = t || "";
         b.onclick = ()=>{
           document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
           b.classList.add('active');
-          document.getElementById('selectedTime').value = t;
+          document.getElementById('selectedTime').value = t || "";
           document.getElementById('nextToInfo').disabled = false;
         };
         g.appendChild(b);
@@ -531,14 +550,14 @@ function submit(){
   const data = {
     lineId: userId,
     lineName: userName,
-    date: document.getElementById('selectedDate').value,
-    service: document.getElementById('selectedService').value,
-    staff: document.getElementById('selectedStaff').value,
-    appointTime: document.getElementById('selectedTime').value,
-    name: document.getElementById('name').value.trim(),
-    phone: document.getElementById('phone').value.trim(),
-    birthday: document.getElementById('birthday').value.trim(),
-    extraInfo: document.getElementById('extraInfo').value.trim()
+    date: document.getElementById('selectedDate').value || "",
+    service: document.getElementById('selectedService').value || "",
+    staff: document.getElementById('selectedStaff').value || "",
+    appointTime: document.getElementById('selectedTime').value || "",
+    name: (document.getElementById('name').value || "").trim(),
+    phone: (document.getElementById('phone').value || "").trim(),
+    birthday: (document.getElementById('birthday').value || "").trim(),
+    extraInfo: (document.getElementById('extraInfo').value || "").trim()
   };
   if(!data.name||!data.phone){showModal('error','填寫錯誤','請填寫姓名與電話');return;}
   document.getElementById('submitBtn').disabled=true;
@@ -558,12 +577,11 @@ async function initLiff(){
     await liff.init({liffId:CONFIG.LIFF_ID});
     if(liff.isLoggedIn()){
       const p = await liff.getProfile();
-      userId = p.userId;
-      userName = p.displayName;
+      userId = p.userId || "guest";
+      userName = p.displayName || "訪客";
     }
   }catch(e){}
   finally{
-    // 現在一定找得到，不會報 null
     document.getElementById('lineId').value = userId;
     document.getElementById('lineName').value = userName;
   }
