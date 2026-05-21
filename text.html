@@ -334,6 +334,14 @@
     <div class="form-group"><label>備註</label><textarea id="extraInfo"></textarea></div>
     <button class="btn-next" id="submitBtn">確認提交預約</button>
   </div>
+
+  <!-- 隱藏欄位：修復錯誤用 -->
+  <input type="hidden" id="selectedService">
+  <input type="hidden" id="selectedDate">
+  <input type="hidden" id="selectedStaff">
+  <input type="hidden" id="selectedTime">
+  <input type="hidden" id="lineId">
+  <input type="hidden" id="lineName">
 </main>
 
 <script>
@@ -356,7 +364,6 @@ const CATEGORIES = {
   "身體":["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"]
 };
 
-// ✅ 100% 穩定請求
 function gasRequest(action, params, callback) {
   let url = CONFIG.SCRIPT_URL + "?action=" + encodeURIComponent(action);
   for(let k in params) url += "&"+encodeURIComponent(k)+"="+encodeURIComponent(params[k]||"");
@@ -470,7 +477,6 @@ function renderStaff(date){
   });
 }
 
-// ✅ 修復：參數名稱 100% 匹配後端
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
@@ -484,12 +490,7 @@ function renderSlots(){
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
 
-  // ✅ 關鍵修復：參數名稱完全對齊後端
-  gasRequest("getSlots", {
-    date: date,
-    staff: staff,
-    service: service
-  }, res=>{
+  gasRequest("getSlots", { date, staff, service }, res=>{
     if(res.status==="success"){
       const slots = res.slots||[];
       g.innerHTML = slots.length===0?'✅ 當日已滿單':'';
@@ -526,7 +527,6 @@ function loadAllData(){
   });
 }
 
-// ✅ 修復：提交參數 100% 匹配
 function submit(){
   const data = {
     lineId: userId,
@@ -554,8 +554,19 @@ function submit(){
 }
 
 async function initLiff(){
-  try{await liff.init({liffId:CONFIG.LIFF_ID});if(liff.isLoggedIn()){const p=await liff.getProfile();userId=p.userId;userName=p.displayName;}}catch(e){}
-  finally{document.getElementById('lineId').value=userId;document.getElementById('lineName').value=userName;}
+  try{
+    await liff.init({liffId:CONFIG.LIFF_ID});
+    if(liff.isLoggedIn()){
+      const p = await liff.getProfile();
+      userId = p.userId;
+      userName = p.displayName;
+    }
+  }catch(e){}
+  finally{
+    // 現在一定找得到，不會報 null
+    document.getElementById('lineId').value = userId;
+    document.getElementById('lineName').value = userName;
+  }
 }
 
 document.addEventListener('DOMContentLoaded',async()=>{
