@@ -370,10 +370,19 @@ function gasRequest(action, params, callback) {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.onload = function(){
-    try{ callback(JSON.parse(xhr.responseText)); }
-    catch(e){ callback({status:"error",message:"系統異常"}); }
+    try{ 
+      const response = xhr.responseText || "{}";
+      callback(JSON.parse(response)); 
+    }
+    catch(e){ 
+      console.error('解析回應失敗:', e);
+      callback({status:"error",message:"系統異常"}); 
+    }
   };
-  xhr.onerror = function(){ callback({status:"error",message:"網路異常"}) };
+  xhr.onerror = function(){ 
+    console.error('請求失敗');
+    callback({status:"error",message:"網路異常"}) 
+  };
   xhr.send();
 }
 
@@ -397,23 +406,28 @@ function renderPagination(){
   const p = document.getElementById('pagination');
   if(totalPage<=1){p.innerHTML='';return;}
   p.innerHTML = `
-    <button ${currentPage===1?'disabled':''} onclick="currentPage=1;renderCurrentPage()">首頁</button>
-    <button ${currentPage===1?'disabled':''} onclick="currentPage--;renderCurrentPage()">上一頁</button>
-    <span>${currentPage}/${totalPage}</span>
-    <button ${currentPage===totalPage?'disabled':''} onclick="currentPage++;renderCurrentPage()">下一頁</button>
-    <button ${currentPage===totalPage?'disabled':''} onclick="currentPage=totalPage;renderCurrentPage()">末頁</button>
+    <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage=1;renderCurrentPage()">首頁</button>
+    <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage--;renderCurrentPage()">上一頁</button>
+    <span class="page-text">${currentPage}/${totalPage}</span>
+    <button class="page-btn" ${currentPage===totalPage?'disabled':''} onclick="currentPage++;renderCurrentPage()">下一頁</button>
+    <button class="page-btn" ${currentPage===totalPage?'disabled':''} onclick="currentPage=totalPage;renderCurrentPage()">末頁</button>
   `;
 }
 
 function renderCurrentPage(){
   const g = document.getElementById('serviceGrid');
   g.innerHTML = '';
-  if(!currentServiceList.length){g.innerHTML='<div class="loading">暫無服務</div>';renderPagination();return;}
+  if(!currentServiceList || currentServiceList.length === 0){
+    g.innerHTML='<div class="loading">暫無服務</div>';
+    renderPagination();
+    return;
+  }
   const list = currentServiceList.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
   list.forEach(item=>{
+    if(!item || !item.name) return; // 防護空數據
     const c = document.createElement('div');
     c.className='service-card';
-    c.innerHTML = `${item.name}<span class="service-duration">${item.duration}分</span>`;
+    c.innerHTML = `${item.name}<span class="service-duration">${item.duration || 0}分</span>`;
     c.onclick = ()=>{
       document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));
       c.classList.add('active');
@@ -427,9 +441,13 @@ function renderCurrentPage(){
 
 function renderServices(cate){
   currentPage=1;
-  currentServiceList = (GLOBAL_DATA.allServices||[]).filter(s=>
-    CATEGORIES[cate]?.includes(s.name) && (searchKeyword===''||s.name.includes(searchKeyword))
-  );
+  // 嚴格防護：確保所有數據都存在且為正確類型
+  const allServices = Array.isArray(GLOBAL_DATA.allServices) ? GLOBAL_DATA.allServices : [];
+  const cateList = CATEGORIES[cate] || [];
+  currentServiceList = allServices.filter(s=>{
+    if(!s || !s.name) return false;
+    return cateList.includes(s.name) && (searchKeyword===''||s.name.includes(searchKeyword));
+  });
   totalPage = Math.ceil(currentServiceList.length/PAGE_SIZE);
   renderCurrentPage();
 }
@@ -437,25 +455,45 @@ function renderServices(cate){
 function renderDates(){
   const w = document.getElementById('weekSlider');
   w.innerHTML = '';
-  const dateList = (GLOBAL_DATA.dateList || []).filter(d => d && typeof d === 'string');
-  if(!dateList.length){w.innerHTML='<div class="loading">暫無排班</div>';return;}
+  // 嚴格過濾：只保留有效字符串日期
+  const dateList = (GLOBAL_DATA.dateList || []).filter(d => {
+    return d && typeof d === 'string' && d.trim() !== '';
+  });
+  
+  if(!dateList.length){
+    w.innerHTML='<div class="loading">暫無排班</div>';
+    return;
+  }
   
   dateList.forEach((d,i)=>{
     const el = document.createElement('div');
-    el.className = `week-day ${i===0?'active':''}`;
+    // 移除默認active：不再給第一個日期加active類
+    el.className = `week-day`;
     
-    // ✅ 關鍵修復：確保 d 是字串才 split
+    // 加強防護：確保split前是有效字符串
     let month = "", day = "";
-    if (d && typeof d === 'string') {
+    if (d && typeof d === 'string' && d.includes('-')) {
       const arr = d.split('-');
       if (arr.length >=3) {
-        month = arr[1];
-        day = arr[2];
+        month = arr[1] || "";
+        day = arr[2] || "";
       }
     }
 
-    el.innerHTML = `<div>${month}/${day}</div><div>週${weekDays[new Date(d).getDay()] || '一'}</div>`;
+    // 防護Date構造函數入參
+    let weekDay = '一';
+    try {
+      const dateObj = new Date(d);
+      if (!isNaN(dateObj.getTime())) {
+        weekDay = weekDays[dateObj.getDay()] || '一';
+      }
+    } catch (e) {
+      weekDay = '一';
+    }
+
+    el.innerHTML = `<div>${month}/${day}</div><div>週${weekDay}</div>`;
     el.onclick = ()=>{
+      // 點擊時才添加active
       document.querySelectorAll('.week-day').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('selectedDate').value = d || "";
@@ -463,9 +501,9 @@ function renderDates(){
     };
     w.appendChild(el);
   });
-  const firstDate = dateList[0] || "";
-  document.getElementById('selectedDate').value = firstDate;
-  renderStaff(firstDate);
+  
+  // 移除默認選中日期：不再主動設置selectedDate和調用renderStaff
+  document.getElementById('selectedDate').value = "";
 }
 
 function renderStaff(date){
@@ -475,16 +513,26 @@ function renderStaff(date){
   document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
   document.getElementById('nextToInfo').disabled = true;
   
-  const list = (date && GLOBAL_DATA.staffData && GLOBAL_DATA.staffData[date]) || [];
-  if(!list.length){s.innerHTML='<div class="loading">當日無美容師</div>';return;}
+  // 嚴格防護：確保date有效且staffData存在
+  if(!date || typeof date !== 'string' || !GLOBAL_DATA.staffData || typeof GLOBAL_DATA.staffData !== 'object'){
+    s.innerHTML='<div class="loading">請選擇有效日期</div>';
+    return;
+  }
+  
+  const list = Array.isArray(GLOBAL_DATA.staffData[date]) ? GLOBAL_DATA.staffData[date] : [];
+  if(!list.length){
+    s.innerHTML='<div class="loading">當日無美容師</div>';
+    return;
+  }
   
   s.innerHTML = '';
   list.forEach(st=>{
+    if(!st) return; // 防護空數據
     const el = document.createElement('div');
     el.className='staff-item';
-    const name = st?.name || "";
-    const start = st?.start || "";
-    const end = st?.end || "";
+    const name = st.name || "";
+    const start = st.start || "";
+    const end = st.end || "";
     el.innerHTML = `<div class="staff-name">${name}</div><div>營業時間：${start}~${end}</div>`;
     el.onclick = ()=>{
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
@@ -502,31 +550,38 @@ function renderSlots(){
   const service = (document.getElementById('selectedService').value || "").trim();
   const g = document.getElementById('timeGrid');
 
-  if(!service){g.innerHTML='❌ 請選擇服務';return;}
-  if(!date||!staff){g.innerHTML='❌ 請選擇日期/美容師';return;}
+  if(!service){
+    g.innerHTML='❌ 請選擇服務';
+    return;
+  }
+  if(!date||!staff){
+    g.innerHTML='❌ 請選擇日期/美容師';
+    return;
+  }
 
   g.innerHTML = '🔍 載入可用時段中...';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
 
   gasRequest("getSlots", { date, staff, service }, res=>{
-    if(res.status==="success"){
-      const slots = res.slots||[];
+    if(res && res.status==="success"){
+      const slots = Array.isArray(res.slots) ? res.slots : [];
       g.innerHTML = slots.length===0?'✅ 當日已滿單':'';
       slots.forEach(t=>{
+        if(!t || typeof t !== 'string') return; // 防護空時段
         const b = document.createElement('div');
         b.className='time-btn';
-        b.textContent = t || "";
+        b.textContent = t;
         b.onclick = ()=>{
           document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
           b.classList.add('active');
-          document.getElementById('selectedTime').value = t || "";
+          document.getElementById('selectedTime').value = t;
           document.getElementById('nextToInfo').disabled = false;
         };
         g.appendChild(b);
       });
     }else{
-      showModal('error','載入失敗',res.message||'網路異常');
+      showModal('error','載入失敗',res?.message||'網路異常');
     }
   });
 }
@@ -534,10 +589,11 @@ function renderSlots(){
 function loadAllData(){
   gasRequest("getAllData",{},res=>{
     document.getElementById('loadingOverlay').style.display='none';
-    if(res.status==="success"){
-      GLOBAL_DATA.dateList = res.dateList||[];
-      GLOBAL_DATA.allServices = res.services||[];
-      GLOBAL_DATA.staffData = res.staffData||{};
+    if(res && res.status==="success"){
+      // 嚴格類型檢查：確保數據是正確類型
+      GLOBAL_DATA.dateList = Array.isArray(res.dateList) ? res.dateList : [];
+      GLOBAL_DATA.allServices = Array.isArray(res.services) ? res.services : [];
+      GLOBAL_DATA.staffData = typeof res.staffData === 'object' && res.staffData !== null ? res.staffData : {};
       renderServices('面部');
       renderDates();
     }else{
@@ -548,8 +604,8 @@ function loadAllData(){
 
 function submit(){
   const data = {
-    lineId: userId,
-    lineName: userName,
+    lineId: userId || "",
+    lineName: userName || "",
     date: document.getElementById('selectedDate').value || "",
     service: document.getElementById('selectedService').value || "",
     staff: document.getElementById('selectedStaff').value || "",
@@ -559,15 +615,18 @@ function submit(){
     birthday: (document.getElementById('birthday').value || "").trim(),
     extraInfo: (document.getElementById('extraInfo').value || "").trim()
   };
-  if(!data.name||!data.phone){showModal('error','填寫錯誤','請填寫姓名與電話');return;}
+  if(!data.name||!data.phone){
+    showModal('error','填寫錯誤','請填寫姓名與電話');
+    return;
+  }
   document.getElementById('submitBtn').disabled=true;
   gasRequest("submit",data,res=>{
     document.getElementById('submitBtn').disabled=false;
-    if(res.status==="success"){
+    if(res && res.status==="success"){
       showModal('success','預約成功','您的預約已提交！');
       setTimeout(()=>location.reload(),2000);
     }else{
-      showModal('error','預約失敗',res.message);
+      showModal('error','預約失敗',res?.message||'提交失敗');
     }
   });
 }
@@ -577,10 +636,12 @@ async function initLiff(){
     await liff.init({liffId:CONFIG.LIFF_ID});
     if(liff.isLoggedIn()){
       const p = await liff.getProfile();
-      userId = p.userId || "guest";
-      userName = p.displayName || "訪客";
+      userId = p?.userId || "guest";
+      userName = p?.displayName || "訪客";
     }
-  }catch(e){}
+  }catch(e){
+    console.error('LIFF初始化失敗:', e);
+  }
   finally{
     document.getElementById('lineId').value = userId;
     document.getElementById('lineName').value = userName;
@@ -591,11 +652,29 @@ document.addEventListener('DOMContentLoaded',async()=>{
   await initLiff();
   loadAllData();
   document.getElementById('modalBtn').onclick=closeModal;
+  
   const s = document.getElementById('serviceSearch');
   const c = document.getElementById('searchClear');
-  s.oninput = e=>{searchKeyword=e.target.value.trim();c.classList.toggle('show',searchKeyword!=='');renderServices(document.querySelector('.tab.active').dataset.cate);};
-  c.onclick = ()=>{s.value='';searchKeyword='';c.classList.remove('show');renderServices(document.querySelector('.tab.active').dataset.cate);};
-  document.querySelectorAll('.tab').forEach(t=>{t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');renderServices(t.dataset.cate);};});
+  s.oninput = e=>{
+    searchKeyword=e.target.value.trim();
+    c.classList.toggle('show',searchKeyword!=='');
+    renderServices(document.querySelector('.tab.active').dataset.cate);
+  };
+  c.onclick = ()=>{
+    s.value='';
+    searchKeyword='';
+    c.classList.remove('show');
+    renderServices(document.querySelector('.tab.active').dataset.cate);
+  };
+  
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      renderServices(t.dataset.cate);
+    };
+  });
+  
   document.getElementById('nextToDate').onclick=()=>goStep(2);
   document.getElementById('nextToInfo').onclick=()=>goStep(3);
   document.getElementById('submitBtn').onclick=submit;
