@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400,500,700,900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
     body{
       background:linear-gradient(135deg,#fdf2f8 0%,#fef7fb 50%,#fce8f3 100%);
@@ -217,8 +217,17 @@
       padding:12px 5px;border-radius:14px;
       background:#fafbfc;border:1px solid #333;
       text-align:center;font-weight:500;cursor:pointer;
+      transition: 0.3s;
     }
     .time-btn.active{background:#ff4d88;color:#fff;}
+    .time-btn.disabled{
+      background:#e9ecef;color:#ccc;
+      cursor:not-allowed;
+      border-color:#ddd;
+    }
+    .time-btn.disabled:hover{
+      background:#e9ecef;color:#ccc;
+    }
 
     .form-group{margin-bottom:20px}
     label{font-weight:600;color:#333;}
@@ -573,18 +582,40 @@ function renderSlots(){
   gasRequest("getSlots", { date, staff, service }, res=>{
     if(res && res.status==="success"){
       const slots = res.slots || [];
-      g.innerHTML = slots.length===0?'✅ 當日已滿單':'';
-      slots.forEach(t=>{
-        if(!t) return;
+      g.innerHTML = '';
+      
+      // 如果沒有任何時段
+      if(slots.length === 0){
+        g.innerHTML = '<div class="loading">✅ 當日已滿單</div>';
+        return;
+      }
+      
+      // 渲染所有時段（包含已預約的）
+      slots.forEach(item=>{
+        if(!item || !item.time) return;
         const b = document.createElement('div');
-        b.className='time-btn';
-        b.textContent = t;
-        b.onclick = ()=>{
-          document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
-          b.classList.add('active');
-          document.getElementById('selectedTime').value = t;
-          document.getElementById('nextToInfo').disabled = false;
-        };
+        // 根據可用狀態添加不同樣式
+        b.className = item.available ? 'time-btn' : 'time-btn disabled';
+        b.textContent = item.time;
+        
+        // 只有可用的時段才能點擊
+        if(item.available){
+          b.onclick = ()=>{
+            // 移除其他按鈕的active狀態
+            document.querySelectorAll('.time-btn').forEach(x=>{
+              if(!x.classList.contains('disabled')){
+                x.classList.remove('active');
+              }
+            });
+            b.classList.add('active');
+            document.getElementById('selectedTime').value = item.time;
+            document.getElementById('nextToInfo').disabled = false;
+          };
+        } else {
+          // 禁用的按鈕點擊無效
+          b.onclick = null;
+        }
+        
         g.appendChild(b);
       });
     }else{
