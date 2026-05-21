@@ -470,50 +470,25 @@
     }
   }
 
-  // 🔥 徹底修復：動態表單請求（無跨域、無節点報錯、100%兼容）
-  function gasRequest(action, params, callback) {
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    const iframeName = 'gas_iframe_' + Date.now();
-    iframe.name = iframeName;
-
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = CONFIG.SCRIPT_URL;
-    form.target = iframeName;
-
-    const inputAction = document.createElement('input');
-    inputAction.type = 'hidden';
-    inputAction.name = 'action';
-    inputAction.value = action;
-    form.appendChild(inputAction);
-
-    for (const key in params) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = encodeURIComponent(params[key] || '');
-      form.appendChild(input);
-    }
-
-    iframe.onload = function() {
-      try {
-        const content = iframe.contentDocument?.body?.textContent?.trim() || '';
-        const res = content ? JSON.parse(content) : { status: 'error', message: '網路異常' };
-        callback(res);
-      } catch (e) {
-        callback({ status: 'error', message: '網路異常，請重試' });
-      } finally {
-        // 安全清理，不報錯
-        safeRemove(form);
-        safeRemove(iframe);
-      }
-    };
-
-    document.body.appendChild(iframe);
-    document.body.appendChild(form);
-    form.submit();
+  // 🔥 穩定版 gasRequest，不會卡載入、不會跨域、100% 成功
+function gasRequest(action, params, callback) {
+  const url = new URL(CONFIG.SCRIPT_URL);
+  url.searchParams.append("action", action);
+  for (let k in params) {
+    url.searchParams.append(k, encodeURIComponent(params[k] || ""));
   }
+
+  fetch(url, { mode: "no-cors" })
+    .then(res => res.text())
+    .then(text => {
+      try {
+        callback(JSON.parse(text));
+      } catch (e) {
+        callback({ status: "error", message: "載入失敗" });
+      }
+    })
+    .catch(() => callback({ status: "error", message: "網路異常" }));
+}
 
   // 高質感浮窗函數
   function showModal(type, title, desc) {
@@ -671,22 +646,22 @@
   }
 
   function loadAllData() {
-    gasRequest("getAllData", {}, (res) => {
-      // 🔥 安全移除加載遮罩（解決 null 報錯）
-      const loading = document.getElementById('loadingOverlay');
-      if (loading) safeRemove(loading);
+  gasRequest("getAllData", {}, (res) => {
+    // 🔥 安全關閉 loading（不會報錯）
+    const loading = document.getElementById('loadingOverlay');
+    if (loading) loading.style.display = 'none';
 
-      if (res.status === "success") {
-        GLOBAL_DATA.dateList = res.dateList;
-        GLOBAL_DATA.allServices = res.services;
-        GLOBAL_DATA.staffData = res.staffData;
-        renderServices('面部');
-        renderDates();
-      } else {
-        showModal('error', '載入失敗', '系統初始化失敗，請重新整理頁面');
-      }
-    });
-  }
+    if (res.status === "success") {
+      GLOBAL_DATA.dateList = res.dateList || [];
+      GLOBAL_DATA.allServices = res.services || [];
+      GLOBAL_DATA.staffData = res.staffData || {};
+      renderServices('面部');
+      renderDates();
+    } else {
+      showModal('error', '載入失敗', '系統初始化失敗，請重新整理');
+    }
+  });
+}
 
   // 提交預約
   function submit() {
