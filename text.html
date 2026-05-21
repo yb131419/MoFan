@@ -220,14 +220,6 @@
       transition: 0.3s;
     }
     .time-btn.active{background:#ff4d88;color:#fff;}
-    .time-btn.disabled{
-      background:#e9ecef;color:#ccc;
-      cursor:not-allowed;
-      border-color:#ddd;
-    }
-    .time-btn.disabled:hover{
-      background:#e9ecef;color:#ccc;
-    }
 
     .form-group{margin-bottom:20px}
     label{font-weight:600;color:#333;}
@@ -560,6 +552,7 @@ function renderStaff(date){
   });
 }
 
+// ✅ 修复：只渲染后端返回的【可用时段】，无禁用/已预约时段显示
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
@@ -584,37 +577,24 @@ function renderSlots(){
       const slots = res.slots || [];
       g.innerHTML = '';
       
-      // 如果沒有任何時段
       if(slots.length === 0){
         g.innerHTML = '<div class="loading">✅ 當日已滿單</div>';
         return;
       }
       
-      // 渲染所有時段（包含已預約的）
+      // 只渲染可用时段
       slots.forEach(item=>{
         if(!item || !item.time) return;
         const b = document.createElement('div');
-        // 根據可用狀態添加不同樣式
-        b.className = item.available ? 'time-btn' : 'time-btn disabled';
+        b.className = 'time-btn';
         b.textContent = item.time;
         
-        // 只有可用的時段才能點擊
-        if(item.available){
-          b.onclick = ()=>{
-            // 移除其他按鈕的active狀態
-            document.querySelectorAll('.time-btn').forEach(x=>{
-              if(!x.classList.contains('disabled')){
-                x.classList.remove('active');
-              }
-            });
-            b.classList.add('active');
-            document.getElementById('selectedTime').value = item.time;
-            document.getElementById('nextToInfo').disabled = false;
-          };
-        } else {
-          // 禁用的按鈕點擊無效
-          b.onclick = null;
-        }
+        b.onclick = ()=>{
+          document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
+          document.getElementById('selectedTime').value = item.time;
+          document.getElementById('nextToInfo').disabled = false;
+        };
         
         g.appendChild(b);
       });
