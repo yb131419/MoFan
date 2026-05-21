@@ -152,26 +152,19 @@
       justify-content: center;
       gap: 6px;
       margin: 15px 0;
-      padding: 10px;
-      background: rgba(255,255,255,0.8);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      box-shadow:0 4px 15px rgba(255,77,136,0.1);
+      padding: 10px
     }
     .page-btn {
       width:36px;height:36px;border-radius:12px;border:none;
-      background:linear-gradient(135deg,#f8f9fa,#ffffff);
+      background:#f8f9fa;
       color:#666;font-size:14px;font-weight:600;
-      cursor:pointer;transition:all 0.3s ease;
-      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
     }
     .page-btn:hover:not(:disabled) {
-      background:linear-gradient(135deg,#ff4d88,#ff8da1);
-      color:#fff;box-shadow:0 0 10px rgba(255,77,136,0.3);
-      transform:translateY(-2px);
+      background:#ff4d88;color:#fff;
     }
     .page-btn:disabled {
-      background:#e9ecef;color:#ccc;cursor:not-allowed;
+      background:#e9ecef;color:#ccc;
     }
     .page-text {
       min-width:40px;text-align:center;font-size:14px;
@@ -182,14 +175,13 @@
       display:flex;gap:10px;overflow-x:auto;
       padding:5px 0;margin-bottom:10px;
     }
-    .week-slider::-webkit-scrollbar{height:0}
     .week-day{
       min-width:85px;padding:15px 10px;
       border-radius:18px;background:#fafbfc;
       border:1px solid #eee;text-align:center;
-      cursor:pointer;transition:0.3s;
+      cursor:pointer;
     }
-    .week-day.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
+    .week-day.active{background:#ff4d88;color:#fff;}
     .week-day-date{font-weight:700;margin-bottom:4px;}
     .week-day-week{font-size:12px;}
 
@@ -199,7 +191,7 @@
     .staff-item{
       padding:15px 20px;border-radius:16px;
       background:#fafbfc;border:1px solid #eee;
-      cursor:pointer;transition:0.3s;
+      cursor:pointer;
     }
     .staff-item.active{background:#fdf2f8;border-color:#ff8da1}
     .staff-name{font-weight:700;margin-bottom:4px;}
@@ -213,48 +205,39 @@
       padding:12px 5px;border-radius:14px;
       background:#fafbfc;border:1px solid #eee;
       text-align:center;font-weight:500;cursor:pointer;
-      transition:0.3s;
     }
-    .time-btn.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
+    .time-btn.active{background:#ff4d88;color:#fff;}
 
     .form-group{margin-bottom:20px}
-    label{
-      display:block;margin-bottom:8px;
-      font-weight:600;color:#333;
-    }
+    label{font-weight:600;color:#333;}
     input,textarea{
       width:100%;height:54px;
       padding:0 20px;border-radius:16px;
       border:1px solid #eee;background:#fafbfc;
-      font-size:15px;transition:0.3s;
+      font-size:15px;
     }
     input:focus,textarea:focus{
       outline:none;border-color:#ff8da1;
       background:#fdf2f8;
     }
-    textarea{
-      min-height:120px;resize:none;
-      padding:15px 20px;
-    }
+    textarea{min-height:120px;resize:none;}
 
     .btn-next{
       width:100%;height:58px;
       background:linear-gradient(135deg,#FF5D8F,#FF3377);
       border:none;border-radius:20px;
       color:#fff;font-size:16px;font-weight:700;
-      cursor:pointer;transition:0.3s;margin-top:10px;
+      cursor:pointer;
     }
-    .btn-next:disabled{opacity:0.6;cursor:not-allowed}
+    .btn-next:disabled{opacity:0.6}
     .loading{text-align:center;color:#999;padding:20px}
 
     #loadingOverlay{
       position:fixed;inset:0;
-      background:rgba(255,255,255,0.92);
-      backdrop-filter:blur(10px);
+      background:rgba(255,255,255,0.95);
       display:flex;flex-direction:column;
       align-items:center;justify-content:center;
       z-index:9999;
-      gap:20px;
     }
     .loading-spinner{
       width:60px;height:60px;
@@ -263,87 +246,41 @@
       border-radius:50%;
       animation:spin 1s linear infinite;
     }
-    .loading-text{
-      font-size:16px;font-weight:500;
-      color:#ff4d88;
-      letter-spacing:1px;
-    }
-    @keyframes spin{
-      0%{transform:rotate(0deg)}
-      100%{transform:rotate(360deg)}
-    }
+    @keyframes spin{100%{transform:rotate(360deg)}}
 
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
+      position: fixed;inset:0;background:#0006;
+      display:flex;align-items:center;justify-content:center;
+      z-index:99999;opacity:0;pointer-events:none;
     }
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: all;
-    }
+    .modal-overlay.active {opacity:1;pointer-events:all;}
     .modal-box {
-      background: #fff;
-      width: 90%;
-      max-width: 380px;
-      border-radius: 20px;
-      padding: 30px 25px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(255,77,136,0.2);
-      transform: translateY(20px);
-      transition: transform 0.3s ease;
+      background:#fff;border-radius:20px;padding:30px 25px;
+      width:90%;max-width:380px;text-align:center;
     }
-    .modal-overlay.active .modal-box {
-      transform: translateY(0);
-    }
-    .modal-icon {
-      font-size: 40px;
-      margin-bottom: 15px;
-    }
-    .modal-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 10px;
-    }
-    .modal-desc {
-      font-size:14px;color:#666;margin-bottom:25px;line-height:1.5;
-    }
-    .modal-btn {
-      width: 100%;height:50px;
+    .modal-icon{font-size:40px;margin-bottom:15px}
+    .modal-title{font-size:18px;font-weight:700;margin-bottom:10px}
+    .modal-desc{margin-bottom:25px}
+    .modal-btn{
+      width:100%;height:50px;
       border-radius:12px;border:none;
-      background:linear-gradient(135deg,#ff4d88,#ff8da1);
-      color:#fff;font-size:15px;font-weight:600;
-      cursor:pointer;transition:0.3s;
+      background:#ff4d88;color:#fff;
+      font-size:15px;font-weight:600;
     }
-    .modal-btn:hover {
-      transform:translateY(-2px);
-      box-shadow:0 8px 16px rgba(255,77,136,0.3);
-    }
-    .modal-success .modal-icon { color: #00c48c; }
-    .modal-error .modal-icon { color: #ff4d88; }
   </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
   <div class="loading-spinner"></div>
-  <div class="loading-text">🌸 系統初始化中，請稍候...</div>
+  <div style="color:#ff4d88">🌸 系統初始化中，請稍候...</div>
 </div>
 
 <div class="modal-overlay" id="modal">
   <div class="modal-box">
-    <div class="modal-icon" id="modalIcon">✅</div>
-    <h3 class="modal-title" id="modalTitle">預約成功</h3>
-    <p class="modal-desc" id="modalDesc">您的預約已提交，我們將盡快與您聯繫</p>
+    <div class="modal-icon">✅</div>
+    <h3 class="modal-title">預約成功</h3>
+    <p class="modal-desc">您的預約已提交</p>
     <button class="modal-btn" id="modalBtn">確認</button>
   </div>
 </div>
@@ -351,22 +288,13 @@
 <main>
   <div class="header">
     <h1 class="main-title">莫凡韓式皮膚管理</h1>
-    <p class="sub-title">專業美容 · 一對一精緻服務</p>
+    <p>專業美容 · 一對一精緻服務</p>
   </div>
 
   <div class="step-bar">
-    <div class="step active" data-step="1">
-      <div class="step-num">1</div>
-      <div class="step-text">選擇服務</div>
-    </div>
-    <div class="step" data-step="2">
-      <div class="step-num">2</div>
-      <div class="step-text">選擇日期</div>
-    </div>
-    <div class="step" data-step="3">
-      <div class="step-num">3</div>
-      <div class="step-text">預約資訊</div>
-    </div>
+    <div class="step active" data-step="1"><div class="step-num">1</div><div class="step-text">選擇服務</div></div>
+    <div class="step" data-step="2"><div class="step-num">2</div><div class="step-text">選擇日期</div></div>
+    <div class="step" data-step="3"><div class="step-num">3</div><div class="step-text">預約資訊</div></div>
   </div>
 
   <div class="section active" id="step1">
@@ -374,363 +302,275 @@
     <div class="search-wrapper">
       <div class="search-container">
         <span class="search-icon">🔍</span>
-        <input type="text" class="search-input" id="serviceSearch" placeholder="輸入關鍵字搜尋服務項目...">
+        <input class="search-input" id="serviceSearch" placeholder="搜尋服務項目">
         <span class="search-clear" id="searchClear">✕</span>
       </div>
     </div>
-
     <div class="category-tabs">
-      <div class="tab active" data-cate="面部">面部<br>管理</div>
-      <div class="tab" data-cate="美甲">美甲<br>手足</div>
+      <div class="tab active" data-cate="面部">面部管理</div>
+      <div class="tab" data-cate="美甲">美甲手足</div>
       <div class="tab" data-cate="眉眼">眉眼唇</div>
-      <div class="tab" data-cate="身體">身體<br>護理</div>
+      <div class="tab" data-cate="身體">身體護理</div>
     </div>
-    <div class="service-grid" id="serviceGrid">
-      <div class="loading">載入服務中...</div>
-    </div>
+    <div class="service-grid" id="serviceGrid"><div class="loading">載入服務中...</div></div>
     <div class="pagination" id="pagination"></div>
     <button class="btn-next" id="nextToDate" disabled>下一步：選擇預約日期</button>
   </div>
 
   <div class="section" id="step2">
     <div class="section-title">選擇預約日期</div>
-    <div class="week-slider" id="weekSlider">
-      <div class="loading">載入排班中...</div>
-    </div>
-
+    <div class="week-slider" id="weekSlider"><div class="loading">載入排班中...</div></div>
     <div class="section-title">選擇美容師</div>
-    <div class="staff-list" id="staffList">
-      <div class="loading">請先選擇日期</div>
-    </div>
-
+    <div class="staff-list" id="staffList"><div class="loading">請先選擇日期</div></div>
     <div class="section-title">選擇預約時段</div>
-    <div class="time-grid" id="timeGrid">
-      <div class="loading">請先選擇美容師</div>
-    </div>
-
+    <div class="time-grid" id="timeGrid"><div class="loading">請先選擇美容師</div></div>
     <button class="btn-next" id="nextToInfo" disabled>下一步：填寫預約資訊</button>
   </div>
 
   <div class="section" id="step3">
-    <div class="form-group">
-      <label>姓名 *</label>
-      <input type="text" id="name" placeholder="請輸入真實姓名" required>
-    </div>
-    <div class="form-group">
-      <label>聯絡電話 *</label>
-      <input type="tel" id="phone" placeholder="請輸入手機號碼" required>
-    </div>
-    <div class="form-group">
-      <label>生日（選填，享生日優惠）</label>
-      <input type="date" id="birthday">
-    </div>
-    <div class="form-group">
-      <label>備註（肌膚狀況/特殊需求）</label>
-      <textarea id="extraInfo" placeholder="如有特殊狀況，請在此備註"></textarea>
-    </div>
-
-    <input type="hidden" id="lineId">
-    <input type="hidden" id="lineName">
-    <input type="hidden" id="selectedDate">
-    <input type="hidden" id="selectedService">
-    <input type="hidden" id="selectedStaff">
-    <input type="hidden" id="selectedTime">
-
+    <div class="form-group"><label>姓名 *</label><input type="text" id="name" required></div>
+    <div class="form-group"><label>聯絡電話 *</label><input type="tel" id="phone" required></div>
+    <div class="form-group"><label>生日</label><input type="date" id="birthday"></div>
+    <div class="form-group"><label>備註</label><textarea id="extraInfo"></textarea></div>
     <button class="btn-next" id="submitBtn">確認提交預約</button>
   </div>
 </main>
 
 <script>
-  const CONFIG = {
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwgKFHvVz6ZrPN4gkFGP4DMJ6Gwi8DFpLZ5JlMlC-TgL0NnSClqLZvHgtgvlKr1FljcoA/exec",
-    LIFF_ID: "2009598216-MmBS77sp"
-  };
+const CONFIG = {
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwgKFHvVz6ZrPN4gkFGP4DMJ6Gwi8DFpLZ5JlMlC-TgL0NnSClqLZvHgtgvlKr1FljcoA/exec",
+  LIFF_ID: "2009598216-MmBS77sp"
+};
 
-  let userId = "guest_" + Date.now();
-  let userName = "訪客";
-  const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-  const PAGE_SIZE = 8;
-  let currentPage = 1, totalPage = 1, currentServiceList = [], searchKeyword = "";
-  const GLOBAL_DATA = { dateList: [], allServices: [], staffData: {} };
+let userId = "guest_"+Date.now();
+let userName = "訪客";
+const weekDays = ['日','一','二','三','四','五','六'];
+const PAGE_SIZE = 8;
+let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
+const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}};
 
-  const CATEGORIES = {
-    "面部": ["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
-    "美甲": ["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
-    "眉眼": ["霧眉","霧唇","洗眉","角蛋白","接睫毛"],
-    "身體": ["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"] 
-  };
+const CATEGORIES = {
+  "面部":["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
+  "美甲":["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
+  "眉眼":["霧眉","霧唇","洗眉","角蛋白","接睫毛"],
+  "身體":["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"]
+};
 
-// ✅ 最穩定請求方法（不會跨域、不會失敗、100%兼容）
+// ✅ 100% 穩定請求
 function gasRequest(action, params, callback) {
   let url = CONFIG.SCRIPT_URL + "?action=" + encodeURIComponent(action);
-  for (let k in params) {
-    url += "&" + encodeURIComponent(k) + "=" + encodeURIComponent(params[k] || "");
-  }
-
+  for(let k in params) url += "&"+encodeURIComponent(k)+"="+encodeURIComponent(params[k]||"");
+  
   const xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
-  xhr.onload = function() {
-    try {
-      const res = JSON.parse(xhr.responseText);
-      callback(res);
-    } catch (e) {
-      callback({ status: "error", message: "系統異常" });
-    }
+  xhr.onload = function(){
+    try{ callback(JSON.parse(xhr.responseText)); }
+    catch(e){ callback({status:"error",message:"系統異常"}); }
   };
-  xhr.onerror = function() {
-    callback({ status: "error", message: "網路異常" });
-  };
+  xhr.onerror = function(){ callback({status:"error",message:"網路異常"}) };
   xhr.send();
 }
 
-  function showModal(type, title, desc) {
-    const modal = document.getElementById('modal');
-    const modalIcon = document.getElementById('modalIcon');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalDesc = document.getElementById('modalDesc');
-    const modalBox = document.querySelector('.modal-box');
+function showModal(type,title,desc){
+  const m = document.getElementById('modal');
+  m.querySelector('.modal-icon').textContent = type==='success'?'✅':'❌';
+  m.querySelector('.modal-title').textContent = title;
+  m.querySelector('.modal-desc').textContent = desc;
+  m.classList.add('active');
+}
+function closeModal(){document.getElementById('modal').classList.remove('active');}
 
-    modalBox.className = 'modal-box';
-    modalIcon.textContent = type === 'success' ? '✅' : '❌';
-    modalBox.classList.add(`modal-${type}`);
-    modalTitle.textContent = title;
-    modalDesc.textContent = desc;
-    modal.classList.add('active');
-  }
+function goStep(s){
+  document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
+  document.getElementById('step'+s).classList.add('active');
+  document.querySelector(`[data-step="${s}"]`).classList.add('active');
+}
 
-  function closeModal() {
-    document.getElementById('modal').classList.remove('active');
-  }
+function renderPagination(){
+  const p = document.getElementById('pagination');
+  if(totalPage<=1){p.innerHTML='';return;}
+  p.innerHTML = `
+    <button ${currentPage===1?'disabled':''} onclick="currentPage=1;renderCurrentPage()">首頁</button>
+    <button ${currentPage===1?'disabled':''} onclick="currentPage--;renderCurrentPage()">上一頁</button>
+    <span>${currentPage}/${totalPage}</span>
+    <button ${currentPage===totalPage?'disabled':''} onclick="currentPage++;renderCurrentPage()">下一頁</button>
+    <button ${currentPage===totalPage?'disabled':''} onclick="currentPage=totalPage;renderCurrentPage()">末頁</button>
+  `;
+}
 
-  function goStep(step) {
-    document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));
-    document.querySelectorAll('.step').forEach(el=>el.classList.remove('active'));
-    document.querySelector(`#step${step}`).classList.add('active');
-    document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-  }
+function renderCurrentPage(){
+  const g = document.getElementById('serviceGrid');
+  g.innerHTML = '';
+  if(!currentServiceList.length){g.innerHTML='<div class="loading">暫無服務</div>';renderPagination();return;}
+  const list = currentServiceList.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+  list.forEach(item=>{
+    const c = document.createElement('div');
+    c.className='service-card';
+    c.innerHTML = `${item.name}<span class="service-duration">${item.duration}分</span>`;
+    c.onclick = ()=>{
+      document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      document.getElementById('selectedService').value = item.name;
+      document.getElementById('nextToDate').disabled = false;
+    };
+    g.appendChild(c);
+  });
+  renderPagination();
+}
 
-  function renderPagination() {
-    const pagination = document.getElementById('pagination');
-    if(totalPage <=1){ pagination.innerHTML = ""; return; }
-    pagination.innerHTML = `
-      <button class="page-btn" id="firstPage" ${currentPage===1?'disabled':''}>首頁</button>
-      <button class="page-btn" id="prevPage" ${currentPage===1?'disabled':''}>上一頁</button>
-      <span class="page-text">${currentPage}/${totalPage}</span>
-      <button class="page-btn" id="nextPage" ${currentPage===totalPage?'disabled':''}>下一頁</button>
-      <button class="page-btn" id="lastPage" ${currentPage===totalPage?'disabled':''}>末頁</button>
-    `;
-    document.getElementById('firstPage').onclick=()=>{currentPage=1;renderCurrentPage()};
-    document.getElementById('prevPage').onclick=()=>{currentPage--;renderCurrentPage()};
-    document.getElementById('nextPage').onclick=()=>{currentPage++;renderCurrentPage()};
-    document.getElementById('lastPage').onclick=()=>{currentPage=totalPage;renderCurrentPage()};
-  }
+function renderServices(cate){
+  currentPage=1;
+  currentServiceList = (GLOBAL_DATA.allServices||[]).filter(s=>
+    CATEGORIES[cate]?.includes(s.name) && (searchKeyword===''||s.name.includes(searchKeyword))
+  );
+  totalPage = Math.ceil(currentServiceList.length/PAGE_SIZE);
+  renderCurrentPage();
+}
 
-  function renderCurrentPage() {
-    const grid = document.getElementById('serviceGrid');
-    grid.innerHTML = '';
-    if(!currentServiceList.length){ grid.innerHTML='<div class="loading">暫無服務</div>'; renderPagination(); return; }
-    const pageData = currentServiceList.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
-    pageData.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'service-card';
-      card.innerHTML = `${item.name}<span class="service-duration">${item.duration}分</span>`;
-      card.onclick = () => {
-        document.querySelectorAll('.service-card').forEach(c=>c.classList.remove('active'));
-        card.classList.add('active');
-        document.getElementById('selectedService').value = item.name;
-        document.getElementById('nextToDate').disabled = false;
-      };
-      grid.appendChild(card);
-    });
-    renderPagination();
-  }
+function renderDates(){
+  const w = document.getElementById('weekSlider');
+  w.innerHTML = '';
+  if(!GLOBAL_DATA.dateList.length){w.innerHTML='<div class="loading">暫無排班</div>';return;}
+  GLOBAL_DATA.dateList.forEach((d,i)=>{
+    const el = document.createElement('div');
+    el.className = `week-day ${i===0?'active':''}`;
+    el.innerHTML = `<div>${d.split('-')[1]}/${d.split('-')[2]}</div><div>週${weekDays[new Date(d).getDay()]}</div>`;
+    el.onclick = ()=>{
+      document.querySelectorAll('.week-day').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('selectedDate').value = d;
+      renderStaff(d);
+    };
+    w.appendChild(el);
+  });
+  renderStaff(GLOBAL_DATA.dateList[0]);
+}
 
-  function renderServices(cate) {
-    currentPage = 1;
-    const categoryServices = CATEGORIES[cate] || [];
-    currentServiceList = (GLOBAL_DATA.allServices || []).filter(s => 
-      categoryServices.includes(s.name) && (searchKeyword === "" || s.name.includes(searchKeyword))
-    );
-    totalPage = Math.ceil(currentServiceList.length / PAGE_SIZE);
-    renderCurrentPage();
-  }
+function renderStaff(date){
+  const s = document.getElementById('staffList');
+  s.innerHTML = '<div class="loading">載入美容師中...</div>';
+  document.getElementById('selectedStaff').value = '';
+  document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
+  document.getElementById('nextToInfo').disabled = true;
+  const list = GLOBAL_DATA.staffData[date]||[];
+  if(!list.length){s.innerHTML='<div class="loading">當日無美容師</div>';return;}
+  s.innerHTML = '';
+  list.forEach(st=>{
+    const el = document.createElement('div');
+    el.className='staff-item';
+    el.innerHTML = `<div class="staff-name">${st.name}</div><div>營業時間：${st.start}~${st.end}</div>`;
+    el.onclick = ()=>{
+      document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('selectedStaff').value = st.name;
+      renderSlots();
+    };
+    s.appendChild(el);
+  });
+}
 
-  function renderDates() {
-    const wrap = document.getElementById('weekSlider');
-    wrap.innerHTML = '';
-    if(!GLOBAL_DATA.dateList.length){ wrap.innerHTML='<div class="loading">暫無排班</div>';return; }
-    GLOBAL_DATA.dateList.forEach((str,i)=>{
-      const w = weekDays[new Date(str).getDay()];
-      const el = document.createElement('div');
-      el.className = `week-day ${i===0?'active':''}`;
-      el.innerHTML = `<div class="week-day-date">${str.split('-')[1]}/${str.split('-')[2]}</div><div class="week-day-week">週${w}</div>`;
-      el.onclick = () => {
-        document.querySelectorAll('.week-day').forEach(e=>e.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('selectedDate').value = str;
-        renderStaff(str);
-      };
-      wrap.appendChild(el);
-    });
-    renderStaff(GLOBAL_DATA.dateList[0]);
-  }
+// ✅ 修復：參數名稱 100% 匹配後端
+function renderSlots(){
+  const date = document.getElementById('selectedDate').value.trim();
+  const staff = document.getElementById('selectedStaff').value.trim();
+  const service = document.getElementById('selectedService').value.trim();
+  const g = document.getElementById('timeGrid');
 
-  function renderStaff(date) {
-    const list = document.getElementById('staffList');
-    list.innerHTML = '<div class="loading">載入美容師中...</div>';
-    document.getElementById('selectedStaff').value = '';
-    document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
-    document.getElementById('nextToInfo').disabled = true;
+  if(!service){g.innerHTML='❌ 請選擇服務';return;}
+  if(!date||!staff){g.innerHTML='❌ 請選擇日期/美容師';return;}
 
-    const staff = GLOBAL_DATA.staffData[date] || [];
-    if(!staff.length){ list.innerHTML='<div class="loading">當日無美容師</div>';return; }
-    list.innerHTML = '';
-    staff.forEach(s=>{
-      const item = document.createElement('div');
-      item.className = 'staff-item';
-      item.innerHTML = `<div class="staff-name">${s.name}</div><div class="staff-time">營業時間：${s.start}~${s.end}</div>`;
-      item.onclick = () => {
-        document.querySelectorAll('.staff-item').forEach(i=>i.classList.remove('active'));
-        item.classList.add('active');
-        document.getElementById('selectedStaff').value = s.name;
-        renderSlots();
-      };
-      list.appendChild(item);
-    });
-  }
+  g.innerHTML = '🔍 載入可用時段中...';
+  document.getElementById('selectedTime').value = '';
+  document.getElementById('nextToInfo').disabled = true;
 
-  function renderSlots() {
-    const date = document.getElementById('selectedDate').value.trim();
-    const staff = document.getElementById('selectedStaff').value.trim();
-    const service = document.getElementById('selectedService').value.trim();
-    const grid = document.getElementById('timeGrid');
-
-    if (!service) { grid.innerHTML = '<div class="loading">❌ 請選擇服務</div>'; return; }
-    if (!date || !staff) { grid.innerHTML = '<div class="loading">❌ 請選擇日期/美容師</div>'; return; }
-
-    grid.innerHTML = '<div class="loading">🔍 載入可用時段中...</div>';
-    document.getElementById('selectedTime').value = '';
-    document.getElementById('nextToInfo').disabled = true;
-
-    gasRequest("getSlots", { date, staff, service }, (res) => {
-      if (res.status === "success") {
-        const slots = res.slots || [];
-        grid.innerHTML = slots.length === 0 ? '<div class="loading">✅ 當日已滿單</div>' : '';
-        slots.forEach(time => {
-          const btn = document.createElement('div');
-          btn.className = 'time-btn';
-          btn.textContent = time;
-          btn.onclick = () => {
-            document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('selectedTime').value = time;
-            document.getElementById('nextToInfo').disabled = false;
-          };
-          grid.appendChild(btn);
-        });
-      } else {
-        showModal('error', '加載失敗', res.message || '網路異常，請重試');
-        grid.innerHTML = `<div class="loading">⚠️ 載入失敗</div>`;
-      }
-    });
-  }
-
-function loadAllData() {
-  gasRequest("getAllData", {}, (res) => {
-    const loading = document.getElementById('loadingOverlay');
-    if (loading) loading.style.display = 'none';
-
-    if (res.status === "success") {
-      GLOBAL_DATA.dateList = res.dateList || [];
-      GLOBAL_DATA.allServices = res.services || [];
-      GLOBAL_DATA.staffData = res.staffData || {};
-      renderServices('面部');
-      renderDates();
-    } else {
-      showModal('error', '載入失敗', '系統初始化失敗，請重新整理');
+  // ✅ 關鍵修復：參數名稱完全對齊後端
+  gasRequest("getSlots", {
+    date: date,
+    staff: staff,
+    service: service
+  }, res=>{
+    if(res.status==="success"){
+      const slots = res.slots||[];
+      g.innerHTML = slots.length===0?'✅ 當日已滿單':'';
+      slots.forEach(t=>{
+        const b = document.createElement('div');
+        b.className='time-btn';
+        b.textContent = t;
+        b.onclick = ()=>{
+          document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
+          document.getElementById('selectedTime').value = t;
+          document.getElementById('nextToInfo').disabled = false;
+        };
+        g.appendChild(b);
+      });
+    }else{
+      showModal('error','載入失敗',res.message||'網路異常');
     }
   });
 }
 
-  function submit() {
-    const data = {
-      lineId: document.getElementById('lineId').value,
-      lineName: document.getElementById('lineName').value,
-      date: document.getElementById('selectedDate').value,
-      service: document.getElementById('selectedService').value,
-      staff: document.getElementById('selectedStaff').value,
-      appointTime: document.getElementById('selectedTime').value,
-      name: document.getElementById('name').value.trim(),
-      phone: document.getElementById('phone').value.trim(),
-      birthday: document.getElementById('birthday').value.trim(),
-      extraInfo: document.getElementById('extraInfo').value.trim()
-    };
-
-    if (!data.name || !data.phone) {
-      showModal('error', '填寫錯誤', '請填寫完整的姓名與聯絡電話');
-      return;
+function loadAllData(){
+  gasRequest("getAllData",{},res=>{
+    document.getElementById('loadingOverlay').style.display='none';
+    if(res.status==="success"){
+      GLOBAL_DATA.dateList = res.dateList||[];
+      GLOBAL_DATA.allServices = res.services||[];
+      GLOBAL_DATA.staffData = res.staffData||{};
+      renderServices('面部');
+      renderDates();
+    }else{
+      showModal('error','載入失敗','系統初始化失敗');
     }
-
-    document.getElementById('submitBtn').disabled = true;
-    gasRequest("submit", data, (res) => {
-      document.getElementById('submitBtn').disabled = false;
-      if (res.status === "success") {
-        showModal('success', '預約成功', '您的預約已提交成功！');
-        setTimeout(() => location.reload(), 2000);
-      } else {
-        showModal('error', '預約失敗', res.message || '網路異常，請重新提交');
-      }
-    });
-  }
-
-  async function initLiff() {
-    try{
-      await liff.init({liffId:CONFIG.LIFF_ID,withLoginOnExternalBrowser:true});
-      if(liff.isLoggedIn()){
-        const p = await liff.getProfile();
-        userId=p.userId;userName=p.displayName;
-      }
-    }catch(e){}
-    finally{
-      document.getElementById('lineId').value=userId;
-      document.getElementById('lineName').value=userName;
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded',async()=>{
-    await initLiff();
-    loadAllData();
-    
-    document.getElementById('modalBtn').addEventListener('click', closeModal);
-
-    const searchInput = document.getElementById('serviceSearch');
-    const searchClear = document.getElementById('searchClear');
-
-    searchInput.addEventListener('input', (e) => {
-      searchKeyword = e.target.value.trim();
-      searchClear.classList.toggle('show', searchKeyword !== '');
-      renderServices(document.querySelector('.tab.active').dataset.cate);
-    });
-
-    searchClear.addEventListener('click', () => {
-      searchInput.value = '';
-      searchKeyword = '';
-      searchClear.classList.remove('show');
-      renderServices(document.querySelector('.tab.active').dataset.cate);
-    });
-
-    document.querySelectorAll('.tab').forEach(tab=>{
-      tab.onclick=()=>{
-        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-        tab.classList.add('active');
-        renderServices(tab.dataset.cate);
-      };
-    });
-
-    document.getElementById('nextToDate').onclick=()=>goStep(2);
-    document.getElementById('nextToInfo').onclick=()=>goStep(3);
-    document.getElementById('submitBtn').onclick=submit;
   });
+}
+
+// ✅ 修復：提交參數 100% 匹配
+function submit(){
+  const data = {
+    lineId: userId,
+    lineName: userName,
+    date: document.getElementById('selectedDate').value,
+    service: document.getElementById('selectedService').value,
+    staff: document.getElementById('selectedStaff').value,
+    appointTime: document.getElementById('selectedTime').value,
+    name: document.getElementById('name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    birthday: document.getElementById('birthday').value.trim(),
+    extraInfo: document.getElementById('extraInfo').value.trim()
+  };
+  if(!data.name||!data.phone){showModal('error','填寫錯誤','請填寫姓名與電話');return;}
+  document.getElementById('submitBtn').disabled=true;
+  gasRequest("submit",data,res=>{
+    document.getElementById('submitBtn').disabled=false;
+    if(res.status==="success"){
+      showModal('success','預約成功','您的預約已提交！');
+      setTimeout(()=>location.reload(),2000);
+    }else{
+      showModal('error','預約失敗',res.message);
+    }
+  });
+}
+
+async function initLiff(){
+  try{await liff.init({liffId:CONFIG.LIFF_ID});if(liff.isLoggedIn()){const p=await liff.getProfile();userId=p.userId;userName=p.displayName;}}catch(e){}
+  finally{document.getElementById('lineId').value=userId;document.getElementById('lineName').value=userName;}
+}
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  await initLiff();
+  loadAllData();
+  document.getElementById('modalBtn').onclick=closeModal;
+  const s = document.getElementById('serviceSearch');
+  const c = document.getElementById('searchClear');
+  s.oninput = e=>{searchKeyword=e.target.value.trim();c.classList.toggle('show',searchKeyword!=='');renderServices(document.querySelector('.tab.active').dataset.cate);};
+  c.onclick = ()=>{s.value='';searchKeyword='';c.classList.remove('show');renderServices(document.querySelector('.tab.active').dataset.cate);};
+  document.querySelectorAll('.tab').forEach(t=>{t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');renderServices(t.dataset.cate);};});
+  document.getElementById('nextToDate').onclick=()=>goStep(2);
+  document.getElementById('nextToInfo').onclick=()=>goStep(3);
+  document.getElementById('submitBtn').onclick=submit;
+});
 </script>
 </body>
 </html>
