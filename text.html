@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400,500,700,900&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
     body{
       background:linear-gradient(135deg,#fdf2f8 0%,#fef7fb 50%,#fce8f3 100%);
@@ -47,7 +47,7 @@
     .step{
       display:flex;flex-direction:column;align-items:center;
       position:relative;z-index:2;width:33%;
-      cursor: pointer; /* 步骤可点击 */
+      cursor: pointer;
       transition: 0.3s;
     }
     .step-num{
@@ -189,6 +189,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      white-space: nowrap;
     }
     .loading-icon{
       width: 16px;
@@ -217,7 +218,7 @@
     .btn-next:disabled{opacity:0.6;cursor:not-allowed;}
     .btn-next.loading {background:#ccc;pointer-events:none;}
 
-    #loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}
+    #loadingOverlay{position:fixed;inset:0;background:rgba(255,255,25,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}
     .loading-spinner{width:60px;height:60px;border:5px solid #fce8f3;border-top:5px solid #ff4d88;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px;}
 
     .modal-overlay {position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;pointer-events:none;transition:opacity 0.3s ease;}
@@ -264,7 +265,7 @@
     <div class="search-wrapper">
       <div class="search-container">
         <span class="search-icon">🔍</span>
-        <input class="search-input" id="serviceSearch" placeholder="搜尋服務項目">
+        <input class="search-input" id="serviceSearch" placeholder="搜尋全部服務項目">
         <span class="search-clear" id="searchClear">✕</span>
       </div>
     </div>
@@ -281,7 +282,7 @@
 
   <div class="section" id="step2">
     <div class="section-title">選擇預約日期</div>
-    <!-- 🔥 百万级质感日期分页：日期正上方 -->
+    <!-- 百万级质感日期分页：日期正上方 -->
     <div class="pagination" id="datePagination"></div>
     <!-- 日期显示区域：固定5天网格 + 居中 -->
     <div class="week-slider" id="weekSlider"><div class="loading"><div class="loading-icon"></div>載入排班中...</div></div>
@@ -289,6 +290,7 @@
     <div class="section-title">選擇美容師</div>
     <div class="staff-list" id="staffList"><div class="loading"><div class="loading-icon"></div>請先選擇日期</div></div>
     <div class="section-title">選擇預約時段</div>
+    <!-- 修正：提示文字单行显示 -->
     <div class="time-grid" id="timeGrid"><div class="loading"><div class="loading-icon"></div>請先選擇美容師</div></div>
     <button class="btn-next" id="nextToInfo" disabled>下一步：填寫預約資訊</button>
   </div>
@@ -510,11 +512,12 @@ function renderCurrentPage(){
   renderPagination();
 }
 
-function renderServices(cate){
+// 修正：搜索全品項，無需分類過濾
+function renderServices(){
   currentPage=1;
   const allServices = GLOBAL_DATA.allServices || [];
-  const cateList = CATEGORIES[cate] || [];
-  currentServiceList = allServices.filter(s=> s?.name && cateList.includes(s.name) && (searchKeyword==='' || s.name.includes(searchKeyword)));
+  // 全局搜索所有服务，取消分类限制
+  currentServiceList = allServices.filter(s=> s?.name && (searchKeyword==='' || s.name.includes(searchKeyword)));
   totalPage = Math.ceil(currentServiceList.length/PAGE_SIZE);
   renderCurrentPage();
 }
@@ -614,24 +617,25 @@ function renderStaff(date){
   });
 }
 
-// 刷新可用时段 + 高质感加载动画
+// 刷新可用时段 + 高质感加载动画（单行显示）
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
   const service = document.getElementById('selectedService').value.trim();
   const g = document.getElementById('timeGrid');
 
-  if(!service){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>❌ 請先選擇服務項目</div>'; return; }
-  if(!date || !staff){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>❌ 請先選擇日期和美容師</div>'; return; }
+  if(!service){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇服務項目</div>'; return; }
+  if(!date || !staff){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇日期和美容師</div>'; return; }
 
-  g.innerHTML = '<div class="loading"><div class="loading-icon"></div>🔍 載入可用時段中...</div>';
+  // 修正：加载文字单行显示
+  g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
 
   gasRequest("getSlots", { date, staff, service }, function handleSlotResponse(res){
     if(res?.status !== "success"){
       showModal('error','載入失敗',res?.message||'網路異常，無法載入時段');
-      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>❌ 載入時段失敗，請重新選擇</div>';
+      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入時段失敗，請重新選擇</div>';
       return;
     }
 
@@ -639,7 +643,7 @@ function renderSlots(){
     g.innerHTML = '';
 
     if(slots.length === 0){
-      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>😥 該美容師當日已無可用時段</div>';
+      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>該美容師當日已無可用時段</div>';
       return;
     }
 
@@ -668,7 +672,7 @@ function loadAllData(){
       GLOBAL_DATA.dateList = res.dateList || [];
       GLOBAL_DATA.allServices = res.services || [];
       GLOBAL_DATA.staffData = res.staffData || {};
-      renderServices('面部');
+      renderServices();
       renderDates();
     }else{
       showModal('error','初始化失敗',res?.message||'系統初始化失敗，請刷新頁面重試');
@@ -774,20 +778,20 @@ document.addEventListener('DOMContentLoaded',async function handleDOMContentLoad
   searchInput.addEventListener('input', function handleSearchInput(e){
     searchKeyword = e.target.value.trim();
     searchClear.classList.toggle('show', searchKeyword!=='');
-    renderServices(document.querySelector('.tab.active').dataset.cate);
+    renderServices();
   });
   searchClear.addEventListener('click', function handleSearchClear(){
     searchInput.value = '';
     searchKeyword = '';
     searchClear.classList.remove('show');
-    renderServices(document.querySelector('.tab.active').dataset.cate);
+    renderServices();
   });
   
+  // 分类标签保留切换效果，但搜索为全局
   document.querySelectorAll('.tab').forEach(function handleTabClick(tab){
     tab.addEventListener('click',function(){
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       tab.classList.add('active');
-      renderServices(tab.dataset.cate);
     });
   });
   
