@@ -358,7 +358,7 @@ let allDateList = [];
 
 let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
 let currentCategory = "面部";
-const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}};
+const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}, staffServices:{} }; // 新增 staffServices
 
 // 前后端统一服务分类（完全匹配后端SERVICE_LIST）
 const CATEGORIES = {
@@ -526,11 +526,22 @@ function renderCurrentPage(){
   renderPagination();
 }
 
-// 分类+搜索筛选服务
+// 分类+搜索筛选服务（新增：只显示当前美容师的服务）
 function renderServices(){
   currentPage=1;
   const allServices = GLOBAL_DATA.allServices || [];
-  let filtered = allServices.filter(item => CATEGORIES[currentCategory].includes(item.name));
+  const selectedStaff = document.getElementById('selectedStaff').value.trim();
+  
+  let filtered = [];
+  // 逻辑：如果选了美容师 → 只显示该美容师的服务；没选 → 显示全部分类服务
+  if(selectedStaff && GLOBAL_DATA.staffServices[selectedStaff]){
+    filtered = GLOBAL_DATA.staffServices[selectedStaff].filter(item => 
+      CATEGORIES[currentCategory].includes(item.name)
+    );
+  } else {
+    filtered = allServices.filter(item => CATEGORIES[currentCategory].includes(item.name));
+  }
+
   filtered = filtered.filter(s=> s?.name && (searchKeyword==='' || s.name.includes(searchKeyword)));
   
   currentServiceList = filtered;
@@ -597,20 +608,37 @@ function renderDates(){
   renderDatePagination();
 }
 
-// 渲染美容师
+// 渲染美容师（新增：只显示能提供当前服务的美容师）
 function renderStaff(date){
   const s = document.getElementById('staffList');
+  const selectedService = document.getElementById('selectedService').value.trim();
+  
   s.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入美容師中...</div>';
   document.getElementById('selectedStaff').value = '';
   document.getElementById('timeGrid').innerHTML = '<div class="loading"><div class="loading-icon"></div>請先選擇美容師</div>';
   document.getElementById('nextToInfo').disabled = true;
   
   if(!date || !GLOBAL_DATA.staffData){ s.innerHTML='<div class="loading"><div class="loading-icon"></div>請選擇有效日期</div>'; return; }
-  const list = GLOBAL_DATA.staffData[date] || [];
-  if(!list.length){ s.innerHTML='<div class="loading"><div class="loading-icon"></div>當日無美容師值班</div>'; return; }
+  
+  // 原始当班美容师列表
+  let staffList = GLOBAL_DATA.staffData[date] || [];
+  if(!staffList.length){ s.innerHTML='<div class="loading"><div class="loading-icon"></div>當日無美容師值班</div>'; return; }
+
+  // 核心过滤：只保留能提供当前选中服务的美容师
+  if(selectedService){
+    staffList = staffList.filter(staff => {
+      const staffServices = GLOBAL_DATA.staffServices[staff.name] || [];
+      return staffServices.some(item => item.name === selectedService);
+    });
+  }
+
+  if(!staffList.length){ 
+    s.innerHTML='<div class="loading"><div class="loading-icon"></div>當日無美容師可提供此服務</div>'; 
+    return; 
+  }
   
   s.innerHTML = '';
-  list.forEach(st=>{
+  staffList.forEach(st=>{
     if(!st) return;
     const el = document.createElement('div');
     el.className='staff-item';
@@ -625,6 +653,8 @@ function renderStaff(date){
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('selectedStaff').value = st.name;
+      // 切换美容师后，自动刷新服务列表
+      renderServices();
       renderSlots();
     };
     s.appendChild(el);
@@ -686,6 +716,7 @@ function loadAllData(){
       GLOBAL_DATA.dateList = res.dateList || [];
       GLOBAL_DATA.allServices = res.services || [];
       GLOBAL_DATA.staffData = res.staffData || {};
+      GLOBAL_DATA.staffServices = res.staffServices || {}; // 新增：接收美容师专属服务
       renderServices();
       renderDates();
     }else{
@@ -812,7 +843,11 @@ document.addEventListener('DOMContentLoaded',async function handleDOMContentLoad
     });
   });
   
-  document.getElementById('nextToDate').addEventListener('click',()=>goStep(2));
+document.getElementById('nextToDate').addEventListener('click',()=>{
+  // 切换步骤时，刷新美容师列表（过滤能做当前服务的）
+  renderStaff(document.getElementById('selectedDate').value);
+  goStep(2);
+});
   document.getElementById('nextToInfo').addEventListener('click',()=>goStep(3));
   document.getElementById('submitBtn').addEventListener('click',submit);
   
