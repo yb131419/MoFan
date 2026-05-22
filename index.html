@@ -99,8 +99,9 @@
   margin-bottom:15px;
   justify-content:center;
   align-items:center;
-  flex-wrap:wrap; /* 允许自动换行 */
-  overflow-x:visible; /* 关闭横向滚动 */
+  flex-wrap:wrap;
+  overflow-x:visible;
+  row-gap: 10px;
 }
     .category-tabs::-webkit-scrollbar{height:0}
     .tab{padding:8px 14px;border-radius:20px;background:#f8f9fa;border:1px solid #333;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:0.3s;text-align:center;line-height:1.2;}
@@ -297,7 +298,6 @@
       <div class="tab active" data-cate="面部">面部<br>管理</div>
       <div class="tab" data-cate="美甲">美甲<br>手足</div>
       <div class="tab" data-cate="眉眼">眉眼唇</div>
-      <br>
       <div class="tab" data-cate="除毛">睫毛<br>除毛</div>
       <div class="tab" data-cate="頭皮">頭皮<br>保養</div>
     </div>
