@@ -176,18 +176,19 @@
     .week-day-date{font-weight:700;margin-bottom:2px;font-size:14px;}
     .week-day-week{font-size:11px;}
 
-    .staff-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #fff;
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(255,77,136,0.2);
-      border: 2px solid #fff;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
+.staff-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  /* 原代码：background: #fff; → 会覆盖图片，修改为下方代码 */
+  background-color: #fff; 
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255,77,136,0.2);
+  border: 2px solid #fff;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
     .staff-list{display:flex;flex-direction:column;gap:10px;}
     .staff-item{
       padding:15px 20px;
