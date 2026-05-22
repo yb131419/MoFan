@@ -109,7 +109,26 @@
     .tab.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
 
     .service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:320px;overflow-y:auto;padding-right:5px;min-height:280px;}
-    .service-card{padding:12px 10px;border-radius:16px;background:#fafbfc;border:1px solid #333;text-align:center;font-size:13px;font-weight:500;cursor:pointer;transition:0.3s;min-height:80px;display:flex;flex-direction:column;justify-content:center;}
+.service-card{
+  padding:12px 10px;
+  border-radius:16px;
+  background:#fafbfc;
+  border:1px solid #333;
+  text-align:center;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:0.3s;
+  /* 修复：移除固定居中，改为自适应排列 */
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  /* 修复：允许文字自动换行，保证完整显示 */
+  word-break:break-word;
+  line-height:1.4;
+  min-height:80px;
+}
     .service-card:hover{border-color:#ff8da1;background:#fdf2f8}
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
