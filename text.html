@@ -194,7 +194,7 @@
       cursor:pointer;
     }
     .week-day.active{background:#ff4d88;color:#fff;}
-    .week-day-date{font-weight:700;margin-bottom:4px;}
+    .week-day-date{font-weight:700;margin-bottom:4px;font-size:16px;}
     .week-day-week{font-size:12px;}
 
     .staff-list{
@@ -206,35 +206,39 @@
       cursor:pointer;
     }
     .staff-item.active{background:#fdf2f8;border-color:#ff8da1}
-    .staff-name{font-weight:700;margin-bottom:4px;}
+    .staff-name{font-weight:700;margin-bottom:4px;font-size:16px;}
     .staff-time{font-size:12px;color:#666;}
 
     .time-grid{
       display:grid;grid-template-columns:1fr 1fr 1fr;
-      gap:8px;max-height:280px;overflow-y:auto;
+      gap:8px;max-height:320px;overflow-y:auto;
+      padding-right:5px;
     }
     .time-btn{
-      padding:12px 5px;border-radius:14px;
+      padding:15px 5px;border-radius:14px;
       background:#fafbfc;border:1px solid #333;
       text-align:center;font-weight:500;cursor:pointer;
       transition: 0.3s;
+      font-size:14px;
     }
     .time-btn.active{background:#ff4d88;color:#fff;}
+    .time-btn:hover:not(.active){border-color:#ff8da1;background:#fdf2f8;}
 
     .form-group{margin-bottom:20px}
-    label{font-weight:600;color:#333;}
+    label{font-weight:600;color:#333;display:block;margin-bottom:8px;}
     input,textarea{
       width:100%;height:54px;
       padding:0 20px;border-radius:16px;
       border:1px solid #333;
       background:#fafbfc;
       font-size:15px;
+      font-family:'Noto Sans TC',sans-serif;
     }
     input:focus,textarea:focus{
       outline:none;border-color:#ff8da1;
       background:#fdf2f8;
     }
-    textarea{min-height:120px;resize:none;}
+    textarea{min-height:120px;resize:none;padding:15px 20px;}
 
     .btn-next{
       width:100%;height:58px;
@@ -243,9 +247,11 @@
       border-radius:20px;
       color:#fff;font-size:16px;font-weight:700;
       cursor:pointer;
+      font-family:'Noto Sans TC',sans-serif;
+      margin-top:10px;
     }
-    .btn-next:disabled{opacity:0.6}
-    .loading{text-align:center;color:#999;padding:20px}
+    .btn-next:disabled{opacity:0.6;cursor:not-allowed;}
+    .loading{text-align:center;color:#999;padding:20px;font-size:14px;}
 
     #loadingOverlay{
       position:fixed;inset:0;
@@ -260,43 +266,51 @@
       border-top:5px solid #ff4d88;
       border-radius:50%;
       animation:spin 1s linear infinite;
+      margin-bottom:15px;
     }
     @keyframes spin{100%{transform:rotate(360deg)}}
 
     .modal-overlay {
-      position: fixed;inset:0;background:#0006;
+      position: fixed;inset:0;background:rgba(0,0,0,0.6);
       display:flex;align-items:center;justify-content:center;
       z-index:99999;opacity:0;pointer-events:none;
+      transition:opacity 0.3s ease;
     }
     .modal-overlay.active {opacity:1;pointer-events:all;}
     .modal-box {
       background:#fff;border-radius:20px;padding:30px 25px;
       width:90%;max-width:380px;text-align:center;
       border: 1px solid #333;
+      transform:scale(0.9);
+      transition:transform 0.3s ease;
     }
-    .modal-icon{font-size:40px;margin-bottom:15px}
-    .modal-title{font-size:18px;font-weight:700;margin-bottom:10px}
-    .modal-desc{margin-bottom:25px}
+    .modal-overlay.active .modal-box{transform:scale(1);}
+    .modal-icon{font-size:40px;margin-bottom:15px;color:#ff4d88;}
+    .modal-title{font-size:18px;font-weight:700;margin-bottom:10px;color:#333;}
+    .modal-desc{margin-bottom:25px;color:#666;font-size:14px;}
     .modal-btn{
       width:100%;height:50px;
       border-radius:12px;border:1px solid #333;
       background:#ff4d88;color:#fff;
       font-size:15px;font-weight:600;
+      cursor:pointer;
+      font-family:'Noto Sans TC',sans-serif;
     }
+    .modal-btn:hover{background:#ff3377;}
   </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
   <div class="loading-spinner"></div>
-  <div style="color:#ff4d88">🌸 系統初始化中，請稍候...</div>
+  <div style="color:#ff4d88;font-size:16px;font-weight:500;">🌸 系統初始化中，請稍候...</div>
 </div>
 
 <div class="modal-overlay" id="modal">
   <div class="modal-box">
     <div class="modal-icon">✅</div>
     <h3 class="modal-title">預約成功</h3>
-    <p class="modal-desc">您的預約已提交</p>
+    <p class="modal-desc">您的預約已提交，我們會盡快與您確認</p>
     <button class="modal-btn" id="modalBtn">確認</button>
   </div>
 </div>
@@ -304,7 +318,7 @@
 <main>
   <div class="header">
     <h1 class="main-title">莫凡韓式皮膚管理</h1>
-    <p>專業美容 · 一對一精緻服務</p>
+    <p class="sub-title">專業美容 · 一對一精緻服務</p>
   </div>
 
   <div class="step-bar">
@@ -344,10 +358,10 @@
   </div>
 
   <div class="section" id="step3">
-    <div class="form-group"><label>姓名 *</label><input type="text" id="name" required></div>
-    <div class="form-group"><label>聯絡電話 *</label><input type="tel" id="phone" required></div>
+    <div class="form-group"><label>姓名 *</label><input type="text" id="name" required placeholder="請輸入您的姓名"></div>
+    <div class="form-group"><label>聯絡電話 *</label><input type="tel" id="phone" required placeholder="請輸入您的聯絡電話"></div>
     <div class="form-group"><label>生日</label><input type="date" id="birthday"></div>
-    <div class="form-group"><label>備註</label><textarea id="extraInfo"></textarea></div>
+    <div class="form-group"><label>備註</label><textarea id="extraInfo" placeholder="請輸入其他需要說明的事項（選填）"></textarea></div>
     <button class="btn-next" id="submitBtn">確認提交預約</button>
   </div>
 
@@ -379,7 +393,7 @@ const CATEGORIES = {
   "身體":["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"]
 };
 
-// 獲取台北時區今日日期 (yyyy-MM-dd) ✅ 修正：過濾過去日期
+// 獲取台北時區今日日期 (yyyy-MM-dd)
 function getTodayTaipei() {
   const now = new Date();
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -418,23 +432,44 @@ function gasRequest(action, params, callback) {
 
 function showModal(type,title,desc){
   const m = document.getElementById('modal');
-  m.querySelector('.modal-icon').textContent = type==='success'?'✅':'❌';
-  m.querySelector('.modal-title').textContent = title;
-  m.querySelector('.modal-desc').textContent = desc;
+  const iconEl = m.querySelector('.modal-icon');
+  const titleEl = m.querySelector('.modal-title');
+  const descEl = m.querySelector('.modal-desc');
+  
+  iconEl.textContent = type==='success'?'✅':'❌';
+  iconEl.style.color = type==='success'?'#ff4d88':'#e74c3c';
+  titleEl.textContent = title;
+  descEl.textContent = desc;
+  
   m.classList.add('active');
 }
-function closeModal(){document.getElementById('modal').classList.remove('active');}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('active');
+}
 
 function goStep(s){
-  document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
+  // 隱藏所有步驟
+  document.querySelectorAll('.section').forEach(e=>{
+    e.classList.remove('active');
+  });
+  // 取消所有步驟激活狀態
+  document.querySelectorAll('.step').forEach(e=>{
+    e.classList.remove('active');
+  });
+  // 激活當前步驟
   document.getElementById('step'+s).classList.add('active');
-  document.querySelector(`[data-step="${s}"]`).classList.add('active');
+  document.querySelector(`.step[data-step="${s}"]`).classList.add('active');
+  // 滾動到頂部
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function renderPagination(){
   const p = document.getElementById('pagination');
-  if(totalPage<=1){p.innerHTML='';return;}
+  if(totalPage<=1){
+    p.innerHTML='';
+    return;
+  }
   p.innerHTML = `
     <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage=1;renderCurrentPage()">首頁</button>
     <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage--;renderCurrentPage()">上一頁</button>
@@ -447,25 +482,35 @@ function renderPagination(){
 function renderCurrentPage(){
   const g = document.getElementById('serviceGrid');
   g.innerHTML = '';
+  
   if(!currentServiceList || currentServiceList.length === 0){
-    g.innerHTML='<div class="loading">暫無服務</div>';
+    g.innerHTML='<div class="loading">暫無符合條件的服務</div>';
     renderPagination();
     return;
   }
-  const list = currentServiceList.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+  
+  const startIdx = (currentPage-1)*PAGE_SIZE;
+  const endIdx = Math.min(startIdx + PAGE_SIZE, currentServiceList.length);
+  const list = currentServiceList.slice(startIdx, endIdx);
+  
   list.forEach(item=>{
     if(!item || !item.name) return;
     const c = document.createElement('div');
     c.className='service-card';
     c.innerHTML = `${item.name}<span class="service-duration">${item.duration || 0}分</span>`;
     c.onclick = ()=>{
+      // 取消所有服務卡片的激活狀態
       document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));
+      // 激活當前卡片
       c.classList.add('active');
+      // 保存選中服務
       document.getElementById('selectedService').value = item.name || "";
+      // 啟用下一步按鈕
       document.getElementById('nextToDate').disabled = false;
     };
     g.appendChild(c);
   });
+  
   renderPagination();
 }
 
@@ -473,31 +518,38 @@ function renderServices(cate){
   currentPage=1;
   const allServices = Array.isArray(GLOBAL_DATA.allServices) ? GLOBAL_DATA.allServices : [];
   const cateList = CATEGORIES[cate] || [];
+  
+  // 過濾對應分類且包含搜索關鍵字的服務
   currentServiceList = allServices.filter(s=>{
     if(!s || !s.name) return false;
-    return cateList.includes(s.name) && (searchKeyword===''||s.name.includes(searchKeyword));
+    const matchCate = cateList.includes(s.name);
+    const matchSearch = searchKeyword==='' || s.name.includes(searchKeyword);
+    return matchCate && matchSearch;
   });
+  
   totalPage = Math.ceil(currentServiceList.length/PAGE_SIZE);
   renderCurrentPage();
 }
 
-// ✅ 修正：僅渲染今日及未來日期，隱藏過期日期
+// 渲染日期欄（僅顯示今日及未來日期）
 function renderDates(){
   const w = document.getElementById('weekSlider');
   w.innerHTML = '';
+  
   const today = getTodayTaipei();
+  // 過濾有效日期（非空、今日及未來）
   const dateList = (GLOBAL_DATA.dateList || [])
     .filter(d => d && typeof d === 'string' && d.trim() !== '')
     .filter(d => d >= today);
   
   if(!dateList.length){
-    w.innerHTML='<div class="loading">暫無排班</div>';
+    w.innerHTML='<div class="loading">暫無可預約的日期</div>';
     return;
   }
   
   dateList.forEach((d,i)=>{
     const el = document.createElement('div');
-    el.className = `week-day`;
+    el.className = `week-day ${i===0 ? 'active' : ''}`; // 默認選中第一個日期
     
     let month = "", day = "";
     if (d && d.includes('-')) {
@@ -514,22 +566,36 @@ function renderDates(){
       }
     } catch (e) {}
 
-    el.innerHTML = `<div>${month}/${day}</div><div>週${weekDay}</div>`;
+    // 修正：添加對應樣式類，匹配設計圖格式
+    el.innerHTML = `
+      <div class="week-day-date">${month}/${day}</div>
+      <div class="week-day-week">週${weekDay}</div>
+    `;
+    
     el.onclick = ()=>{
       document.querySelectorAll('.week-day').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('selectedDate').value = d || "";
+      // 自動渲染該日期的美容師
       renderStaff(d);
     };
+    
     w.appendChild(el);
   });
   
-  document.getElementById('selectedDate').value = "";
+  // 默認選中第一個日期
+  if(dateList.length > 0){
+    document.getElementById('selectedDate').value = dateList[0];
+    renderStaff(dateList[0]);
+  }
 }
 
+// 渲染美容師列表
 function renderStaff(date){
   const s = document.getElementById('staffList');
   s.innerHTML = '<div class="loading">載入美容師中...</div>';
+  
+  // 重置狀態
   document.getElementById('selectedStaff').value = '';
   document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
   document.getElementById('nextToInfo').disabled = true;
@@ -541,30 +607,45 @@ function renderStaff(date){
   
   const list = Array.isArray(GLOBAL_DATA.staffData[date]) ? GLOBAL_DATA.staffData[date] : [];
   if(!list.length){
-    s.innerHTML='<div class="loading">當日無美容師</div>';
+    s.innerHTML='<div class="loading">當日無美容師值班</div>';
     return;
   }
   
   s.innerHTML = '';
-  list.forEach(st=>{
+  list.forEach((st, idx)=>{
     if(!st) return;
     const el = document.createElement('div');
-    el.className='staff-item';
+    el.className=`staff-item ${idx===0 ? 'active' : ''}`; // 默認選中第一個美容師
+    
     const name = st.name || "";
     const start = st.start || "";
     const end = st.end || "";
-    el.innerHTML = `<div class="staff-name">${name}</div><div>營業時間：${start}~${end}</div>`;
+    
+    // 修正：添加staff-time樣式類
+    el.innerHTML = `
+      <div class="staff-name">${name}</div>
+      <div class="staff-time">營業時間：${start}~${end}</div>
+    `;
+    
     el.onclick = ()=>{
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('selectedStaff').value = name;
+      // 自動渲染該美容師的可用時段
       renderSlots();
     };
+    
     s.appendChild(el);
   });
+  
+  // 默認選中第一個美容師
+  if(list.length > 0){
+    document.getElementById('selectedStaff').value = list[0].name;
+    renderSlots();
+  }
 }
 
-// ✅ 修正：僅渲染後端返回的可用時段（內建30分鐘緩衝）
+// 渲染可用時段（基於後端返回的緩衝後數據）
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
@@ -572,15 +653,15 @@ function renderSlots(){
   const g = document.getElementById('timeGrid');
 
   if(!service){
-    g.innerHTML='❌ 請選擇服務';
+    g.innerHTML='<div class="loading">❌ 請先選擇服務項目</div>';
     return;
   }
   if(!date||!staff){
-    g.innerHTML='❌ 請選擇日期/美容師';
+    g.innerHTML='<div class="loading">❌ 請先選擇日期和美容師</div>';
     return;
   }
 
-  g.innerHTML = '🔍 載入可用時段中...';
+  g.innerHTML = '<div class="loading">🔍 載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
 
@@ -590,14 +671,14 @@ function renderSlots(){
       g.innerHTML = '';
       
       if(slots.length === 0){
-        g.innerHTML = '<div class="loading">✅ 當日已滿單</div>';
+        g.innerHTML = '<div class="loading">😥 該美容師當日已無可用時段</div>';
         return;
       }
       
-      slots.forEach(item=>{
+      slots.forEach((item, idx)=>{
         if(!item || !item.time) return;
         const b = document.createElement('div');
-        b.className = 'time-btn';
+        b.className = `time-btn ${idx===0 ? 'active' : ''}`; // 默認選中第一個時段
         b.textContent = item.time;
         
         b.onclick = ()=>{
@@ -609,27 +690,40 @@ function renderSlots(){
         
         g.appendChild(b);
       });
+      
+      // 默認選中第一個時段
+      if(slots.length > 0){
+        document.getElementById('selectedTime').value = slots[0].time;
+        document.getElementById('nextToInfo').disabled = false;
+      }
     }else{
-      showModal('error','載入失敗',res?.message||'網路異常');
+      showModal('error','載入失敗',res?.message||'網路異常，無法載入時段');
+      g.innerHTML = '<div class="loading">❌ 載入時段失敗，請重新選擇</div>';
     }
   });
 }
 
+// 加載所有基礎數據
 function loadAllData(){
   gasRequest("getAllData",{},res=>{
+    // 隱藏加載遮罩
     document.getElementById('loadingOverlay').style.display='none';
+    
     if(res && res.status==="success"){
       GLOBAL_DATA.dateList = res.dateList || [];
       GLOBAL_DATA.allServices = res.services || [];
       GLOBAL_DATA.staffData = res.staffData || {};
+      
+      // 渲染服務和日期
       renderServices('面部');
       renderDates();
     }else{
-      showModal('error','載入失敗',res?.message||'系統初始化失敗');
+      showModal('error','初始化失敗',res?.message||'系統初始化失敗，請刷新頁面重試');
     }
   });
 }
 
+// 提交預約表單
 function submit(){
   const data = {
     lineId: userId,
@@ -643,22 +737,40 @@ function submit(){
     birthday: document.getElementById('birthday').value.trim(),
     extraInfo: document.getElementById('extraInfo').value.trim()
   };
-  if(!data.name||!data.phone){
-    showModal('error','填寫錯誤','請填寫姓名與電話');
+  
+  // 表單驗證
+  if(!data.name){
+    showModal('error','填寫錯誤','請輸入您的姓名');
     return;
   }
-  document.getElementById('submitBtn').disabled=true;
+  if(!data.phone || !/^[\d\-\+\(\) ]{8,}$/.test(data.phone)){
+    showModal('error','填寫錯誤','請輸入有效的聯絡電話');
+    return;
+  }
+  
+  // 禁用提交按鈕
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '提交中...';
+  
   gasRequest("submit",data,res=>{
-    document.getElementById('submitBtn').disabled=false;
+    // 恢復按鈕狀態
+    submitBtn.disabled = false;
+    submitBtn.textContent = '確認提交預約';
+    
     if(res && res.status==="success"){
-      showModal('success','預約成功','您的預約已提交！');
-      setTimeout(()=>location.reload(),2000);
+      showModal('success','預約成功','您的預約已提交，我們會盡快與您確認！');
+      // 2秒後刷新頁面
+      setTimeout(()=>{
+        window.location.reload();
+      },2000);
     }else{
-      showModal('error','預約失敗',res?.message||'提交失敗');
+      showModal('error','預約失敗',res?.message||'提交失敗，請稍後重試');
     }
   });
 }
 
+// 初始化LIFF
 async function initLiff(){
   try{
     await liff.init({liffId:CONFIG.LIFF_ID});
@@ -669,43 +781,60 @@ async function initLiff(){
     }
   }catch(e){
     console.error('LIFF初始化失敗:', e);
-  }
-  finally{
+  }finally{
+    // 保存LINE用戶信息
     document.getElementById('lineId').value = userId;
     document.getElementById('lineName').value = userName;
+    // LIFF初始化完成後加載數據
+    loadAllData();
   }
 }
 
+// 頁面加載完成後初始化
 document.addEventListener('DOMContentLoaded',async()=>{
-  await initLiff();
-  loadAllData();
-  document.getElementById('modalBtn').onclick=closeModal;
+  // 初始化Modal關閉按鈕
+  document.getElementById('modalBtn').onclick = closeModal;
   
-  const s = document.getElementById('serviceSearch');
-  const c = document.getElementById('searchClear');
-  s.oninput = e=>{
-    searchKeyword=e.target.value.trim();
-    c.classList.toggle('show',searchKeyword!=='');
-    renderServices(document.querySelector('.tab.active').dataset.cate);
-  };
-  c.onclick = ()=>{
-    s.value='';
-    searchKeyword='';
-    c.classList.remove('show');
-    renderServices(document.querySelector('.tab.active').dataset.cate);
-  };
+  // 服務搜索框事件
+  const searchInput = document.getElementById('serviceSearch');
+  const searchClear = document.getElementById('searchClear');
   
-  document.querySelectorAll('.tab').forEach(t=>{
-    t.onclick=()=>{
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      t.classList.add('active');
-      renderServices(t.dataset.cate);
-    };
+  searchInput.addEventListener('input', e=>{
+    searchKeyword = e.target.value.trim();
+    // 顯示/隱藏清空按鈕
+    searchClear.classList.toggle('show', searchKeyword!=='');
+    // 重新渲染服務列表
+    const activeCate = document.querySelector('.tab.active').dataset.cate;
+    renderServices(activeCate);
   });
   
-  document.getElementById('nextToDate').onclick=()=>goStep(2);
-  document.getElementById('nextToInfo').onclick=()=>goStep(3);
-  document.getElementById('submitBtn').onclick=submit;
+  searchClear.addEventListener('click', ()=>{
+    searchInput.value = '';
+    searchKeyword = '';
+    searchClear.classList.remove('show');
+    // 重新渲染服務列表
+    const activeCate = document.querySelector('.tab.active').dataset.cate;
+    renderServices(activeCate);
+  });
+  
+  // 服務分類標籤點擊事件
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      tab.classList.add('active');
+      renderServices(tab.dataset.cate);
+    });
+  });
+  
+  // 步驟切換按鈕事件
+  document.getElementById('nextToDate').addEventListener('click',()=>goStep(2));
+  document.getElementById('nextToInfo').addEventListener('click',()=>goStep(3));
+  
+  // 提交按鈕事件
+  document.getElementById('submitBtn').addEventListener('click',submit);
+  
+  // 初始化LIFF（會自動觸發數據加載）
+  await initLiff();
 });
 </script>
 </body>
