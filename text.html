@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>莫凡韓式皮膚管理 | 線上預約</title>
   <link rel="icon" href="data:,">
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" async defer></script> 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400,500,700,900&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
@@ -982,35 +982,38 @@ function waitForLiff(timeout = 10000) {
   });
 }
 
-// 修复后的最终版 LIFF 初始化
-async function initLiff(){
-  let liffLoaded = false;
-  try{
-    // 等待SDK加载（最长10秒）
-    liffLoaded = await waitForLiff();
-    
-    // 只有SDK加载成功，才执行LINE登录
-    if(liffLoaded) {
-      await liff.init({liffId:CONFIG.LIFF_ID});
-      
-      if(!liff.isLoggedIn()){
+// 🔥 最终修复：LIFF永不报错，纯静默降级
+async function initLiff() {
+  try {
+    // 等待SDK加载（最长5秒，超时直接放弃）
+    const liffReady = await new Promise(resolve => {
+      let time = 0;
+      const check = () => {
+        if (window.liff) resolve(true);
+        else if (time++ > 50) resolve(false);
+        else setTimeout(check, 100);
+      };
+      check();
+    });
+
+    // 只有在LINE内、SDK加载成功才登录
+    if (liffReady && liff.isInClient()) {
+      await liff.init({ liffId: CONFIG.LIFF_ID });
+      if (!liff.isLoggedIn()) {
         liff.login();
         return;
       }
-
       const profile = await liff.getProfile();
       userId = profile.userId;
       userName = profile.displayName;
-
       document.getElementById('lineId').value = userId;
       document.getElementById('lineName').value = userName;
     }
-  }catch(e){
-    console.error('LIFF初始化失敗:', e);
-    // 不弹窗阻断用户，仅提示
-    console.warn('將以訪客模式使用預約系統');
-  }finally{
-    // 无论LIFF是否成功，系统都正常加载
+  } catch (e) {
+    // 静默失败，完全不报错
+    console.log("非LINE环境，使用游客模式");
+  } finally {
+    // 无论如何都加载系统
     loadAllData();
   }
 }
