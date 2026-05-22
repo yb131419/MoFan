@@ -100,8 +100,9 @@
   margin-bottom:15px;
   justify-content:center;
   align-items:center;
-  flex-wrap:wrap; /* 允许自动换行 */
-  overflow-x:visible; /* 关闭横向滚动 */
+  flex-wrap:wrap;
+  overflow-x:visible;
+  row-gap: 10px;
 }
     .category-tabs::-webkit-scrollbar{height:0}
     .tab{padding:8px 14px;border-radius:20px;background:#f8f9fa;border:1px solid #333;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:0.3s;text-align:center;line-height:1.2;}
@@ -373,8 +374,8 @@ const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}, staffServices:{}
 const CATEGORIES = {
   "面部":["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
   "美甲":["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
-  "眉眼":["霧眉","霧唇","洗眉","角蛋白"],
-  "除毛":["無痛粉嫩乳暈術","除私密毛","腋下私毛","接睫毛"],
+  "眉眼":["霧眉","霧唇","洗眉"],
+  "除毛":["無痛粉嫩乳暈術","除私密毛","腋下私毛","接睫毛","角蛋白"],
   "頭皮":["外泌體育髮"]
 };
 
@@ -431,18 +432,23 @@ function formatPhoneNumber(phone) {
   return numbers;
 }
 
+// ====================== 【僅修正：時區日期計算函數】 ======================
 function getTaipeiDateString(date) {
-  const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' };
-  return new Date(date).toLocaleDateString('zh-CN', options).replace(/\//g, '-');
+  const d = new Date(date);
+  const year = d.toLocaleString('en-US', { timeZone: 'Asia/Taipei', year: 'numeric' });
+  const month = d.toLocaleString('en-US', { timeZone: 'Asia/Taipei', month: '2-digit' });
+  const day = d.toLocaleString('en-US', { timeZone: 'Asia/Taipei', day: '2-digit' });
+  return `${year}-${month}-${day}`;
 }
 function getTodayTaipei() {
   return getTaipeiDateString(new Date());
 }
-
-// 獲取當下台北標準時間（時區校準）
 function getCurrentTaipeiTime() {
-  return new Date(new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
+  const now = new Date();
+  const taipeiTimeStr = now.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+  return new Date(taipeiTimeStr);
 }
+// ========================================================================
 
 // 【修正核心】時段驗證：當天只顯示未過期的時段，非當天只驗證營業時間
 function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration, selectedDate) {
