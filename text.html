@@ -379,6 +379,14 @@ const CATEGORIES = {
   "身體":["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"]
 };
 
+// 獲取台北時區今日日期 (yyyy-MM-dd) ✅ 修正：過濾過去日期
+function getTodayTaipei() {
+  const now = new Date();
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const taipeiTime = new Date(utc + (8*3600000));
+  return taipeiTime.toISOString().split('T')[0];
+}
+
 function gasRequest(action, params, callback) {
   const safeParams = params || {};
   let url = CONFIG.SCRIPT_URL + "?action=" + encodeURIComponent(action);
@@ -473,10 +481,14 @@ function renderServices(cate){
   renderCurrentPage();
 }
 
+// ✅ 修正：僅渲染今日及未來日期，隱藏過期日期
 function renderDates(){
   const w = document.getElementById('weekSlider');
   w.innerHTML = '';
-  const dateList = (GLOBAL_DATA.dateList || []).filter(d => d && typeof d === 'string' && d.trim() !== '');
+  const today = getTodayTaipei();
+  const dateList = (GLOBAL_DATA.dateList || [])
+    .filter(d => d && typeof d === 'string' && d.trim() !== '')
+    .filter(d => d >= today);
   
   if(!dateList.length){
     w.innerHTML='<div class="loading">暫無排班</div>';
@@ -552,7 +564,7 @@ function renderStaff(date){
   });
 }
 
-// ✅ 修复：只渲染后端返回的【可用时段】，无禁用/已预约时段显示
+// ✅ 修正：僅渲染後端返回的可用時段（內建30分鐘緩衝）
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
@@ -582,7 +594,6 @@ function renderSlots(){
         return;
       }
       
-      // 只渲染可用时段
       slots.forEach(item=>{
         if(!item || !item.time) return;
         const b = document.createElement('div');
