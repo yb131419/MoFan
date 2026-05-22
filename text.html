@@ -94,7 +94,8 @@
     .search-clear:hover {background:#ff4d88;color:#fff;}
 
 .category-tabs{
-  display:flex;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
   gap:8px;
   padding:10px 0;
   margin-bottom:15px;
@@ -432,67 +433,56 @@ function formatPhoneNumber(phone) {
   return numbers;
 }
 
-// ====================== 【修復：精準台北時區計算（無誤差）】 ======================
+// ====================== 【修復：精準台北時區計算（無瀏覽器誤差）】 ======================
 function getTaipeiDateString(date) {
-  const d = new Date(date);
-  // 直接用ISO格式+时区校正，避免toLocaleString误差
-  const taipeiTime = new Date(d.getTime() + (8 * 60 * 60 * 1000));
-  const year = taipeiTime.getFullYear();
-  const month = String(taipeiTime.getMonth() + 1).padStart(2, '0');
-  const day = String(taipeiTime.getDate()).padStart(2, '0');
+  const formatter = new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(new Date(date));
+  const year = parts.find(p => p.type === 'year').value;
+  const month = parts.find(p => p.type === 'month').value;
+  const day = parts.find(p => p.type === 'day').value;
   return `${year}-${month}-${day}`;
 }
 function getTodayTaipei() {
   return getTaipeiDateString(new Date());
 }
 function getCurrentTaipeiTime() {
-  // 精準獲取當前台北時間（無瀏覽器誤差）
-  return new Date(new Date().getTime() + (8 * 60 * 60 * 1000));
+  const now = new Date();
+  const taipeiTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+  return taipeiTime;
 }
 // ========================================================================
 
-// 【修復核心：時段驗證（放寬規則 + 無誤差 + 除錯日誌）】
+// 【修復核心：時段驗證】徹底解決時間對比錯誤，保留所有規則
 function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration, selectedDate) {
   try {
-    // 空值直接返回false，避免报错
-    if (!slotTime || !workStart || !workEnd || !serviceDuration) {
-      console.log("驗證失敗：缺少參數", {slotTime, workStart, workEnd, serviceDuration});
-      return false;
-    }
+    if (!slotTime || !workStart || !workEnd || !serviceDuration) return false;
 
     const today = getTodayTaipei();
     const nowTaipei = getCurrentTaipeiTime();
-    // 構建標準時間對象
+    
     const slotDateTime = new Date(`${selectedDate}T${slotTime}:00+08:00`);
     const startWork = new Date(`${selectedDate}T${workStart}:00+08:00`);
     const endWork = new Date(`${selectedDate}T${workEnd}:00+08:00`);
-    // 服務結束時間（關鍵：避免超過營業時間）
     const serviceEndTime = new Date(slotDateTime.getTime() + serviceDuration * 60000);
 
-    // 1. 服務全程必須在營業時間內
-    const inHours = slotDateTime >= startWork && serviceEndTime <= endWork;
-    // 2. 當天時段必須晚於當前時間，非當天直接通過
+    // 1. 服務全程在營業時間內
+    const inBusinessHours = slotDateTime >= startWork && serviceEndTime <= endWork;
+    // 2. 當天時段晚於當前時間，非當天直接生效
     const notExpired = selectedDate !== today || slotDateTime > nowTaipei;
 
-    // 除錯日誌（打開瀏覽器控制台可看）
-    console.log("時段驗證結果：", {
-      時段: slotTime,
-      營業時間: `${workStart}-${workEnd}`,
-      服務時長: serviceDuration,
-      選擇日期: selectedDate,
-      是否在營業時間: inHours,
-      是否未過期: notExpired,
-      最終結果: inHours && notExpired
-    });
-
-    return inHours && notExpired;
+    return inBusinessHours && notExpired;
   } catch (e) {
     console.error("時段驗證錯誤:", e);
     return false;
   }
 }
 
-// 【修正核心】日期驗證：只顯示今天及以後的日期，徹底隱藏過期日期
+// 【修復：日期過濾】隱藏過期日期，只顯示可預約日期
 function getValidDatesByService(serviceName) {
   const today = getTodayTaipei();
   let validDates = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
@@ -778,48 +768,47 @@ function renderSlots(){
   document.getElementById('nextToInfo').disabled = true;
 
   gasRequest("getSlots", { 
-  date: date, 
-  staff: staffName, 
-  service: serviceName 
-}, function handleSlotResponse(res){
-  if(!res || res?.status !== "success"){
-    const msg = res?.message || '網路異常，無法載入時段';
-    showModal('error','載入失敗', msg);
-    g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入時段失敗，請重新選擇</div>';
-    return;
-  }
+    date: date, 
+    staff: staffName, 
+    service: serviceName 
+  }, function handleSlotResponse(res){
+    if(!res || res?.status !== "success"){
+      const msg = res?.message || '網路異常，無法載入時段';
+      showModal('error','載入失敗', msg);
+      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入時段失敗，請重新選擇</div>';
+      return;
+    }
 
-  let slots = res.slots || [];
-  // 除錯：看後端返回了多少時段
-  console.log("後端返回時段：", slots);
-  g.innerHTML = '';
+    let slots = res.slots || [];
+    g.innerHTML = '';
 
-  // 僅過期/營業時間外的時段，不過濾其他
-  slots = slots.filter(item => {
-    return item?.time && isTimeSlotValid(item.time, workStart, workEnd, serviceDuration, date);
+    // 修復後的時段過濾
+    slots = slots.filter(item => {
+      return item?.time && isTimeSlotValid(item.time, workStart, workEnd, serviceDuration, date);
+    });
+
+    if(slots.length === 0){
+      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>當前無可用預約時段</div>';
+      return;
+    }
+
+    slots.forEach((item)=>{
+      if(!item?.time) return;
+      const timeText = item.time.trim();
+      const b = document.createElement('div');
+      b.className = 'time-btn';
+      b.textContent = timeText;
+      
+      b.onclick = function handleTimeClick() {
+        document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        document.getElementById('selectedTime').value = timeText;
+        document.getElementById('nextToInfo').disabled = false;
+      };
+      g.appendChild(b);
+    });
   });
-
-  if(slots.length === 0){
-    g.innerHTML = '<div class="loading"><div class="loading-icon"></div>當前無可用預約時段</div>';
-    return;
-  }
-
-  slots.forEach((item)=>{
-    if(!item?.time) return;
-    const timeText = item.time.trim();
-    const b = document.createElement('div');
-    b.className = 'time-btn';
-    b.textContent = timeText;
-    
-    b.onclick = function handleTimeClick() {
-      document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      document.getElementById('selectedTime').value = timeText;
-      document.getElementById('nextToInfo').disabled = false;
-    };
-    g.appendChild(b);
-  });
-});
+}
 
 function loadAllData(){
   gasRequest("getAllData",{},function handleAllDataResponse(res){
