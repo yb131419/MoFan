@@ -104,7 +104,6 @@
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
 
-    /* 百万级质感分页通用样式 */
     .pagination {
       display: flex;
       align-items: center;
@@ -142,7 +141,6 @@
       white-space: nowrap;
     }
 
-    /* 预约日期网格样式：手机端固定5天 + 居中显示 */
     .week-slider{
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -167,7 +165,6 @@
     .week-day-date{font-weight:700;margin-bottom:2px;font-size:14px;}
     .week-day-week{font-size:11px;}
 
-    /* 美容师圆形头像样式 */
     .staff-avatar {
       width: 48px;
       height: 48px;
@@ -188,18 +185,16 @@
       align-items: center;
       gap: 16px;
     }
-    .staff-item.active{background:#fdf2f8;border-color:#ff8da1}
+    .staff-item.active{background:#fdf2f8;border-color:#ff4d88}
     .staff-info{flex:1;}
     .staff-name{font-weight:700;margin-bottom:4px;font-size:16px;}
     .staff-time{font-size:12px;color:#666;}
 
-    /* 预约时段：一行四列 适配文字 */
     .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:320px;overflow-y:auto;padding-right:5px;}
     .time-btn{padding:12px 4px;border-radius:14px;background:#fafbfc;border:1px solid #333;text-align:center;font-weight:500;cursor:pointer;transition:0.3s;font-size:13px;}
     .time-btn.active{background:#ff4d88;color:#fff;}
     .time-btn:hover:not(.active){border-color:#ff8da1;background:#fdf2f8;}
 
-    /* 高质感加载动画 */
     .loading{
       text-align:center;
       color:#999;
@@ -289,28 +284,25 @@
         <span class="search-clear" id="searchClear">✕</span>
       </div>
     </div>
-    <div class="category-tabs">
+    <div class="category-tabs" id="categoryTabs">
       <div class="tab active" data-cate="面部">面部<br>管理</div>
       <div class="tab" data-cate="美甲">美甲<br>手足</div>
       <div class="tab" data-cate="眉眼">眉眼唇</div>
       <div class="tab" data-cate="除毛">睫毛<br>除毛</div>
     </div>
-    <div class="service-grid" id="serviceGrid"><div class="loading"><div class="loading-icon"></div>載入服務中...</div></div>
+    <div class="service-grid" id="serviceGrid"><div class="loading"><div class="loading-icon"></div>請先選擇美容師</div></div>
     <div class="pagination" id="pagination"></div>
     <button class="btn-next" id="nextToDate" disabled>下一步：選擇預約日期</button>
   </div>
 
   <div class="section" id="step2">
     <div class="section-title">選擇預約日期</div>
-    <!-- 百万级质感日期分页：日期正上方 -->
     <div class="pagination" id="datePagination"></div>
-    <!-- 日期显示区域：固定5天网格 + 居中 -->
     <div class="week-slider" id="weekSlider"><div class="loading"><div class="loading-icon"></div>載入排班中...</div></div>
     
     <div class="section-title">選擇美容師</div>
     <div class="staff-list" id="staffList"><div class="loading"><div class="loading-icon"></div>請先選擇日期</div></div>
     <div class="section-title">選擇預約時段</div>
-    <!-- 修正：提示文字单行显示 -->
     <div class="time-grid" id="timeGrid"><div class="loading"><div class="loading-icon"></div>請先選擇美容師</div></div>
     <button class="btn-next" id="nextToInfo" disabled>下一步：填寫預約資訊</button>
   </div>
@@ -358,22 +350,27 @@ let userId = "";
 let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
 const PAGE_SIZE = 8;
-// 日期分页配置：每页固定5天
 const DATE_PAGE_SIZE = 5;
 let currentDatePage = 0;
 let totalDatePages = 0;
 let allDateList = [];
 
 let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
-// 新增：当前选中分类（默认面部）
 let currentCategory = "面部";
-const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}};
-
+// 核心修正：存储当前美容师的服务
+let currentStaffServices = [];
 const CATEGORIES = {
   "面部":["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
   "美甲":["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
   "眉眼":["霧眉","霧唇","洗眉","角蛋白"],
   "除毛":["無痛粉嫩乳暈術","外泌體育髮","除私密毛","腋下私毛","接睫毛"]
+};
+
+const GLOBAL_DATA = {
+  dateList:[], 
+  allServices:[], 
+  staffData:{},
+  staffServices:{} // 美容师技能列表
 };
 
 // 步骤栏点击切换功能
@@ -390,7 +387,6 @@ function initBirthdaySelect() {
   const monthSel = document.getElementById('birthMonth');
   const daySel = document.getElementById('birthDay');
   
-  // 年：1940 ~ 今年
   const now = new Date();
   const currentYear = now.getFullYear();
   for(let y=1940; y<=currentYear; y++){
@@ -399,14 +395,12 @@ function initBirthdaySelect() {
     opt.textContent = y + '年';
     yearSel.appendChild(opt);
   }
-  // 月
   for(let m=1; m<=12; m++){
     const opt = document.createElement('option');
     opt.value = m;
     opt.textContent = m + '月';
     monthSel.appendChild(opt);
   }
-  // 年月變更時刷新日
   const updateDays = () => {
     daySel.innerHTML = '<option value="">請選擇日</option>';
     const y = yearSel.value;
@@ -424,7 +418,7 @@ function initBirthdaySelect() {
   monthSel.addEventListener('change', updateDays);
 }
 
-// 電話號碼格式化 09xx-xxx-xxx
+// 電話號碼格式化
 function formatPhoneNumber(phone) {
   let numbers = phone.replace(/\D/g, '');
   if(numbers.startsWith('09')){
@@ -510,10 +504,21 @@ function renderPagination(){
   `;
 }
 
+// 核心修正：渲染当前美容师的服务
 function renderCurrentPage(){
   const g = document.getElementById('serviceGrid');
   g.innerHTML = '';
-  if(!currentServiceList.length){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>暫無符合條件的服務</div>'; renderPagination(); return; }
+  
+  if(!currentStaffServices.length){ 
+    g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇美容師</div>'; 
+    renderPagination(); 
+    return; 
+  }
+  if(!currentServiceList.length){ 
+    g.innerHTML='<div class="loading"><div class="loading-icon"></div>暫無符合條件的服務</div>'; 
+    renderPagination(); 
+    return; 
+  }
   
   const startIdx = (currentPage-1)*PAGE_SIZE;
   const list = currentServiceList.slice(startIdx, startIdx+PAGE_SIZE);
@@ -534,13 +539,50 @@ function renderCurrentPage(){
   renderPagination();
 }
 
-// 修复：分类+搜索双重筛选服务
+// 核心修正：过滤分类（仅显示美容师有服务的分类）
+function filterStaffCategories(){
+  const staffServices = currentStaffServices.map(s => s.name);
+  const validCates = [];
+  
+  for(let cate in CATEGORIES){
+    const hasService = CATEGORIES[cate].some(item => staffServices.includes(item));
+    if(hasService) validCates.push(cate);
+  }
+  
+  const tabContainer = document.getElementById('categoryTabs');
+  tabContainer.innerHTML = '';
+  
+  validCates.forEach(cate => {
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (cate === currentCategory ? ' active' : '');
+    tab.dataset.cate = cate;
+    tab.innerHTML = cate === '面部' ? '面部<br>管理' : 
+                   cate === '美甲' ? '美甲<br>手足' :
+                   cate === '眉眼' ? '眉眼唇' : '睫毛<br>除毛';
+    tabContainer.appendChild(tab);
+  });
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click',function(){
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      tab.classList.add('active');
+      currentCategory = tab.dataset.cate;
+      renderServices();
+    });
+  });
+}
+
+// 核心修正：渲染美容师专属服务
 function renderServices(){
-  currentPage=1;
-  const allServices = GLOBAL_DATA.allServices || [];
-  // 第一步：按当前分类筛选
-  let filtered = allServices.filter(item => CATEGORIES[currentCategory].includes(item.name));
-  // 第二步：按搜索关键词筛选
+  currentPage = 1;
+  if(!currentStaffServices.length){
+    currentServiceList = [];
+    totalPage = 0;
+    renderCurrentPage();
+    return;
+  }
+
+  let filtered = currentStaffServices.filter(item => CATEGORIES[currentCategory].includes(item.name));
   filtered = filtered.filter(s=> s?.name && (searchKeyword==='' || s.name.includes(searchKeyword)));
   
   currentServiceList = filtered;
@@ -548,7 +590,6 @@ function renderServices(){
   renderCurrentPage();
 }
 
-// 渲染日期分页（百万级质感）
 function renderDatePagination(){
   const p = document.getElementById('datePagination');
   if(totalDatePages <= 1){ 
@@ -564,7 +605,6 @@ function renderDatePagination(){
   `;
 }
 
-// 日期分页跳转
 function goDatePage(page){
   if(page < 0 || page >= totalDatePages) return;
   currentDatePage = page;
@@ -572,7 +612,6 @@ function goDatePage(page){
   renderDatePagination();
 }
 
-// 渲染当前日期页（取消默认选中）
 function renderCurrentDatePage(){
   const w = document.getElementById('weekSlider');
   w.innerHTML = '';
@@ -597,7 +636,6 @@ function renderCurrentDatePage(){
   });
 }
 
-// 初始化日期数据
 function renderDates(){
   const w = document.getElementById('weekSlider');
   const today = getTodayTaipei();
@@ -615,10 +653,13 @@ function renderDates(){
   renderDatePagination();
 }
 
+// 核心修正：选择美容师后加载专属服务
 function renderStaff(date){
   const s = document.getElementById('staffList');
   s.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入美容師中...</div>';
   document.getElementById('selectedStaff').value = '';
+  document.getElementById('selectedService').value = '';
+  document.getElementById('nextToDate').disabled = true;
   document.getElementById('timeGrid').innerHTML = '<div class="loading"><div class="loading-icon"></div>請先選擇美容師</div>';
   document.getElementById('nextToInfo').disabled = true;
   
@@ -631,7 +672,6 @@ function renderStaff(date){
     if(!st) return;
     const el = document.createElement('div');
     el.className='staff-item';
-    // 帶圓形頭像的美容師卡片
     el.innerHTML = `
       <div class="staff-avatar"></div>
       <div class="staff-info">
@@ -642,14 +682,19 @@ function renderStaff(date){
     el.onclick = function handleStaffClick() {
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
-      document.getElementById('selectedStaff').value = st.name;
+      const staffName = st.name;
+      document.getElementById('selectedStaff').value = staffName;
+      
+      // 加载当前美容师的专属服务
+      currentStaffServices = GLOBAL_DATA.staffServices[staffName] || [];
+      filterStaffCategories(); // 过滤分类
+      renderServices(); // 渲染服务
       renderSlots();
     };
     s.appendChild(el);
   });
 }
 
-// 刷新可用时段 + 高质感加载动画（单行显示）
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
@@ -659,7 +704,6 @@ function renderSlots(){
   if(!service){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇服務項目</div>'; return; }
   if(!date || !staff){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇日期和美容師</div>'; return; }
 
-  // 修正：加载文字单行显示
   g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
@@ -704,6 +748,7 @@ function loadAllData(){
       GLOBAL_DATA.dateList = res.dateList || [];
       GLOBAL_DATA.allServices = res.services || [];
       GLOBAL_DATA.staffData = res.staffData || {};
+      GLOBAL_DATA.staffServices = res.staffServices || {}; // 加载美容师技能
       renderServices();
       renderDates();
     }else{
@@ -817,17 +862,6 @@ document.addEventListener('DOMContentLoaded',async function handleDOMContentLoad
     searchKeyword = '';
     searchClear.classList.remove('show');
     renderServices();
-  });
-  
-  // 修复：分类标签点击联动筛选
-  document.querySelectorAll('.tab').forEach(function handleTabClick(tab){
-    tab.addEventListener('click',function(){
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      tab.classList.add('active');
-      // 更新当前分类并重新渲染服务
-      currentCategory = tab.dataset.cate;
-      renderServices();
-    });
   });
   
   document.getElementById('nextToDate').addEventListener('click',function(){goStep(2)});
