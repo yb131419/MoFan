@@ -86,7 +86,7 @@
     .search-icon {font-size:16px;color:#ff4d88;margin-right:12px;}
     .search-input {flex:1;height:52px;border:none;outline:none;background:transparent;font-size:15px;color:#444;padding:0 5px;}
     .search-input::placeholder {color:#c0c0c0;font-weight:500;}
-    .search-clear {width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;background:#f8f9fa;border-radius:50%;cursor:pointer;transition:0.3s;border:1px solid #333;opacity:0;pointer-events:none;}
+    .search-clear {width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;background:#f8f9fa;border-radius:50%;cursor:pointer;transition:0.3;border:1px solid #333;opacity:0;pointer-events:none;}
     .search-clear.show {opacity:1;pointer-events:all;}
     .search-clear:hover {background:#ff4d88;color:#fff;}
 
@@ -101,7 +101,7 @@
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
 
-    /* 🔥 服务分页：强制一行显示，不换行 */
+    /* 百万级质感分页通用样式 */
     .pagination {
       display: flex;
       align-items: center;
@@ -126,6 +126,7 @@
       font-weight:600;
       cursor:pointer;
       white-space: nowrap;
+      transition: 0.3s;
     }
     .page-btn:hover:not(:disabled) {background:#ff4d88;color:#fff;}
     .page-btn:disabled {background:#e9ecef;color:#ccc;}
@@ -138,7 +139,7 @@
       white-space: nowrap;
     }
 
-    /* 🔥 预约日期：一行七列 折叠布局 无翻页按钮 */
+    /* 预约日期网格样式：手机端固定7天一行 */
     .week-slider{
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -154,6 +155,7 @@
       border:1px solid #333;
       text-align:center;
       cursor:pointer;
+      transition: 0.3s;
     }
     .week-day.active{background:#ff4d88;color:#fff;}
     .week-day-date{font-weight:700;margin-bottom:2px;font-size:14px;}
@@ -249,8 +251,11 @@
 
   <div class="section" id="step2">
     <div class="section-title">選擇預約日期</div>
-    <!-- 🔥 无翻页按钮，固定7天一行七列 -->
+    <!-- 日期显示区域：固定7天网格 -->
     <div class="week-slider" id="weekSlider"><div class="loading">載入排班中...</div></div>
+    <!-- 🔥 百万级质感日期分页：日期下方 -->
+    <div class="pagination" id="datePagination"></div>
+    
     <div class="section-title">選擇美容師</div>
     <div class="staff-list" id="staffList"><div class="loading">請先選擇日期</div></div>
     <div class="section-title">選擇預約時段</div>
@@ -300,6 +305,12 @@ let userId = "";
 let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
 const PAGE_SIZE = 8;
+// 日期分页配置：每页固定7天
+const DATE_PAGE_SIZE = 7;
+let currentDatePage = 0;
+let totalDatePages = 0;
+let allDateList = [];
+
 let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
 const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}};
 
@@ -424,7 +435,6 @@ function goStep(s){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-// 服务分页渲染（强制一行不换行）
 function renderPagination(){
   const p = document.getElementById('pagination');
   if(totalPage<=1){ p.innerHTML=''; return; }
@@ -470,17 +480,40 @@ function renderServices(cate){
   renderCurrentPage();
 }
 
-// 🔥 预约日期：固定显示7天，无翻页
-function renderDates(){
+// 渲染日期分页（百万级质感）
+function renderDatePagination(){
+  const p = document.getElementById('datePagination');
+  if(totalDatePages <= 1){ 
+    p.innerHTML = ''; 
+    return; 
+  }
+  p.innerHTML = `
+    <button class="page-btn" ${currentDatePage === 0 ? 'disabled' : ''} onclick="goDatePage(0)">首頁</button>
+    <button class="page-btn" ${currentDatePage === 0 ? 'disabled' : ''} onclick="goDatePage(currentDatePage - 1)">上一頁</button>
+    <span class="page-text">${currentDatePage + 1}/${totalDatePages}</span>
+    <button class="page-btn" ${currentDatePage === totalDatePages - 1 ? 'disabled' : ''} onclick="goDatePage(currentDatePage + 1)">下一頁</button>
+    <button class="page-btn" ${currentDatePage === totalDatePages - 1 ? 'disabled' : ''} onclick="goDatePage(totalDatePages - 1)">末頁</button>
+  `;
+}
+
+// 日期分页跳转
+function goDatePage(page){
+  if(page < 0 || page >= totalDatePages) return;
+  currentDatePage = page;
+  renderCurrentDatePage();
+  renderDatePagination();
+}
+
+// 渲染当前日期页（取消默认选中）
+function renderCurrentDatePage(){
   const w = document.getElementById('weekSlider');
   w.innerHTML = '';
-  const today = getTodayTaipei();
-  // 过滤今日之后的日期，最多取7天
-  const dateList = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today).slice(0,7);
   
-  if(!dateList.length){ w.innerHTML='<div class="loading">暫無可預約的日期</div>'; return; }
-  
-  dateList.forEach(d=>{
+  const start = currentDatePage * DATE_PAGE_SIZE;
+  const end = start + DATE_PAGE_SIZE;
+  const currentDates = allDateList.slice(start, end);
+
+  currentDates.forEach(d=>{
     const el = document.createElement('div');
     el.className = 'week-day';
     const [,month,day] = d.split('-');
@@ -494,11 +527,28 @@ function renderDates(){
     };
     w.appendChild(el);
   });
-  
-  document.querySelectorAll('.week-day')[0]?.click();
+
+  // 🔥 已删除：默认选中第一个日期的代码
 }
 
-// 🔥 美容师名称自动添加「老師」
+// 初始化日期数据
+function renderDates(){
+  const w = document.getElementById('weekSlider');
+  const today = getTodayTaipei();
+  allDateList = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
+  totalDatePages = Math.ceil(allDateList.length / DATE_PAGE_SIZE);
+  currentDatePage = 0;
+  
+  if(!allDateList.length){ 
+    w.innerHTML='<div class="loading">暫無可預約的日期</div>'; 
+    document.getElementById('datePagination').innerHTML = '';
+    return; 
+  }
+
+  renderCurrentDatePage();
+  renderDatePagination();
+}
+
 function renderStaff(date){
   const s = document.getElementById('staffList');
   s.innerHTML = '<div class="loading">載入美容師中...</div>';
@@ -515,7 +565,7 @@ function renderStaff(date){
     if(!st) return;
     const el = document.createElement('div');
     el.className='staff-item';
-    // 🔥 自动加老师
+    // 美容师自动添加「老師」
     el.innerHTML = `<div class="staff-name">${st.name}老師</div><div class="staff-time">營業時間：${st.start}~${st.end}</div>`;
     el.onclick = function handleStaffClick() {
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
@@ -525,7 +575,6 @@ function renderStaff(date){
     };
     s.appendChild(el);
   });
-  document.querySelectorAll('.staff-item')[0]?.click();
 }
 
 // 刷新可用时段
@@ -572,11 +621,6 @@ function renderSlots(){
       };
       g.appendChild(b);
     });
-
-    const firstTimeBtn = document.querySelectorAll('.time-btn')[0];
-    if(firstTimeBtn){
-      firstTimeBtn.click();
-    }
   });
 }
 
@@ -595,11 +639,10 @@ function loadAllData(){
   });
 }
 
-// 提交预约：防呆+动态加载
+// 提交预约
 function submit(){
   const submitBtn = document.getElementById('submitBtn');
   
-  // 防重复提交
   if(submitBtn.disabled) return;
 
   if(!userId){
@@ -607,7 +650,6 @@ function submit(){
     return;
   }
 
-  // 表單驗證
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
   if(!name){
@@ -619,12 +661,10 @@ function submit(){
     return;
   }
 
-  // 动态效果：禁用按钮+加载样式
   submitBtn.disabled = true;
   submitBtn.classList.add('loading');
   submitBtn.textContent = '提交中...';
 
-  // 獲取生日
   const y = document.getElementById('birthYear').value;
   const m = document.getElementById('birthMonth').value;
   const d = document.getElementById('birthDay').value;
@@ -644,7 +684,6 @@ function submit(){
   };
   
   gasRequest("submit",data,function handleSubmitResponse(res){
-    // 恢复按钮状态
     submitBtn.disabled = false;
     submitBtn.classList.remove('loading');
     submitBtn.textContent = '確認提交預約';
@@ -684,10 +723,8 @@ async function initLiff(){
 }
 
 document.addEventListener('DOMContentLoaded',async function handleDOMContentLoaded(){
-  // 初始化生日下拉
   initBirthdaySelect();
   
-  // 電話格式化
   const phoneInput = document.getElementById('phone');
   phoneInput.addEventListener('input', (e) => {
     e.target.value = formatPhoneNumber(e.target.value);
