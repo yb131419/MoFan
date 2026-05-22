@@ -99,12 +99,13 @@
     .tab.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
 
     .service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:320px;overflow-y:auto;padding-right:5px;min-height:280px;}
-    .service-card{padding:12px 10px;border-radius:16px;background:#fafbfc;border:1px solid #333;text-align:center;font-size:13px;font-weight:500;cursor:pointer;transition:0.3s;min-height:60px;display:flex;flex-direction:column;justify-content:center;}
+    .service-card{padding:12px 10px;border-radius:16px;background:#fafbfc;border:1px solid #333;text-align:center;font-size:13px;font-weight:500;cursor:pointer;transition:0.3s;min-height:80px;display:flex;flex-direction:column;justify-content:center;}
     .service-card:hover{border-color:#ff8da1;background:#fdf2f8}
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
+    .service-desc{font-size:10px;color:#666;margin-top:2px;opacity:0.7;line-height:1.2;}
+    .service-card.active .service-duration,.service-card.active .service-desc{color:#fff;opacity:1;}
 
-    /* 百万级质感分页通用样式 */
     .pagination {
       display: flex;
       align-items: center;
@@ -142,7 +143,6 @@
       white-space: nowrap;
     }
 
-    /* 预约日期网格样式：手机端固定5天 + 居中显示 */
     .week-slider{
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -156,8 +156,7 @@
     }
     .week-day{
       padding: 10px 4px;
-      border-radius: 12px;
-      background:#fafbfc;
+      border-radius:12px;background:#fafbfc;
       border:1px solid #333;
       text-align:center;
       cursor:pointer;
@@ -167,19 +166,36 @@
     .week-day-date{font-weight:700;margin-bottom:2px;font-size:14px;}
     .week-day-week{font-size:11px;}
 
+    .staff-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff8da1, #ff4d88, #c77dff);
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(255,77,136,0.2);
+      border: 2px solid #fff;
+    }
     .staff-list{display:flex;flex-direction:column;gap:10px;}
-    .staff-item{padding:15px 20px;border-radius:16px;background:#fafbfc;border:1px solid #333;cursor:pointer;}
-    .staff-item.active{background:#fdf2f8;border-color:#ff8da1}
+    .staff-item{
+      padding:15px 20px;
+      border-radius:16px;
+      background:#fafbfc;
+      border:1px solid #333;
+      cursor:pointer;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .staff-item.active{background:#fdf2f8;border-color:#ff4da1}
+    .staff-info{flex:1;}
     .staff-name{font-weight:700;margin-bottom:4px;font-size:16px;}
     .staff-time{font-size:12px;color:#666;}
 
-    /* 预约时段：一行四列 适配文字 */
     .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:320px;overflow-y:auto;padding-right:5px;}
     .time-btn{padding:12px 4px;border-radius:14px;background:#fafbfc;border:1px solid #333;text-align:center;font-weight:500;cursor:pointer;transition:0.3s;font-size:13px;}
     .time-btn.active{background:#ff4d88;color:#fff;}
     .time-btn:hover:not(.active){border-color:#ff8da1;background:#fdf2f8;}
 
-    /* 高质感加载动画 */
     .loading{
       text-align:center;
       color:#999;
@@ -273,7 +289,8 @@
       <div class="tab active" data-cate="面部">面部<br>管理</div>
       <div class="tab" data-cate="美甲">美甲<br>手足</div>
       <div class="tab" data-cate="眉眼">眉眼唇</div>
-      <div class="tab" data-cate="身體">身體<br>護理</div>
+      <div class="tab" data-cate="除毛">睫毛<br>除毛</div>
+      <div class="tab" data-cate="頭皮">頭皮<br>保養</div>
     </div>
     <div class="service-grid" id="serviceGrid"><div class="loading"><div class="loading-icon"></div>載入服務中...</div></div>
     <div class="pagination" id="pagination"></div>
@@ -282,15 +299,12 @@
 
   <div class="section" id="step2">
     <div class="section-title">選擇預約日期</div>
-    <!-- 百万级质感日期分页：日期正上方 -->
     <div class="pagination" id="datePagination"></div>
-    <!-- 日期显示区域：固定5天网格 + 居中 -->
     <div class="week-slider" id="weekSlider"><div class="loading"><div class="loading-icon"></div>載入排班中...</div></div>
     
     <div class="section-title">選擇美容師</div>
     <div class="staff-list" id="staffList"><div class="loading"><div class="loading-icon"></div>請先選擇日期</div></div>
     <div class="section-title">選擇預約時段</div>
-    <!-- 修正：提示文字单行显示 -->
     <div class="time-grid" id="timeGrid"><div class="loading"><div class="loading-icon"></div>請先選擇美容師</div></div>
     <button class="btn-next" id="nextToInfo" disabled>下一步：填寫預約資訊</button>
   </div>
@@ -337,24 +351,24 @@ const CONFIG = {
 let userId = "";
 let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
-const PAGE_SIZE = 8;
-// 日期分页配置：每页固定5天
+const PAGE_SIZE = 6;
 const DATE_PAGE_SIZE = 5;
 let currentDatePage = 0;
 let totalDatePages = 0;
 let allDateList = [];
 
 let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
-const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}};
+let currentCategory = "面部";
+const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}, staffServices:{} };
 
 const CATEGORIES = {
   "面部":["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
   "美甲":["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
-  "眉眼":["霧眉","霧唇","洗眉","角蛋白","接睫毛"],
-  "身體":["無痛粉嫩乳暈術","外泌體育髮","除私密毛","腋下私毛"]
+  "眉眼":["霧眉","霧唇","洗眉","角蛋白"],
+  "除毛":["無痛粉嫩乳暈術","除私密毛","腋下私毛","接睫毛"],
+  "頭皮":["外泌體育髮"]
 };
 
-// 步骤栏点击切换功能
 document.querySelectorAll('.step').forEach(step => {
   step.addEventListener('click', () => {
     const targetStep = step.dataset.step;
@@ -362,13 +376,11 @@ document.querySelectorAll('.step').forEach(step => {
   });
 });
 
-// 初始化生日下拉選單
 function initBirthdaySelect() {
   const yearSel = document.getElementById('birthYear');
   const monthSel = document.getElementById('birthMonth');
   const daySel = document.getElementById('birthDay');
   
-  // 年：1940 ~ 今年
   const now = new Date();
   const currentYear = now.getFullYear();
   for(let y=1940; y<=currentYear; y++){
@@ -377,14 +389,12 @@ function initBirthdaySelect() {
     opt.textContent = y + '年';
     yearSel.appendChild(opt);
   }
-  // 月
   for(let m=1; m<=12; m++){
     const opt = document.createElement('option');
     opt.value = m;
     opt.textContent = m + '月';
     monthSel.appendChild(opt);
   }
-  // 年月變更時刷新日
   const updateDays = () => {
     daySel.innerHTML = '<option value="">請選擇日</option>';
     const y = yearSel.value;
@@ -402,7 +412,6 @@ function initBirthdaySelect() {
   monthSel.addEventListener('change', updateDays);
 }
 
-// 電話號碼格式化 09xx-xxx-xxx
 function formatPhoneNumber(phone) {
   let numbers = phone.replace(/\D/g, '');
   if(numbers.startsWith('09')){
@@ -419,6 +428,55 @@ function getTaipeiDateString(date) {
 }
 function getTodayTaipei() {
   return getTaipeiDateString(new Date());
+}
+
+// 獲取當下台北標準時間（時區校準）
+function getCurrentTaipeiTime() {
+  return new Date(new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
+}
+
+// 【修正核心】時段驗證：當天只顯示未過期的時段，非當天只驗證營業時間
+function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration, selectedDate) {
+  try {
+    if (!slotTime || !workStart || !workEnd || !serviceDuration) return false;
+
+    const today = getTodayTaipei();
+    const nowTaipei = getCurrentTaipeiTime();
+    const slotDateTime = new Date(`${selectedDate} ${slotTime}`);
+    const start = new Date(`${selectedDate} ${workStart}`);
+    const end = new Date(`${selectedDate} ${workEnd}`);
+    const serviceEndTime = new Date(slotDateTime.getTime() + serviceDuration * 60000);
+
+    // 1. 必須在營業時間內
+    const inBusinessHours = slotDateTime >= start && serviceEndTime <= end;
+    // 2. 如果是當天，必須晚於當前時間；非當天直接通過
+    const notExpired = selectedDate !== today || slotDateTime > nowTaipei;
+
+    return inBusinessHours && notExpired;
+  } catch (e) {
+    console.error("時段驗證錯誤:", e);
+    return false;
+  }
+}
+
+// 【修正核心】日期驗證：只顯示今天及以後的日期，徹底隱藏過期日期
+function getValidDatesByService(serviceName) {
+  const today = getTodayTaipei();
+  let validDates = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
+
+  if (!serviceName) return validDates;
+
+  validDates = validDates.filter(date => {
+    const staffList = GLOBAL_DATA.staffData[date] || [];
+    if (staffList.length === 0) return false;
+
+    return staffList.some(staff => {
+      const staffServices = GLOBAL_DATA.staffServices[staff.name] || [];
+      return staffServices.some(item => item.name === serviceName);
+    });
+  });
+
+  return validDates;
 }
 
 function gasRequest(action, params, callback) {
@@ -460,10 +518,8 @@ function showModal(type,title,desc){
   iconEl.style.color = type==='success'?'#ff4d88':'#e74c3c';
   titleEl.textContent = title;
   descEl.textContent = desc;
-  
   m.classList.add('active');
 }
-
 function closeModal(){
   document.getElementById('modal').classList.remove('active');
 }
@@ -498,37 +554,73 @@ function renderCurrentPage(){
   
   list.forEach(item=>{
     if(!item?.name) return;
+
+    let descText = item.desc || '';
+    if(item.name === "外泌體育髮"){
+      descText = "（三個月份 無效全額退款)<br>另送整套外泌體組合<br>總額 $35000";
+    }
+
     const c = document.createElement('div');
     c.className='service-card';
-    c.innerHTML = `${item.name}<span class="service-duration">${item.duration || 0}分</span>`;
+    c.innerHTML = `
+      ${item.name}
+      <span class="service-duration">${item.duration || 0}分</span>
+      <span class="service-desc">${descText}</span>
+    `;
     c.onclick = function handleServiceClick() {
       document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));
       c.classList.add('active');
       document.getElementById('selectedService').value = item.name;
       document.getElementById('nextToDate').disabled = false;
+      
+      renderFilteredDates();
     };
     g.appendChild(c);
   });
   renderPagination();
 }
 
-// 修正：搜索全品項，無需分類過濾
+function renderFilteredDates() {
+  const selectedService = document.getElementById('selectedService').value.trim();
+  allDateList = getValidDatesByService(selectedService);
+  totalDatePages = Math.ceil(allDateList.length / DATE_PAGE_SIZE);
+  currentDatePage = 0;
+  
+  const w = document.getElementById('weekSlider');
+  if (!allDateList.length) {
+    w.innerHTML = '<div class="loading"><div class="loading-icon"></div>暫無可預約的日期</div>';
+    document.getElementById('datePagination').innerHTML = '';
+    return;
+  }
+  
+  renderCurrentDatePage();
+  renderDatePagination();
+}
+
 function renderServices(){
   currentPage=1;
   const allServices = GLOBAL_DATA.allServices || [];
-  // 全局搜索所有服务，取消分类限制
-  currentServiceList = allServices.filter(s=> s?.name && (searchKeyword==='' || s.name.includes(searchKeyword)));
+  const selectedStaff = document.getElementById('selectedStaff').value.trim();
+  
+  let filtered = [];
+  if(selectedStaff && GLOBAL_DATA.staffServices[selectedStaff]){
+    filtered = GLOBAL_DATA.staffServices[selectedStaff].filter(item => 
+      CATEGORIES[currentCategory].includes(item.name)
+    );
+  } else {
+    filtered = allServices.filter(item => CATEGORIES[currentCategory].includes(item.name));
+  }
+
+  filtered = filtered.filter(s=> s?.name && (searchKeyword==='' || s.name.includes(searchKeyword)));
+  
+  currentServiceList = filtered;
   totalPage = Math.ceil(currentServiceList.length/PAGE_SIZE);
   renderCurrentPage();
 }
 
-// 渲染日期分页（百万级质感）
 function renderDatePagination(){
   const p = document.getElementById('datePagination');
-  if(totalDatePages <= 1){ 
-    p.innerHTML = ''; 
-    return; 
-  }
+  if(totalDatePages <= 1){ p.innerHTML = ''; return; }
   p.innerHTML = `
     <button class="page-btn" ${currentDatePage === 0 ? 'disabled' : ''} onclick="goDatePage(0)">首頁</button>
     <button class="page-btn" ${currentDatePage === 0 ? 'disabled' : ''} onclick="goDatePage(currentDatePage - 1)">上一頁</button>
@@ -537,16 +629,12 @@ function renderDatePagination(){
     <button class="page-btn" ${currentDatePage === totalDatePages - 1 ? 'disabled' : ''} onclick="goDatePage(totalDatePages - 1)">末頁</button>
   `;
 }
-
-// 日期分页跳转
 function goDatePage(page){
   if(page < 0 || page >= totalDatePages) return;
   currentDatePage = page;
   renderCurrentDatePage();
   renderDatePagination();
 }
-
-// 渲染当前日期页（取消默认选中）
 function renderCurrentDatePage(){
   const w = document.getElementById('weekSlider');
   w.innerHTML = '';
@@ -571,79 +659,113 @@ function renderCurrentDatePage(){
   });
 }
 
-// 初始化日期数据
 function renderDates(){
-  const w = document.getElementById('weekSlider');
-  const today = getTodayTaipei();
-  allDateList = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
+  allDateList = getValidDatesByService('');
   totalDatePages = Math.ceil(allDateList.length / DATE_PAGE_SIZE);
   currentDatePage = 0;
   
+  const w = document.getElementById('weekSlider');
   if(!allDateList.length){ 
     w.innerHTML='<div class="loading"><div class="loading-icon"></div>暫無可預約的日期</div>'; 
     document.getElementById('datePagination').innerHTML = '';
     return; 
   }
-
   renderCurrentDatePage();
   renderDatePagination();
 }
 
 function renderStaff(date){
   const s = document.getElementById('staffList');
+  const selectedService = document.getElementById('selectedService').value.trim();
+  
   s.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入美容師中...</div>';
   document.getElementById('selectedStaff').value = '';
   document.getElementById('timeGrid').innerHTML = '<div class="loading"><div class="loading-icon"></div>請先選擇美容師</div>';
   document.getElementById('nextToInfo').disabled = true;
   
   if(!date || !GLOBAL_DATA.staffData){ s.innerHTML='<div class="loading"><div class="loading-icon"></div>請選擇有效日期</div>'; return; }
-  const list = GLOBAL_DATA.staffData[date] || [];
-  if(!list.length){ s.innerHTML='<div class="loading"><div class="loading-icon"></div>當日無美容師值班</div>'; return; }
+  
+  let staffList = GLOBAL_DATA.staffData[date] || [];
+  if(!staffList.length){ s.innerHTML='<div class="loading"><div class="loading-icon"></div>當日無美容師值班</div>'; return; }
+
+  if(selectedService){
+    staffList = staffList.filter(staff => {
+      const staffServices = GLOBAL_DATA.staffServices[staff.name] || [];
+      return staffServices.some(item => item.name === selectedService);
+    });
+  }
+
+  if(!staffList.length){ 
+    s.innerHTML='<div class="loading"><div class="loading-icon"></div>當日無美容師可提供此服務</div>'; 
+    return; 
+  }
   
   s.innerHTML = '';
-  list.forEach(st=>{
+  staffList.forEach(st=>{
     if(!st) return;
     const el = document.createElement('div');
     el.className='staff-item';
-    // 美容师自动添加「老師」
-    el.innerHTML = `<div class="staff-name">${st.name} 老師</div><div class="staff-time">營業時間：${st.start}~${st.end}</div>`;
+    el.innerHTML = `
+      <div class="staff-avatar"></div>
+      <div class="staff-info">
+        <div class="staff-name">${st.name} 老師</div>
+        <div class="staff-time">營業時間：${st.start}~${st.end}</div>
+      </div>
+    `;
     el.onclick = function handleStaffClick() {
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('selectedStaff').value = st.name;
+      renderServices();
       renderSlots();
     };
     s.appendChild(el);
   });
 }
 
-// 刷新可用时段 + 高质感加载动画（单行显示）
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
-  const staff = document.getElementById('selectedStaff').value.trim();
-  const service = document.getElementById('selectedService').value.trim();
+  const staffName = document.getElementById('selectedStaff').value.trim();
+  const serviceName = document.getElementById('selectedService').value.trim();
   const g = document.getElementById('timeGrid');
 
-  if(!service){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇服務項目</div>'; return; }
-  if(!date || !staff){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇日期和美容師</div>'; return; }
+  if(!serviceName){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇服務項目</div>'; return; }
+  if(!date || !staffName){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇日期和美容師</div>'; return; }
 
-  // 修正：加载文字单行显示
+  const staffList = GLOBAL_DATA.staffData[date] || [];
+  const staffInfo = staffList.find(s => s.name === staffName) || {};
+  const serviceInfo = GLOBAL_DATA.allServices.find(s => s.name === serviceName) || {};
+  const serviceDuration = serviceInfo?.duration || 60;
+
+  const workStart = staffInfo.start || "09:00";
+  const workEnd = staffInfo.end || "21:00";
+
   g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
 
-  gasRequest("getSlots", { date, staff, service }, function handleSlotResponse(res){
-    if(res?.status !== "success"){
-      showModal('error','載入失敗',res?.message||'網路異常，無法載入時段');
+  gasRequest("getSlots", { 
+    date: date, 
+    staff: staffName, 
+    service: serviceName 
+  }, function handleSlotResponse(res){
+    if(!res || res?.status !== "success"){
+      const msg = res?.message || '網路異常，無法載入時段';
+      showModal('error','載入失敗', msg);
       g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入時段失敗，請重新選擇</div>';
       return;
     }
 
-    const slots = res.slots || [];
+    let slots = res.slots || [];
     g.innerHTML = '';
 
+    // 傳入選中的日期，校準時段過期時間
+    slots = slots.filter(item => {
+      return item?.time && isTimeSlotValid(item.time, workStart, workEnd, serviceDuration, date);
+    });
+
     if(slots.length === 0){
-      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>該美容師當日已無可用時段</div>';
+      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>當前無可用預約時段</div>';
       return;
     }
 
@@ -672,6 +794,7 @@ function loadAllData(){
       GLOBAL_DATA.dateList = res.dateList || [];
       GLOBAL_DATA.allServices = res.services || [];
       GLOBAL_DATA.staffData = res.staffData || {};
+      GLOBAL_DATA.staffServices = res.staffServices || {};
       renderServices();
       renderDates();
     }else{
@@ -680,7 +803,6 @@ function loadAllData(){
   });
 }
 
-// 提交预约
 function submit(){
   const submitBtn = document.getElementById('submitBtn');
   
@@ -688,6 +810,32 @@ function submit(){
 
   if(!userId){
     showModal('error','登錄異常','請使用LINE登錄後再提交預約');
+    return;
+  }
+
+  const selectedService = document.getElementById('selectedService').value.trim();
+  const selectedDate = document.getElementById('selectedDate').value.trim();
+  const selectedStaff = document.getElementById('selectedStaff').value.trim();
+  const selectedTime = document.getElementById('selectedTime').value.trim();
+
+  if(!selectedService){
+    showModal('error','資料 incomplete','請先選擇服務項目！');
+    goStep(1);
+    return;
+  }
+  if(!selectedDate){
+    showModal('error','資料 incomplete','請先選擇預約日期！');
+    goStep(2);
+    return;
+  }
+  if(!selectedStaff){
+    showModal('error','資料 incomplete','請先選擇美容師！');
+    goStep(2);
+    return;
+  }
+  if(!selectedTime){
+    showModal('error','資料 incomplete','請先選擇預約時段！');
+    goStep(2);
     return;
   }
 
@@ -714,10 +862,10 @@ function submit(){
   const data = {
     lineId: userId,
     lineName: userName,
-    date: document.getElementById('selectedDate').value,
-    service: document.getElementById('selectedService').value,
-    staff: document.getElementById('selectedStaff').value,
-    appointTime: document.getElementById('selectedTime').value,
+    date: selectedDate,
+    service: selectedService,
+    staff: selectedStaff,
+    appointTime: selectedTime,
     name: name,
     phone: phone,
     birthday: birthday,
@@ -734,7 +882,6 @@ function submit(){
       setTimeout(()=>window.location.reload(),2000);
     }else{
       showModal('error','預約失敗',res?.message||'提交失敗，請稍後重試');
-      renderSlots();
     }
   });
 }
@@ -787,16 +934,20 @@ document.addEventListener('DOMContentLoaded',async function handleDOMContentLoad
     renderServices();
   });
   
-  // 分类标签保留切换效果，但搜索为全局
-  document.querySelectorAll('.tab').forEach(function handleTabClick(tab){
+  document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click',function(){
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       tab.classList.add('active');
+      currentCategory = tab.dataset.cate;
+      renderServices();
     });
   });
   
-  document.getElementById('nextToDate').addEventListener('click',function(){goStep(2)});
-  document.getElementById('nextToInfo').addEventListener('click',function(){goStep(3)});
+document.getElementById('nextToDate').addEventListener('click',()=>{
+  renderStaff(document.getElementById('selectedDate').value);
+  goStep(2);
+});
+  document.getElementById('nextToInfo').addEventListener('click',()=>goStep(3));
   document.getElementById('submitBtn').addEventListener('click',submit);
   
   await initLiff();
