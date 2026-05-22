@@ -226,7 +226,7 @@
 
     .form-group{margin-bottom:20px}
     label{font-weight:600;color:#333;display:block;margin-bottom:8px;}
-    input,textarea{
+    input,textarea,select{
       width:100%;height:54px;
       padding:0 20px;border-radius:16px;
       border:1px solid #333;
@@ -234,11 +234,13 @@
       font-size:15px;
       font-family:'Noto Sans TC',sans-serif;
     }
-    input:focus,textarea:focus{
+    input:focus,textarea:focus,select:focus{
       outline:none;border-color:#ff8da1;
       background:#fdf2f8;
     }
     textarea{min-height:120px;resize:none;padding:15px 20px;}
+    .birthday-row{display:flex;gap:10px;}
+    .birthday-row select{flex:1;}
 
     .btn-next{
       width:100%;height:58px;
@@ -358,10 +360,26 @@
   </div>
 
   <div class="section" id="step3">
-    <div class="form-group"><label>姓名 *</label><input type="text" id="name" required placeholder="請輸入您的姓名"></div>
-    <div class="form-group"><label>聯絡電話 *</label><input type="tel" id="phone" required placeholder="請輸入您的聯絡電話"></div>
-    <div class="form-group"><label>生日</label><input type="date" id="birthday"></div>
-    <div class="form-group"><label>備註</label><textarea id="extraInfo" placeholder="請輸入其他需要說明的事項（選填）"></textarea></div>
+    <div class="form-group">
+      <label>姓名 *</label>
+      <input type="text" id="name" required placeholder="請輸入您的姓名">
+    </div>
+    <div class="form-group">
+      <label>聯絡電話 * (格式：0912-345-678)</label>
+      <input type="tel" id="phone" required placeholder="請輸入手機號碼" maxlength="12">
+    </div>
+    <div class="form-group">
+      <label>生日</label>
+      <div class="birthday-row">
+        <select id="birthYear"><option value="">請選擇年</option></select>
+        <select id="birthMonth"><option value="">請選擇月</option></select>
+        <select id="birthDay"><option value="">請選擇日</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>備註</label>
+      <textarea id="extraInfo" placeholder="請輸入其他需要說明的事項（選填）"></textarea>
+    </div>
     <button class="btn-next" id="submitBtn">確認提交預約</button>
   </div>
 
@@ -392,6 +410,57 @@ const CATEGORIES = {
   "眉眼":["霧眉","霧唇","洗眉","角蛋白","接睫毛"],
   "身體":["無痛粉嫩乳暈術","外泌體育髮","除私密毛","腋下私毛"]
 };
+
+// 初始化生日下拉選單
+function initBirthdaySelect() {
+  const yearSel = document.getElementById('birthYear');
+  const monthSel = document.getElementById('birthMonth');
+  const daySel = document.getElementById('birthDay');
+  
+  // 年：1940 ~ 今年
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  for(let y=1940; y<=currentYear; y++){
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + '年';
+    yearSel.appendChild(opt);
+  }
+  // 月
+  for(let m=1; m<=12; m++){
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m + '月';
+    monthSel.appendChild(opt);
+  }
+  // 年月變更時刷新日
+  const updateDays = () => {
+    daySel.innerHTML = '<option value="">請選擇日</option>';
+    const y = yearSel.value;
+    const m = monthSel.value;
+    if(!y || !m) return;
+    const days = new Date(y, m, 0).getDate();
+    for(let d=1; d<=days; d++){
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d + '日';
+      daySel.appendChild(opt);
+    }
+  };
+  yearSel.addEventListener('change', updateDays);
+  monthSel.addEventListener('change', updateDays);
+}
+
+// 電話號碼格式化 09xx-xxx-xxx
+function formatPhoneNumber(phone) {
+  let numbers = phone.replace(/\D/g, '');
+  if(numbers.startsWith('09')){
+    if(numbers.length <=4) return numbers;
+    if(numbers.length <=7) return numbers.slice(0,4) + '-' + numbers.slice(4);
+    return numbers.slice(0,4) + '-' + numbers.slice(4,7) + '-' + numbers.slice(7,10);
+  }
+  return numbers;
+}
 
 function getTaipeiDateString(date) {
   const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -555,6 +624,7 @@ function renderStaff(date){
   document.querySelectorAll('.staff-item')[0]?.click();
 }
 
+// 修復：強制刷新可用時段
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
@@ -621,11 +691,18 @@ function loadAllData(){
   });
 }
 
+// 提交預約（修復生日格式）
 function submit(){
   if(!userId){
     showModal('error','登錄異常','請使用LINE登錄後再提交預約');
     return;
   }
+
+  // 獲取生日
+  const y = document.getElementById('birthYear').value;
+  const m = document.getElementById('birthMonth').value;
+  const d = document.getElementById('birthDay').value;
+  const birthday = (y && m && d) ? `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}` : '';
 
   const data = {
     lineId: userId,
@@ -636,7 +713,7 @@ function submit(){
     appointTime: document.getElementById('selectedTime').value,
     name: document.getElementById('name').value.trim(),
     phone: document.getElementById('phone').value.trim(),
-    birthday: document.getElementById('birthday').value.trim(),
+    birthday: birthday,
     extraInfo: document.getElementById('extraInfo').value.trim()
   };
   
@@ -645,7 +722,7 @@ function submit(){
   if(!data.staff){ showModal('error','填寫錯誤','請選擇美容師'); return; }
   if(!data.appointTime){ showModal('error','填寫錯誤','請選擇預約時間'); return; }
   if(!data.name){ showModal('error','填寫錯誤','請輸入您的姓名'); return; }
-  if(!data.phone || !/^[\d\-\+\(\) ]{8,}$/.test(data.phone)){ showModal('error','填寫錯誤','請輸入有效的聯絡電話'); return; }
+  if(!/^09\d{2}-\d{3}-\d{3}$/.test(data.phone)){ showModal('error','填寫錯誤','請輸入正確電話格式：0912-345-678'); return; }
   
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
@@ -656,9 +733,11 @@ function submit(){
     submitBtn.textContent = '確認提交預約';
     if(res?.status==="success"){
       showModal('success','預約成功','您的預約已提交，我們會盡快與您確認！');
-      setTimeout(function reloadPage(){window.location.reload();},2000);
+      setTimeout(()=>window.location.reload(),2000);
     }else{
       showModal('error','預約失敗',res?.message||'提交失敗，請稍後重試');
+      // 預約失敗強制刷新時段
+      renderSlots();
     }
   });
 }
@@ -688,6 +767,15 @@ async function initLiff(){
 }
 
 document.addEventListener('DOMContentLoaded',async function handleDOMContentLoaded(){
+  // 初始化生日下拉
+  initBirthdaySelect();
+  
+  // 電話格式化
+  const phoneInput = document.getElementById('phone');
+  phoneInput.addEventListener('input', (e) => {
+    e.target.value = formatPhoneNumber(e.target.value);
+  });
+
   document.getElementById('modalBtn').onclick = closeModal;
   
   const searchInput = document.getElementById('serviceSearch');
