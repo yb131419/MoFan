@@ -103,7 +103,6 @@
     .service-card:hover{border-color:#ff8da1;background:#fdf2f8}
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
-    /* 新增：服务说明文字样式 */
     .service-desc{font-size:10px;color:#666;margin-top:2px;opacity:0.7;line-height:1.2;}
     .service-card.active .service-duration,.service-card.active .service-desc{color:#fff;opacity:1;}
 
@@ -352,7 +351,8 @@ const CONFIG = {
 let userId = "";
 let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
-const PAGE_SIZE = 8;
+// ✅ 修改1：每頁顯示6個服務
+const PAGE_SIZE = 6;
 const DATE_PAGE_SIZE = 5;
 let currentDatePage = 0;
 let totalDatePages = 0;
@@ -436,6 +436,37 @@ function getTodayTaipei() {
   return getTaipeiDateString(new Date());
 }
 
+// ✅ 新增：獲取當前台北時間（用於判斷時段是否過期）
+function getCurrentTaipeiTime() {
+  const now = new Date();
+  const taipeiTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+  return taipeiTime;
+}
+
+// ✅ 新增：判斷時段是否有效（未過期 + 在美容師上班時間內）
+function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration) {
+  try {
+    const now = getCurrentTaipeiTime();
+    const today = getTaipeiDateString(now);
+    const slotDateTime = new Date(`${today} ${slotTime}`);
+    
+    // 1. 判斷時段是否已過期
+    if (slotDateTime < now) return false;
+
+    // 2. 轉化美容師上下班時間
+    const start = new Date(`${today} ${workStart}`);
+    const end = new Date(`${today} ${workEnd}`);
+    
+    // 3. 計算服務結束時間
+    const serviceEndTime = new Date(slotDateTime.getTime() + serviceDuration * 60000);
+    
+    // 4. 時段必須在上班時間內，且服務結束不超過下班時間
+    return slotDateTime >= start && serviceEndTime <= end;
+  } catch (e) {
+    return false;
+  }
+}
+
 // 后端接口请求
 function gasRequest(action, params, callback) {
   const safeParams = params || {};
@@ -492,7 +523,7 @@ function goStep(s){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-// ✅ 修復：補回缺失的分頁函數
+// 分頁函數
 function renderPagination(){
   const p = document.getElementById('pagination');
   if(totalPage<=1){ p.innerHTML=''; return; }
@@ -517,15 +548,13 @@ function renderCurrentPage(){
   list.forEach(item=>{
     if(!item?.name) return;
 
-    // 手动给服务添加说明
     let descText = item.desc || '';
     if(item.name === "外泌體育髮"){
-      descText = "（三個月份 無效全額退款\n另送整套外泌體組合\n總額 $35000"; // 👈 自定義說明文字
+      descText = "（三個月份 無效全額退款)<br>另送整套外泌體組合<br>總額 $35000";
     }
 
     const c = document.createElement('div');
     c.className='service-card';
-    // 渲染：名称 + 时长 + 说明
     c.innerHTML = `
       ${item.name}
       <span class="service-duration">${item.duration || 0}分</span>
@@ -673,32 +702,43 @@ function renderStaff(date){
   });
 }
 
-// 渲染可用时段
+// ✅ 修改2/3：渲染可用時段（過期不顯示 + 匹配美容師上班時間）
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
-  const staff = document.getElementById('selectedStaff').value.trim();
-  const service = document.getElementById('selectedService').value.trim();
+  const staffName = document.getElementById('selectedStaff').value.trim();
+  const serviceName = document.getElementById('selectedService').value.trim();
   const g = document.getElementById('timeGrid');
 
-  if(!service){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇服務項目</div>'; return; }
-  if(!date || !staff){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇日期和美容師</div>'; return; }
+  if(!serviceName){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇服務項目</div>'; return; }
+  if(!date || !staffName){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇日期和美容師</div>'; return; }
+
+  // 獲取當天美容師資訊 + 服務時長
+  const staffList = GLOBAL_DATA.staffData[date] || [];
+  const staffInfo = staffList.find(s => s.name === staffName);
+  const serviceInfo = GLOBAL_DATA.allServices.find(s => s.name === serviceName);
+  const serviceDuration = serviceInfo?.duration || 60;
 
   g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
 
-  gasRequest("getSlots", { date, staff, service }, function handleSlotResponse(res){
+  gasRequest("getSlots", { date, staff:staffName, service:serviceName }, function handleSlotResponse(res){
     if(res?.status !== "success"){
       showModal('error','載入失敗',res?.message||'網路異常，無法載入時段');
       g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入時段失敗，請重新選擇</div>';
       return;
     }
 
-    const slots = res.slots || [];
+    let slots = res.slots || [];
     g.innerHTML = '';
 
+    // 過濾：僅保留有效時段
+    slots = slots.filter(item => {
+      return item?.time && isTimeSlotValid(item.time, staffInfo.start, staffInfo.end, serviceDuration);
+    });
+
     if(slots.length === 0){
-      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>該美容師當日已無可用時段</div>';
+      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>當前無可用預約時段</div>';
       return;
     }
 
@@ -737,7 +777,7 @@ function loadAllData(){
   });
 }
 
-// 提交预约（防呆）
+// 提交预约
 function submit(){
   const submitBtn = document.getElementById('submitBtn');
   
