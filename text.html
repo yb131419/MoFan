@@ -77,227 +77,85 @@
       margin-bottom: 20px;
     }
     .search-container {
-      display: flex;
-      align-items: center;
-      padding: 0 18px;
-      background: #ffffff;
-      border-radius:22px;
+      display:flex;align-items:center;padding:0 18px;
+      background:#ffffff;border-radius:22px;
       box-shadow:0 6px 18px rgba(255,77,136,0.1);
-      border:1px solid #333;
-      transition: all 0.3s ease;
+      border:1px solid #333;transition:all 0.3s ease;
     }
-    .search-container:focus-within {
-      border-color: #ff8da1;
-    }
-    .search-icon {
-      font-size:16px;color:#ff4d88;margin-right:12px;
-    }
-    .search-input {
-      flex:1;height:52px;border:none;outline:none;
-      background:transparent;font-size:15px;color:#444;
-      padding:0 5px;
-    }
-    .search-input::placeholder {
-      color:#c0c0c0;font-weight:500;
-    }
-    .search-clear {
-      width:24px;height:24px;display:flex;
-      align-items:center;justify-content:center;
-      font-size:12px;color:#999;background:#f8f9fa;
-      border-radius:50%;cursor:pointer;transition:0.3s;
-      border: 1px solid #333;
-      opacity:0;pointer-events:none;
-    }
-    .search-clear.show {
-      opacity:1;pointer-events:all;
-    }
-    .search-clear:hover {
-      background:#ff4d88;color:#fff;
-    }
+    .search-container:focus-within {border-color:#ff8da1}
+    .search-icon {font-size:16px;color:#ff4d88;margin-right:12px;}
+    .search-input {flex:1;height:52px;border:none;outline:none;background:transparent;font-size:15px;color:#444;padding:0 5px;}
+    .search-input::placeholder {color:#c0c0c0;font-weight:500;}
+    .search-clear {width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;background:#f8f9fa;border-radius:50%;cursor:pointer;transition:0.3s;border:1px solid #333;opacity:0;pointer-events:none;}
+    .search-clear.show {opacity:1;pointer-events:all;}
+    .search-clear:hover {background:#ff4d88;color:#fff;}
 
-    .category-tabs{
-      display:flex;gap:8px;overflow-x:auto;
-      padding:10px 0;margin-bottom:15px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: nowrap;
-    }
+    .category-tabs{display:flex;gap:8px;overflow-x:auto;padding:10px 0;margin-bottom:15px;justify-content:center;align-items:center;flex-wrap:nowrap;}
     .category-tabs::-webkit-scrollbar{height:0}
-    .tab{
-      padding:8px 14px;border-radius:20px;
-      background:#f8f9fa;border:1px solid #333;
-      font-size:14px;font-weight:500;cursor:pointer;
-      white-space:nowrap;transition:0.3s;
-      text-align: center;
-      line-height: 1.2;
-    }
+    .tab{padding:8px 14px;border-radius:20px;background:#f8f9fa;border:1px solid #333;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:0.3s;text-align:center;line-height:1.2;}
     .tab.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
 
-    .service-grid{
-      display:grid;grid-template-columns:1fr 1fr;
-      gap:10px;max-height:320px;overflow-y:auto;
-      padding-right:5px;
-      min-height: 280px;
-    }
-    .service-card{
-      padding:12px 10px;border-radius:16px;
-      background:#fafbfc;border:1px solid #333;
-      text-align:center;font-size:13px;font-weight:500;
-      cursor:pointer;transition:0.3s;
-      min-height:60px;display:flex;
-      flex-direction:column;justify-content:center;
-    }
+    .service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:320px;overflow-y:auto;padding-right:5px;min-height:280px;}
+    .service-card{padding:12px 10px;border-radius:16px;background:#fafbfc;border:1px solid #333;text-align:center;font-size:13px;font-weight:500;cursor:pointer;transition:0.3s;min-height:60px;display:flex;flex-direction:column;justify-content:center;}
     .service-card:hover{border-color:#ff8da1;background:#fdf2f8}
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
 
-    .pagination {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin: 15px 0;
-      padding: 10px;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-    }
+    .pagination {display:flex;align-items:center;justify-content:center;gap:6px;margin:15px 0;padding:10px;flex-wrap:nowrap;overflow-x:auto;}
     .pagination::-webkit-scrollbar {display: none;}
-    .page-btn {
-      width:36px;height:36px;border-radius:12px;
-      border:1px solid #333;
-      background:#f8f9fa;
-      color:#666;font-size:14px;font-weight:600;
-      cursor:pointer;
-      flex-shrink: 0;
-    }
-    .page-btn:hover:not(:disabled) {
-      background:#ff4d88;color:#fff;
-    }
-    .page-btn:disabled {
-      background:#e9ecef;color:#ccc;
-    }
-    .page-text {
-      min-width:40px;text-align:center;font-size:14px;
-      font-weight:600;color:#333;
-      flex-shrink: 0;
-    }
+    .page-btn {width:36px;height:36px;border-radius:12px;border:1px solid #333;background:#f8f9fa;color:#666;font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0;}
+    .page-btn:hover:not(:disabled) {background:#ff4d88;color:#fff;}
+    .page-btn:disabled {background:#e9ecef;color:#ccc;}
+    .page-text {min-width:40px;text-align:center;font-size:14px;font-weight:600;color:#333;flex-shrink:0;}
 
-    .week-slider{
-      display:flex;gap:10px;overflow-x:auto;
-      padding:5px 0;margin-bottom:10px;
-    }
-    .week-day{
-      min-width:85px;padding:15px 10px;
-      border-radius:18px;background:#fafbfc;
-      border:1px solid #333;
-      text-align:center;
-      cursor:pointer;
-    }
+    /* 🔥 日期翻页容器样式 */
+    .date-pagination {display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0;}
+    .date-page-btn {width:40px;height:40px;border-radius:50%;border:1px solid #333;background:#f8f9fa;font-size:16px;cursor:pointer;}
+    .date-page-btn:disabled {background:#eee;color:#ccc;cursor:not-allowed;}
+    .week-slider{display:flex;gap:8px;overflow:hidden;padding:5px 0;margin-bottom:10px;justify-content:center;}
+    .week-day{min-width:85px;padding:15px 10px;border-radius:18px;background:#fafbfc;border:1px solid #333;text-align:center;cursor:pointer;}
     .week-day.active{background:#ff4d88;color:#fff;}
     .week-day-date{font-weight:700;margin-bottom:4px;font-size:16px;}
     .week-day-week{font-size:12px;}
 
-    .staff-list{
-      display:flex;flex-direction:column;gap:10px;
-    }
-    .staff-item{
-      padding:15px 20px;border-radius:16px;
-      background:#fafbfc;border:1px solid #333;
-      cursor:pointer;
-    }
+    .staff-list{display:flex;flex-direction:column;gap:10px;}
+    .staff-item{padding:15px 20px;border-radius:16px;background:#fafbfc;border:1px solid #333;cursor:pointer;}
     .staff-item.active{background:#fdf2f8;border-color:#ff8da1}
     .staff-name{font-weight:700;margin-bottom:4px;font-size:16px;}
     .staff-time{font-size:12px;color:#666;}
 
-    .time-grid{
-      display:grid;grid-template-columns:1fr 1fr 1fr;
-      gap:8px;max-height:320px;overflow-y:auto;
-      padding-right:5px;
-    }
-    .time-btn{
-      padding:15px 5px;border-radius:14px;
-      background:#fafbfc;border:1px solid #333;
-      text-align:center;font-weight:500;cursor:pointer;
-      transition: 0.3s;
-      font-size:14px;
-    }
+    /* 🔥 预约时段：一行四列 适配文字 */
+    .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:320px;overflow-y:auto;padding-right:5px;}
+    .time-btn{padding:12px 4px;border-radius:14px;background:#fafbfc;border:1px solid #333;text-align:center;font-weight:500;cursor:pointer;transition:0.3s;font-size:13px;}
     .time-btn.active{background:#ff4d88;color:#fff;}
     .time-btn:hover:not(.active){border-color:#ff8da1;background:#fdf2f8;}
 
     .form-group{margin-bottom:20px}
     label{font-weight:600;color:#333;display:block;margin-bottom:8px;}
-    input,textarea,select{
-      width:100%;height:54px;
-      padding:0 20px;border-radius:16px;
-      border:1px solid #333;
-      background:#fafbfc;
-      font-size:15px;
-      font-family:'Noto Sans TC',sans-serif;
-    }
-    input:focus,textarea:focus,select:focus{
-      outline:none;border-color:#ff8da1;
-      background:#fdf2f8;
-    }
+    input,textarea,select{width:100%;height:54px;padding:0 20px;border-radius:16px;border:1px solid #333;background:#fafbfc;font-size:15px;font-family:'Noto Sans TC',sans-serif;}
+    input:focus,textarea:focus,select:focus{outline:none;border-color:#ff8da1;background:#fdf2f8;}
     textarea{min-height:120px;resize:none;padding:15px 20px;}
     .birthday-row{display:flex;gap:10px;}
     .birthday-row select{flex:1;}
 
-    .btn-next{
-      width:100%;height:58px;
-      background:linear-gradient(135deg,#FF5D8F,#FF3377);
-      border:1px solid #333;
-      border-radius:20px;
-      color:#fff;font-size:16px;font-weight:700;
-      cursor:pointer;
-      font-family:'Noto Sans TC',sans-serif;
-      margin-top:10px;
-    }
+    .btn-next{width:100%;height:58px;background:linear-gradient(135deg,#FF5D8F,#FF3377);border:1px solid #333;border-radius:20px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;margin-top:10px;transition:0.3s;}
     .btn-next:disabled{opacity:0.6;cursor:not-allowed;}
+    /* 🔥 提交按钮加载样式 */
+    .btn-next.loading {background:#ccc;pointer-events:none;}
     .loading{text-align:center;color:#999;padding:20px;font-size:14px;}
 
-    #loadingOverlay{
-      position:fixed;inset:0;
-      background:rgba(255,255,255,0.95);
-      display:flex;flex-direction:column;
-      align-items:center;justify-content:center;
-      z-index:9999;
-    }
-    .loading-spinner{
-      width:60px;height:60px;
-      border:5px solid #fce8f3;
-      border-top:5px solid #ff4d88;
-      border-radius:50%;
-      animation:spin 1s linear infinite;
-      margin-bottom:15px;
-    }
+    #loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}
+    .loading-spinner{width:60px;height:60px;border:5px solid #fce8f3;border-top:5px solid #ff4d88;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px;}
     @keyframes spin{100%{transform:rotate(360deg)}}
 
-    .modal-overlay {
-      position: fixed;inset:0;background:rgba(0,0,0,0.6);
-      display:flex;align-items:center;justify-content:center;
-      z-index:99999;opacity:0;pointer-events:none;
-      transition:opacity 0.3s ease;
-    }
+    .modal-overlay {position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;pointer-events:none;transition:opacity 0.3s ease;}
     .modal-overlay.active {opacity:1;pointer-events:all;}
-    .modal-box {
-      background:#fff;border-radius:20px;padding:30px 25px;
-      width:90%;max-width:380px;text-align:center;
-      border: 1px solid #333;
-      transform:scale(0.9);
-      transition:transform 0.3s ease;
-    }
+    .modal-box {background:#fff;border-radius:20px;padding:30px 25px;width:90%;max-width:380px;text-align:center;border:1px solid #333;transform:scale(0.9);transition:transform 0.3s ease;}
     .modal-overlay.active .modal-box{transform:scale(1);}
     .modal-icon{font-size:40px;margin-bottom:15px;color:#ff4d88;}
     .modal-title{font-size:18px;font-weight:700;margin-bottom:10px;color:#333;}
     .modal-desc{margin-bottom:25px;color:#666;font-size:14px;}
-    .modal-btn{
-      width:100%;height:50px;
-      border-radius:12px;border:1px solid #333;
-      background:#ff4d88;color:#fff;
-      font-size:15px;font-weight:600;
-      cursor:pointer;
-      font-family:'Noto Sans TC',sans-serif;
-    }
+    .modal-btn{width:100%;height:50px;border-radius:12px;border:1px solid #333;background:#ff4d88;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
     .modal-btn:hover{background:#ff3377;}
   </style>
 </head>
@@ -351,7 +209,12 @@
 
   <div class="section" id="step2">
     <div class="section-title">選擇預約日期</div>
-    <div class="week-slider" id="weekSlider"><div class="loading">載入排班中...</div></div>
+    <!-- 🔥 日期翻页组件 -->
+    <div class="date-pagination">
+      <button class="date-page-btn" id="prevDate" disabled>&lt;</button>
+      <div class="week-slider" id="weekSlider"><div class="loading">載入排班中...</div></div>
+      <button class="date-page-btn" id="nextDate">&gt;</button>
+    </div>
     <div class="section-title">選擇美容師</div>
     <div class="staff-list" id="staffList"><div class="loading">請先選擇日期</div></div>
     <div class="section-title">選擇預約時段</div>
@@ -401,6 +264,11 @@ let userId = "";
 let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
 const PAGE_SIZE = 8;
+// 🔥 日期分页配置（7天一页）
+const DATE_PAGE_SIZE = 7;
+let currentDatePage = 0;
+let allDateList = [];
+
 let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
 const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}};
 
@@ -570,15 +438,32 @@ function renderServices(cate){
   renderCurrentPage();
 }
 
+// 🔥 日期分页渲染（7天一页）
 function renderDates(){
   const w = document.getElementById('weekSlider');
-  w.innerHTML = '';
   const today = getTodayTaipei();
-  const dateList = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
+  allDateList = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
   
-  if(!dateList.length){ w.innerHTML='<div class="loading">暫無可預約的日期</div>'; return; }
+  if(!allDateList.length){ 
+    w.innerHTML='<div class="loading">暫無可預約的日期</div>'; 
+    document.getElementById('prevDate').disabled = true;
+    document.getElementById('nextDate').disabled = true;
+    return; 
+  }
+
+  renderCurrentDatePage();
+}
+
+// 渲染当前日期页
+function renderCurrentDatePage(){
+  const w = document.getElementById('weekSlider');
+  w.innerHTML = '';
   
-  dateList.forEach(d=>{
+  const start = currentDatePage * DATE_PAGE_SIZE;
+  const end = start + DATE_PAGE_SIZE;
+  const currentDates = allDateList.slice(start, end);
+
+  currentDates.forEach(d=>{
     const el = document.createElement('div');
     el.className = 'week-day';
     const [,month,day] = d.split('-');
@@ -592,9 +477,30 @@ function renderDates(){
     };
     w.appendChild(el);
   });
+
+  // 翻页按钮状态
+  document.getElementById('prevDate').disabled = currentDatePage === 0;
+  document.getElementById('nextDate').disabled = end >= allDateList.length;
   
-  document.querySelectorAll('.week-day')[0]?.click();
+  // 默认选中第一个
+  if(currentDates.length) document.querySelectorAll('.week-day')[0]?.click();
 }
+
+// 日期上一页
+document.getElementById('prevDate').addEventListener('click', () => {
+  if(currentDatePage > 0){
+    currentDatePage--;
+    renderCurrentDatePage();
+  }
+});
+
+// 日期下一页
+document.getElementById('nextDate').addEventListener('click', () => {
+  if((currentDatePage + 1) * DATE_PAGE_SIZE < allDateList.length){
+    currentDatePage++;
+    renderCurrentDatePage();
+  }
+});
 
 function renderStaff(date){
   const s = document.getElementById('staffList');
@@ -691,12 +597,34 @@ function loadAllData(){
   });
 }
 
-// 提交預約（修復生日格式）
+// 🔥 提交预约：防呆+动态加载效果
 function submit(){
+  const submitBtn = document.getElementById('submitBtn');
+  
+  // 防重复提交
+  if(submitBtn.disabled) return;
+
   if(!userId){
     showModal('error','登錄異常','請使用LINE登錄後再提交預約');
     return;
   }
+
+  // 表單驗證
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  if(!name){
+    showModal('error','填寫錯誤','請輸入您的姓名');
+    return;
+  }
+  if(!/^09\d{2}-\d{3}-\d{3}$/.test(phone)){
+    showModal('error','填寫錯誤','請輸入正確電話格式：0912-345-678');
+    return;
+  }
+
+  // 🔥 动态效果：禁用按钮+加载样式
+  submitBtn.disabled = true;
+  submitBtn.classList.add('loading');
+  submitBtn.textContent = '提交中...';
 
   // 獲取生日
   const y = document.getElementById('birthYear').value;
@@ -711,32 +639,23 @@ function submit(){
     service: document.getElementById('selectedService').value,
     staff: document.getElementById('selectedStaff').value,
     appointTime: document.getElementById('selectedTime').value,
-    name: document.getElementById('name').value.trim(),
-    phone: document.getElementById('phone').value.trim(),
+    name: name,
+    phone: phone,
     birthday: birthday,
     extraInfo: document.getElementById('extraInfo').value.trim()
   };
   
-  if(!data.service){ showModal('error','填寫錯誤','請選擇服務項目'); return; }
-  if(!data.date){ showModal('error','填寫錯誤','請選擇預約日期'); return; }
-  if(!data.staff){ showModal('error','填寫錯誤','請選擇美容師'); return; }
-  if(!data.appointTime){ showModal('error','填寫錯誤','請選擇預約時間'); return; }
-  if(!data.name){ showModal('error','填寫錯誤','請輸入您的姓名'); return; }
-  if(!/^09\d{2}-\d{3}-\d{3}$/.test(data.phone)){ showModal('error','填寫錯誤','請輸入正確電話格式：0912-345-678'); return; }
-  
-  const submitBtn = document.getElementById('submitBtn');
-  submitBtn.disabled = true;
-  submitBtn.textContent = '提交中...';
-  
   gasRequest("submit",data,function handleSubmitResponse(res){
+    // 恢复按钮状态
     submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
     submitBtn.textContent = '確認提交預約';
+
     if(res?.status==="success"){
       showModal('success','預約成功','您的預約已提交，我們會盡快與您確認！');
       setTimeout(()=>window.location.reload(),2000);
     }else{
       showModal('error','預約失敗',res?.message||'提交失敗，請稍後重試');
-      // 預約失敗強制刷新時段
       renderSlots();
     }
   });
