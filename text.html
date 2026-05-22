@@ -379,7 +379,6 @@ const CONFIG = {
   LIFF_ID: "2009598216-MmBS77sp"
 };
 
-// 強制LINE登錄，禁止匿名
 let userId = "";
 let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
@@ -394,7 +393,6 @@ const CATEGORIES = {
   "身體":["無痛粉嫩乳暈術","外泌體育髮","除私密毛","腋下私毛"]
 };
 
-// 強制台北時區（GMT+8），徹底解決時間錯誤
 function getTaipeiDateString(date) {
   const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' };
   return new Date(date).toLocaleDateString('zh-CN', options).replace(/\//g, '-');
@@ -526,7 +524,6 @@ function renderDates(){
     w.appendChild(el);
   });
   
-  // 默認選中第一個日期
   document.querySelectorAll('.week-day')[0]?.click();
 }
 
@@ -555,27 +552,22 @@ function renderStaff(date){
     };
     s.appendChild(el);
   });
-  // 默認選中第一個美容師
   document.querySelectorAll('.staff-item')[0]?.click();
 }
 
-// 核心修復：預約時間渲染、選擇、賦值
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
   const service = document.getElementById('selectedService').value.trim();
   const g = document.getElementById('timeGrid');
 
-  // 前置校驗
   if(!service){ g.innerHTML='<div class="loading">❌ 請先選擇服務項目</div>'; return; }
   if(!date || !staff){ g.innerHTML='<div class="loading">❌ 請先選擇日期和美容師</div>'; return; }
 
-  // 重置狀態
   g.innerHTML = '<div class="loading">🔍 載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
 
-  // 獲取可用時段
   gasRequest("getSlots", { date, staff, service }, function handleSlotResponse(res){
     if(res?.status !== "success"){
       showModal('error','載入失敗',res?.message||'網路異常，無法載入時段');
@@ -591,7 +583,6 @@ function renderSlots(){
       return;
     }
 
-    // 渲染時間按鈕 + 強制賦值
     slots.forEach((item)=>{
       if(!item?.time) return;
       const timeText = item.time.trim();
@@ -599,7 +590,6 @@ function renderSlots(){
       b.className = 'time-btn';
       b.textContent = timeText;
       
-      // 點擊事件：正確賦值時間
       b.onclick = function handleTimeClick() {
         document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
         b.classList.add('active');
@@ -609,7 +599,6 @@ function renderSlots(){
       g.appendChild(b);
     });
 
-    // 默認選中第一個時間，自動賦值
     const firstTimeBtn = document.querySelectorAll('.time-btn')[0];
     if(firstTimeBtn){
       firstTimeBtn.click();
@@ -632,9 +621,7 @@ function loadAllData(){
   });
 }
 
-// 修復：提交前強校驗時間，防止空值 + 強校驗LINE用戶信息
 function submit(){
-  // 強制校驗LINE登錄狀態
   if(!userId){
     showModal('error','登錄異常','請使用LINE登錄後再提交預約');
     return;
@@ -653,7 +640,6 @@ function submit(){
     extraInfo: document.getElementById('extraInfo').value.trim()
   };
   
-  // 強制校驗所有必填項（包含時間）
   if(!data.service){ showModal('error','填寫錯誤','請選擇服務項目'); return; }
   if(!data.date){ showModal('error','填寫錯誤','請選擇預約日期'); return; }
   if(!data.staff){ showModal('error','填寫錯誤','請選擇美容師'); return; }
@@ -677,23 +663,19 @@ function submit(){
   });
 }
 
-// 核心修復：強制LINE登錄，獲取標準U開頭用戶ID
 async function initLiff(){
   try{
     await liff.init({liffId:CONFIG.LIFF_ID});
     
-    // 未登錄 → 強制跳轉登錄
     if(!liff.isLoggedIn()){
       liff.login();
       return;
     }
 
-    // 已登錄 → 獲取標準LINE用戶信息(U開頭ID)
     const profile = await liff.getProfile();
-    userId = profile.userId;       // 標準U開頭LINE ID
-    userName = profile.displayName;// 正確暱稱
+    userId = profile.userId;
+    userName = profile.displayName;
 
-    // 賦值到隱藏欄位
     document.getElementById('lineId').value = userId;
     document.getElementById('lineName').value = userName;
     
@@ -701,7 +683,6 @@ async function initLiff(){
     console.error('LIFF初始化失敗:', e);
     showModal('error','登錄失敗','LINE登錄異常，請刷新重試');
   }finally{
-    // 加載系統數據
     loadAllData();
   }
 }
@@ -735,7 +716,6 @@ document.addEventListener('DOMContentLoaded',async function handleDOMContentLoad
   document.getElementById('nextToInfo').addEventListener('click',function(){goStep(3)});
   document.getElementById('submitBtn').addEventListener('click',submit);
   
-  // 初始化LIFF
   await initLiff();
 });
 </script>
