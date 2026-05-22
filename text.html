@@ -167,9 +167,29 @@
     .week-day-date{font-weight:700;margin-bottom:2px;font-size:14px;}
     .week-day-week{font-size:11px;}
 
+    /* 美容师圆形头像样式 */
+    .staff-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff8da1, #ff4d88, #c77dff);
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(255,77,136,0.2);
+      border: 2px solid #fff;
+    }
     .staff-list{display:flex;flex-direction:column;gap:10px;}
-    .staff-item{padding:15px 20px;border-radius:16px;background:#fafbfc;border:1px solid #333;cursor:pointer;}
+    .staff-item{
+      padding:15px 20px;
+      border-radius:16px;
+      background:#fafbfc;
+      border:1px solid #333;
+      cursor:pointer;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
     .staff-item.active{background:#fdf2f8;border-color:#ff8da1}
+    .staff-info{flex:1;}
     .staff-name{font-weight:700;margin-bottom:4px;font-size:16px;}
     .staff-time{font-size:12px;color:#666;}
 
@@ -273,7 +293,7 @@
       <div class="tab active" data-cate="面部">面部<br>管理</div>
       <div class="tab" data-cate="美甲">美甲<br>手足</div>
       <div class="tab" data-cate="眉眼">眉眼唇</div>
-      <div class="tab" data-cate="身體">身體<br>護理</div>
+      <div class="tab" data-cate="除毛">睫毛<br>除毛</div>
     </div>
     <div class="service-grid" id="serviceGrid"><div class="loading"><div class="loading-icon"></div>載入服務中...</div></div>
     <div class="pagination" id="pagination"></div>
@@ -345,13 +365,15 @@ let totalDatePages = 0;
 let allDateList = [];
 
 let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
+// 新增：当前选中分类（默认面部）
+let currentCategory = "面部";
 const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}};
 
 const CATEGORIES = {
   "面部":["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
   "美甲":["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
-  "眉眼":["霧眉","霧唇","洗眉","角蛋白","接睫毛"],
-  "身體":["無痛粉嫩乳暈術","外泌體育髮","除私密毛","腋下私毛"]
+  "眉眼":["霧眉","霧唇","洗眉","角蛋白"],
+  "除毛":["無痛粉嫩乳暈術","外泌體育髮","除私密毛","腋下私毛","接睫毛"]
 };
 
 // 步骤栏点击切换功能
@@ -512,12 +534,16 @@ function renderCurrentPage(){
   renderPagination();
 }
 
-// 修正：搜索全品項，無需分類過濾
+// 修复：分类+搜索双重筛选服务
 function renderServices(){
   currentPage=1;
   const allServices = GLOBAL_DATA.allServices || [];
-  // 全局搜索所有服务，取消分类限制
-  currentServiceList = allServices.filter(s=> s?.name && (searchKeyword==='' || s.name.includes(searchKeyword)));
+  // 第一步：按当前分类筛选
+  let filtered = allServices.filter(item => CATEGORIES[currentCategory].includes(item.name));
+  // 第二步：按搜索关键词筛选
+  filtered = filtered.filter(s=> s?.name && (searchKeyword==='' || s.name.includes(searchKeyword)));
+  
+  currentServiceList = filtered;
   totalPage = Math.ceil(currentServiceList.length/PAGE_SIZE);
   renderCurrentPage();
 }
@@ -605,8 +631,14 @@ function renderStaff(date){
     if(!st) return;
     const el = document.createElement('div');
     el.className='staff-item';
-    // 美容师自动添加「老師」
-    el.innerHTML = `<div class="staff-name">${st.name} 老師</div><div class="staff-time">營業時間：${st.start}~${st.end}</div>`;
+    // 帶圓形頭像的美容師卡片
+    el.innerHTML = `
+      <div class="staff-avatar"></div>
+      <div class="staff-info">
+        <div class="staff-name">${st.name} 老師</div>
+        <div class="staff-time">營業時間：${st.start}~${st.end}</div>
+      </div>
+    `;
     el.onclick = function handleStaffClick() {
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
@@ -787,11 +819,14 @@ document.addEventListener('DOMContentLoaded',async function handleDOMContentLoad
     renderServices();
   });
   
-  // 分类标签保留切换效果，但搜索为全局
+  // 修复：分类标签点击联动筛选
   document.querySelectorAll('.tab').forEach(function handleTabClick(tab){
     tab.addEventListener('click',function(){
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       tab.classList.add('active');
+      // 更新当前分类并重新渲染服务
+      currentCategory = tab.dataset.cate;
+      renderServices();
     });
   });
   
