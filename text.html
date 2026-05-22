@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>莫凡韓式皮膚管理 | 線上預約</title>
+  <title>莫凡韩式皮肤管理 | 线上预约</title>
   <link rel="icon" href="data:,">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -303,36 +303,36 @@
 
 <div id="loadingOverlay">
   <div class="loading-spinner"></div>
-  <div style="color:#ff4d88;font-size:16px;font-weight:500;">🌸 系統初始化中，請稍候...</div>
+  <div style="color:#ff4d88;font-size:16px;font-weight:500;">🌸 系统初始化中，请稍候...</div>
 </div>
 
 <div class="modal-overlay" id="modal">
   <div class="modal-box">
     <div class="modal-icon">✅</div>
-    <h3 class="modal-title">預約成功</h3>
-    <p class="modal-desc">您的預約已提交，我們會盡快與您確認</p>
-    <button class="modal-btn" id="modalBtn">確認</button>
+    <h3 class="modal-title">预约成功</h3>
+    <p class="modal-desc">您的预约已提交，我们会尽快与您确认</p>
+    <button class="modal-btn" id="modalBtn">确认</button>
   </div>
 </div>
 
 <main>
   <div class="header">
-    <h1 class="main-title">莫凡韓式皮膚管理</h1>
-    <p class="sub-title">專業美容 · 一對一精緻服務</p>
+    <h1 class="main-title">莫凡韩式皮肤管理</h1>
+    <p class="sub-title">专业美容 · 一对一精致服务</p>
   </div>
 
   <div class="step-bar">
-    <div class="step active" data-step="1"><div class="step-num">1</div><div class="step-text">選擇服務</div></div>
-    <div class="step" data-step="2"><div class="step-num">2</div><div class="step-text">選擇日期</div></div>
-    <div class="step" data-step="3"><div class="step-num">3</div><div class="step-text">預約資訊</div></div>
+    <div class="step active" data-step="1"><div class="step-num">1</div><div class="step-text">选择服务</div></div>
+    <div class="step active" data-step="2"><div class="step-num">2</div><div class="step-text">选择日期</div></div>
+    <div class="step" data-step="3"><div class="step-num">3</div><div class="step-text">预约信息</div></div>
   </div>
 
   <div class="section active" id="step1">
-    <div class="section-title">服務項目分類</div>
+    <div class="section-title">服务项目分类</div>
     <div class="search-wrapper">
       <div class="search-container">
         <span class="search-icon">🔍</span>
-        <input class="search-input" id="serviceSearch" placeholder="搜尋服務項目">
+        <input class="search-input" id="serviceSearch" placeholder="搜寻服务项目">
         <span class="search-clear" id="searchClear">✕</span>
       </div>
     </div>
@@ -340,29 +340,29 @@
       <div class="tab active" data-cate="面部">面部<br>管理</div>
       <div class="tab" data-cate="美甲">美甲<br>手足</div>
       <div class="tab" data-cate="眉眼">眉眼唇</div>
-      <div class="tab" data-cate="身體">身體<br>護理</div>
+      <div class="tab" data-cate="身体">身体<br>护理</div>
     </div>
-    <div class="service-grid" id="serviceGrid"><div class="loading">載入服務中...</div></div>
+    <div class="service-grid" id="serviceGrid"><div class="loading">载入服务中...</div></div>
     <div class="pagination" id="pagination"></div>
-    <button class="btn-next" id="nextToDate" disabled>下一步：選擇預約日期</button>
+    <button class="btn-next" id="nextToDate" disabled>下一步：选择预约日期</button>
   </div>
 
   <div class="section" id="step2">
-    <div class="section-title">選擇預約日期</div>
-    <div class="week-slider" id="weekSlider"><div class="loading">載入排班中...</div></div>
-    <div class="section-title">選擇美容師</div>
-    <div class="staff-list" id="staffList"><div class="loading">請先選擇日期</div></div>
-    <div class="section-title">選擇預約時段</div>
-    <div class="time-grid" id="timeGrid"><div class="loading">請先選擇美容師</div></div>
-    <button class="btn-next" id="nextToInfo" disabled>下一步：填寫預約資訊</button>
+    <div class="section-title">选择预约日期</div>
+    <div class="week-slider" id="weekSlider"><div class="loading">载入排班中...</div></div>
+    <div class="section-title">选择美容师</div>
+    <div class="staff-list" id="staffList"><div class="loading">请先选择日期</div></div>
+    <div class="section-title">选择预约时段</div>
+    <div class="time-grid" id="timeGrid"><div class="loading">请先选择美容师</div></div>
+    <button class="btn-next" id="nextToInfo" disabled>下一步：填写预约信息</button>
   </div>
 
   <div class="section" id="step3">
-    <div class="form-group"><label>姓名 *</label><input type="text" id="name" required placeholder="請輸入您的姓名"></div>
-    <div class="form-group"><label>聯絡電話 *</label><input type="tel" id="phone" required placeholder="請輸入您的聯絡電話"></div>
+    <div class="form-group"><label>姓名 *</label><input type="text" id="name" required placeholder="请输入您的姓名"></div>
+    <div class="form-group"><label>联络电话 *</label><input type="tel" id="phone" required placeholder="请输入您的联络电话"></div>
     <div class="form-group"><label>生日</label><input type="date" id="birthday"></div>
-    <div class="form-group"><label>備註</label><textarea id="extraInfo" placeholder="請輸入其他需要說明的事項（選填）"></textarea></div>
-    <button class="btn-next" id="submitBtn">確認提交預約</button>
+    <div class="form-group"><label>备注</label><textarea id="extraInfo" placeholder="请输入其他需要说明的事项（选填）"></textarea></div>
+    <button class="btn-next" id="submitBtn">确认提交预约</button>
   </div>
 
   <input type="hidden" id="selectedService">
@@ -380,20 +380,20 @@ const CONFIG = {
 };
 
 let userId = "guest_"+Date.now();
-let userName = "訪客";
+let userName = "访客";
 const weekDays = ['日','一','二','三','四','五','六'];
 const PAGE_SIZE = 8;
 let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
 const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}};
 
 const CATEGORIES = {
-  "面部":["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
-  "美甲":["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
-  "眉眼":["霧眉","霧唇","洗眉","角蛋白","接睫毛"],
-  "身體":["無痛粉嫩乳暈術","外泌體育髪","除私密毛","腋下私毛"]
+  "面部":["液态飞梭","无痛清粉刺","无痛清粉刺+修护敏感项目","无痛清粉刺+靓白水光肌项目","进化黑矽晶重返年轻课程","黑脸娃娃","除疣","除斑","脸部深层保湿课程","脸部皮秒课程","脸部白藻针课程","脸部清粉刺","高阶保养"],
+  "美甲":["光疗美甲","卸甲","光疗美甲加卸甲","剪手脚指甲","手部保养","足部保养"],
+  "眉眼":["雾眉","雾唇","洗眉","角蛋白","接睫毛"],
+  "身体":["无痛粉嫩乳晕术","外泌体育发","除私密毛","腋下私毛"]
 };
 
-// 強制台北時區（GMT+8），徹底解決時間錯誤
+// 强制台北时区（GMT+8），彻底解决时间错误
 function getTaipeiDateString(date) {
   const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' };
   return new Date(date).toLocaleDateString('zh-CN', options).replace(/\//g, '-');
@@ -414,19 +414,19 @@ function gasRequest(action, params, callback) {
   xhr.open("GET", url, true);
   xhr.timeout = 15000;
   xhr.ontimeout = function() {
-    callback({status:"error",message:"請求超時，請稍後再試"});
+    callback({status:"error",message:"请求超时，请稍后再试"});
   };
   xhr.onload = function(){
     try{ 
       const resData = JSON.parse(xhr.responseText || "{}");
-      callback(resData || {status:"error",message:"數據格式異常"}); 
+      callback(resData || {status:"error",message:"数据格式异常"}); 
     }
     catch(e){ 
-      callback({status:"error",message:"系統異常："+e.message}); 
+      callback({status:"error",message:"系统异常："+e.message}); 
     }
   };
   xhr.onerror = function(){ 
-    callback({status:"error",message:"網路異常，請檢查網路連接"}) 
+    callback({status:"error",message:"网络异常，请检查网络连接"}) 
   };
   xhr.send();
 }
@@ -461,18 +461,18 @@ function renderPagination(){
   const p = document.getElementById('pagination');
   if(totalPage<=1){ p.innerHTML=''; return; }
   p.innerHTML = `
-    <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage=1;renderCurrentPage()">首頁</button>
-    <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage--;renderCurrentPage()">上一頁</button>
+    <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage=1;renderCurrentPage()">首页</button>
+    <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage--;renderCurrentPage()">上一页</button>
     <span class="page-text">${currentPage}/${totalPage}</span>
-    <button class="page-btn" ${currentPage===totalPage?'disabled':''} onclick="currentPage++;renderCurrentPage()">下一頁</button>
-    <button class="page-btn" ${currentPage===totalPage?'disabled':''} onclick="currentPage=totalPage;renderCurrentPage()">末頁</button>
+    <button class="page-btn" ${currentPage===totalPage?'disabled':''} onclick="currentPage++;renderCurrentPage()">下一页</button>
+    <button class="page-btn" ${currentPage===totalPage?'disabled':''} onclick="currentPage=totalPage;renderCurrentPage()">末页</button>
   `;
 }
 
 function renderCurrentPage(){
   const g = document.getElementById('serviceGrid');
   g.innerHTML = '';
-  if(!currentServiceList.length){ g.innerHTML='<div class="loading">暫無符合條件的服務</div>'; renderPagination(); return; }
+  if(!currentServiceList.length){ g.innerHTML='<div class="loading">暂无符合条件的服务</div>'; renderPagination(); return; }
   
   const startIdx = (currentPage-1)*PAGE_SIZE;
   const list = currentServiceList.slice(startIdx, startIdx+PAGE_SIZE);
@@ -508,7 +508,7 @@ function renderDates(){
   const today = getTodayTaipei();
   const dateList = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
   
-  if(!dateList.length){ w.innerHTML='<div class="loading">暫無可預約的日期</div>'; return; }
+  if(!dateList.length){ w.innerHTML='<div class="loading">暂无可预约的日期</div>'; return; }
   
   dateList.forEach(d=>{
     const el = document.createElement('div');
@@ -525,27 +525,27 @@ function renderDates(){
     w.appendChild(el);
   });
   
-  // 默認選中第一個日期
+  // 默认选中第一个日期
   document.querySelectorAll('.week-day')[0]?.click();
 }
 
 function renderStaff(date){
   const s = document.getElementById('staffList');
-  s.innerHTML = '<div class="loading">載入美容師中...</div>';
+  s.innerHTML = '<div class="loading">载入美容师中...</div>';
   document.getElementById('selectedStaff').value = '';
-  document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
+  document.getElementById('timeGrid').innerHTML = '<div class="loading">请先选择美容师</div>';
   document.getElementById('nextToInfo').disabled = true;
   
-  if(!date || !GLOBAL_DATA.staffData){ s.innerHTML='<div class="loading">請選擇有效日期</div>'; return; }
+  if(!date || !GLOBAL_DATA.staffData){ s.innerHTML='<div class="loading">请选择有效日期</div>'; return; }
   const list = GLOBAL_DATA.staffData[date] || [];
-  if(!list.length){ s.innerHTML='<div class="loading">當日無美容師值班</div>'; return; }
+  if(!list.length){ s.innerHTML='<div class="loading">当日无美容师值班</div>'; return; }
   
   s.innerHTML = '';
   list.forEach(st=>{
     if(!st) return;
     const el = document.createElement('div');
     el.className='staff-item';
-    el.innerHTML = `<div class="staff-name">${st.name}</div><div class="staff-time">營業時間：${st.start}~${st.end}</div>`;
+    el.innerHTML = `<div class="staff-name">${st.name}</div><div class="staff-time">营业时间：${st.start}~${st.end}</div>`;
     el.onclick = ()=>{
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
@@ -554,31 +554,31 @@ function renderStaff(date){
     };
     s.appendChild(el);
   });
-  // 默認選中第一個美容師
+  // 默认选中第一个美容师
   document.querySelectorAll('.staff-item')[0]?.click();
 }
 
-// ✅ 核心修復：預約時間渲染、選擇、賦值（徹底解決時間錯誤）
+// ✅ 核心修复：预约时间渲染、选择、赋值（彻底解决时间错误）
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
   const service = document.getElementById('selectedService').value.trim();
   const g = document.getElementById('timeGrid');
 
-  // 前置校驗
-  if(!service){ g.innerHTML='<div class="loading">❌ 請先選擇服務項目</div>'; return; }
-  if(!date || !staff){ g.innerHTML='<div class="loading">❌ 請先選擇日期和美容師</div>'; return; }
+  // 前置校验
+  if(!service){ g.innerHTML='<div class="loading">❌ 请先选择服务项目</div>'; return; }
+  if(!date || !staff){ g.innerHTML='<div class="loading">❌ 请先选择日期和美容师</div>'; return; }
 
-  // 重置狀態
-  g.innerHTML = '<div class="loading">🔍 載入可用時段中...</div>';
+  // 重置状态
+  g.innerHTML = '<div class="loading">🔍 载入可用时段中...</div>';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
 
-  // 獲取可用時段
+  // 获取可用时段
   gasRequest("getSlots", { date, staff, service }, res=>{
     if(res?.status !== "success"){
-      showModal('error','載入失敗',res?.message||'網路異常，無法載入時段');
-      g.innerHTML = '<div class="loading">❌ 載入時段失敗，請重新選擇</div>';
+      showModal('error','载入失败',res?.message||'网络异常，无法载入时段');
+      g.innerHTML = '<div class="loading">❌ 载入时段失败，请重新选择</div>';
       return;
     }
 
@@ -586,11 +586,11 @@ function renderSlots(){
     g.innerHTML = '';
 
     if(slots.length === 0){
-      g.innerHTML = '<div class="loading">😥 該美容師當日已無可用時段</div>';
+      g.innerHTML = '<div class="loading">😥 该美容师当日已无可用时段</div>';
       return;
     }
 
-    // 渲染時間按鈕 + 強制賦值
+    // 渲染时间按钮 + 强制赋值
     slots.forEach((item, idx)=>{
       if(!item?.time) return;
       const timeText = item.time.trim();
@@ -598,17 +598,17 @@ function renderSlots(){
       b.className = 'time-btn';
       b.textContent = timeText;
       
-      // 點擊事件：正確賦值時間
+      // 点击事件：正确赋值时间
       b.onclick = ()=>{
         document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
         b.classList.add('active');
-        document.getElementById('selectedTime').value = timeText; // ✅ 強制賦值
+        document.getElementById('selectedTime').value = timeText; // ✅ 强制赋值
         document.getElementById('nextToInfo').disabled = false;
       };
       g.appendChild(b);
     });
 
-    // ✅ 默認選中第一個時間，自動賦值
+    // ✅ 默认选中第一个时间，自动赋值
     const firstTimeBtn = document.querySelectorAll('.time-btn')[0];
     if(firstTimeBtn){
       firstTimeBtn.click();
@@ -626,12 +626,12 @@ function loadAllData(){
       renderServices('面部');
       renderDates();
     }else{
-      showModal('error','初始化失敗',res?.message||'系統初始化失敗，請刷新頁面重試');
+      showModal('error','初始化失败',res?.message||'系统初始化失败，请刷新页面重试');
     }
   });
 }
 
-// ✅ 修復：提交前強校驗時間，防止空值
+// ✅ 修复：提交前强校验时间，防止空值
 function submit(){
   const data = {
     lineId: userId,
@@ -646,13 +646,13 @@ function submit(){
     extraInfo: document.getElementById('extraInfo').value.trim()
   };
   
-  // 強制校驗所有必填項（包含時間）
-  if(!data.service){ showModal('error','填寫錯誤','請選擇服務項目'); return; }
-  if(!data.date){ showModal('error','填寫錯誤','請選擇預約日期'); return; }
-  if(!data.staff){ showModal('error','填寫錯誤','請選擇美容師'); return; }
-  if(!data.appointTime){ showModal('error','填寫錯誤','請選擇預約時間'); return; }
-  if(!data.name){ showModal('error','填寫錯誤','請輸入您的姓名'); return; }
-  if(!data.phone || !/^[\d\-\+\(\) ]{8,}$/.test(data.phone)){ showModal('error','填寫錯誤','請輸入有效的聯絡電話'); return; }
+  // 强制校验所有必填项（包含时间）
+  if(!data.service){ showModal('error','填写错误','请选择服务项目'); return; }
+  if(!data.date){ showModal('error','填写错误','请选择预约日期'); return; }
+  if(!data.staff){ showModal('error','填写错误','请选择美容师'); return; }
+  if(!data.appointTime){ showModal('error','填写错误','请选择预约时间'); return; }
+  if(!data.name){ showModal('error','填写错误','请输入您的姓名'); return; }
+  if(!data.phone || !/^[\d\-\+\(\) ]{8,}$/.test(data.phone)){ showModal('error','填写错误','请输入有效的联络电话'); return; }
   
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
@@ -660,12 +660,12 @@ function submit(){
   
   gasRequest("submit",data,res=>{
     submitBtn.disabled = false;
-    submitBtn.textContent = '確認提交預約';
+    submitBtn.textContent = '确认提交预约';
     if(res?.status==="success"){
-      showModal('success','預約成功','您的預約已提交，我們會盡快與您確認！');
+      showModal('success','预约成功','您的预约已提交，我们会尽快与您确认！');
       setTimeout(()=>window.location.reload(),2000);
     }else{
-      showModal('error','預約失敗',res?.message||'提交失敗，請稍後重試');
+      showModal('error','预约失败',res?.message||'提交失败，请稍后重试');
     }
   });
 }
@@ -676,10 +676,10 @@ async function initLiff(){
     if(liff.isLoggedIn()){
       const p = await liff.getProfile();
       userId = p?.userId || "guest";
-      userName = p?.displayName || "訪客";
+      userName = p?.displayName || "访客";
     }
   }catch(e){
-    console.error('LIFF初始化失敗:', e);
+    console.error('LIFF初始化失败:', e);
   }finally{
     document.getElementById('lineId').value = userId;
     document.getElementById('lineName').value = userName;
