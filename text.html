@@ -10,7 +10,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400,500,700,900&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
     body{
-      background:linear-gradient(135deg,#fdf2f8 0%,#fef7fb 50%,#fce8f3 100%);
+      background:linear-gradient(135deg,#fdf2f8 0%,#fef7fb 50%,#fce8f3 10%);
       font-family:'Noto Sans TC',sans-serif;color:#444;
       display:flex;justify-content:center;min-height:100vh;
       padding:15px 10px 60px;
@@ -18,7 +18,7 @@
     main{
       background:#fff;border-radius:28px;
       box-shadow:0 20px 60px rgba(255,133,162,0.15);
-      width:100%;max-width:480px;padding:40px 28px;
+      width:100%;max-width:48px;padding:40px 28px;
       position:relative;overflow:hidden;
       border: 1px solid #333;
     }
@@ -77,7 +77,7 @@
 
     .search-wrapper {
       position: relative;
-      margin-bottom: 20px;
+      margin-bottom:20px;
     }
     .search-container {
       display:flex;align-items:center;padding:0 18px;
@@ -162,7 +162,7 @@
       white-space: nowrap;
       transition: 0.3s;
     }
-    .page-btn:hover:not(:disabled) {background:#ff4d88;color:#fff;}
+    .page-btn:hover:not(.disabled) {background:#ff4d88;color:#fff;}
     .page-btn:disabled {background:#e9ecef;color:#ccc;}
     .page-text {
       min-width:45px;
@@ -322,7 +322,7 @@
     <div class="category-tabs">
       <div class="tab active" data-cate="面部">面部<br>管理</div>
       <div class="tab" data-cate="美甲">美甲<br>手足</div>
-      <div class="tab" data-cate="眉眼">眉眼唇</div>
+      <div class="tab" data-cate="眉眼">眉<br>眼唇</div>
       <div class="tab" data-cate="除毛">睫毛<br>除毛</div>
       <div class="tab" data-cate="頭皮">頭皮<br>保養</div>
     </div>
@@ -408,7 +408,8 @@ function getStaffAvatar(staffName) {
   const avatarMap = {
     "小惠": "https://yb131419.github.io/MoFan/IMG_6059.jpg",
     "Tina": "https://yb131419.github.io/MoFan/IMG_6058.jpg",
-    "Nini": "https://picsum.photos/seed/xiaoting/200/200"
+    "Nini": "https://picsum.photos/seed/xiaoting/200/200",
+    "auto": "https://picsum.photos/seed/auto/200/200"
   };
   return avatarMap[staffName] || "https://picsum.photos/seed/default/200/200";
 }
@@ -659,7 +660,7 @@ function renderServices(){
   const selectedStaff = document.getElementById('selectedStaff').value.trim();
   
   let filtered = [];
-  if(selectedStaff && GLOBAL_DATA.staffServices[selectedStaff]){
+  if(selectedStaff && selectedStaff !== 'auto' && GLOBAL_DATA.staffServices[selectedStaff]){
     filtered = GLOBAL_DATA.staffServices[selectedStaff].filter(item => 
       CATEGORIES[currentCategory].includes(item.name)
     );
@@ -730,6 +731,7 @@ function renderDates(){
   renderDatePagination();
 }
 
+// ✅ 前端核心修改：新增「不指定美容師」選項
 function renderStaff(date){
   const s = document.getElementById('staffList');
   const selectedService = document.getElementById('selectedService').value.trim();
@@ -757,6 +759,27 @@ function renderStaff(date){
   }
   
   s.innerHTML = '';
+
+  // 新增：不指定美容師（自動分配）
+  const autoEl = document.createElement('div');
+  autoEl.className = 'staff-item';
+  autoEl.innerHTML = `
+    <div class="staff-avatar" style="background-image: url('${getStaffAvatar('auto')}')"></div>
+    <div class="staff-info">
+      <div class="staff-name">不指定美容師</div>
+      <div class="staff-time">系統自動分配</div>
+    </div>
+  `;
+  autoEl.onclick = function handleAutoStaff() {
+    document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
+    autoEl.classList.add('active');
+    document.getElementById('selectedStaff').value = 'auto';
+    renderServices();
+    renderSlots();
+  };
+  s.appendChild(autoEl);
+
+  // 原有美容師列表
   staffList.forEach(st=>{
     if(!st) return;
     const el = document.createElement('div');
@@ -788,13 +811,28 @@ function renderSlots(){
   if(!serviceName){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇服務項目</div>'; return; }
   if(!date || !staffName){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇日期和美容師</div>'; return; }
 
-  const staffList = GLOBAL_DATA.staffData[date] || [];
-  const staffInfo = staffList.find(s => s.name === staffName) || {};
+  let workStart = "09:00";
+  let workEnd = "21:00";
+  
+  // 自動分配模式，取當日所有美容師的營業時間區間
+  if(staffName === 'auto'){
+    const staffList = GLOBAL_DATA.staffData[date] || [];
+    const validStaff = staffList.filter(st => 
+      GLOBAL_DATA.staffServices[st.name]?.some(item => item.name === serviceName)
+    );
+    if(validStaff.length){
+      workStart = validStaff[0].start;
+      workEnd = validStaff[0].end;
+    }
+  } else {
+    const staffList = GLOBAL_DATA.staffData[date] || [];
+    const staffInfo = staffList.find(s => s.name === staffName) || {};
+    workStart = staffInfo.start || "09:00";
+    workEnd = staffInfo.end || "21:00";
+  }
+
   const serviceInfo = GLOBAL_DATA.allServices.find(s => s.name === serviceName) || {};
   const serviceDuration = serviceInfo?.duration || 60;
-
-  const workStart = staffInfo.start || "09:00";
-  const workEnd = staffInfo.end || "21:00";
 
   g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
@@ -934,7 +972,7 @@ function submit(){
     submitBtn.textContent = '確認提交預約';
 
     if(res?.status==="success"){
-      showModal('success','預約成功','您的預約已提交，我們會盡快與您確認！');
+      showModal('success','預約成功','您的預約已提交，系統已自動分配美容師！');
       setTimeout(()=>window.location.reload(),2000);
     }else{
       showModal('error','預約失敗',res?.message||'提交失敗，請稍後重試');
