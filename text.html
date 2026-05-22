@@ -226,7 +226,7 @@
 
     .form-group{margin-bottom:20px}
     label{font-weight:600;color:#333;display:block;margin-bottom:8px;}
-    input,textarea,select{
+    input,textarea{
       width:100%;height:54px;
       padding:0 20px;border-radius:16px;
       border:1px solid #333;
@@ -234,13 +234,11 @@
       font-size:15px;
       font-family:'Noto Sans TC',sans-serif;
     }
-    input:focus,textarea:focus,select:focus{
+    input:focus,textarea:focus{
       outline:none;border-color:#ff8da1;
       background:#fdf2f8;
     }
     textarea{min-height:120px;resize:none;padding:15px 20px;}
-    .birthday-row{display:flex;gap:10px;}
-    .birthday-col{flex:1;}
 
     .btn-next{
       width:100%;height:58px;
@@ -361,31 +359,8 @@
 
   <div class="section" id="step3">
     <div class="form-group"><label>姓名 *</label><input type="text" id="name" required placeholder="請輸入您的姓名"></div>
-    <div class="form-group"><label>聯絡電話 *</label><input type="tel" id="phone" required placeholder="請輸入手機號碼（0912-345-678）"></div>
-    
-    <!-- 修正：生日下拉選單（年/月/日） -->
-    <div class="form-group">
-      <label>生日</label>
-      <div class="birthday-row">
-        <div class="birthday-col">
-          <select id="birthYear">
-            <option value="">請選擇年</option>
-          </select>
-        </div>
-        <div class="birthday-col">
-          <select id="birthMonth">
-            <option value="">請選擇月</option>
-          </select>
-        </div>
-        <div class="birthday-col">
-          <select id="birthDay">
-            <option value="">請選擇日</option>
-          </select>
-        </div>
-      </div>
-      <input type="hidden" id="birthday">
-    </div>
-
+    <div class="form-group"><label>聯絡電話 *</label><input type="tel" id="phone" required placeholder="請輸入您的聯絡電話"></div>
+    <div class="form-group"><label>生日</label><input type="date" id="birthday"></div>
     <div class="form-group"><label>備註</label><textarea id="extraInfo" placeholder="請輸入其他需要說明的事項（選填）"></textarea></div>
     <button class="btn-next" id="submitBtn">確認提交預約</button>
   </div>
@@ -426,66 +401,6 @@ function getTaipeiDateString(date) {
 }
 function getTodayTaipei() {
   return getTaipeiDateString(new Date());
-}
-
-// 初始化生日下拉選單
-function initBirthdaySelect() {
-  const yearSelect = document.getElementById('birthYear');
-  const monthSelect = document.getElementById('birthMonth');
-  const daySelect = document.getElementById('birthDay');
-  
-  // 生成年份選項（1920~今年）
-  const currentYear = new Date().getFullYear();
-  for (let y = currentYear; y >= 1920; y--) {
-    const opt = document.createElement('option');
-    opt.value = y;
-    opt.textContent = y + '年';
-    yearSelect.appendChild(opt);
-  }
-  
-  // 生成月份選項
-  for (let m = 1; m <= 12; m++) {
-    const opt = document.createElement('option');
-    opt.value = m;
-    opt.textContent = m + '月';
-    monthSelect.appendChild(opt);
-  }
-
-  // 年月變更時，聯動日期
-  const updateDays = () => {
-    const y = yearSelect.value;
-    const m = monthSelect.value;
-    daySelect.innerHTML = '<option value="">請選擇日</option>';
-    if (!y || !m) return;
-    
-    // 獲取當月天數
-    const daysInMonth = new Date(y, m, 0).getDate();
-    for (let d = 1; d <= daysInMonth; d++) {
-      const opt = document.createElement('option');
-      opt.value = d;
-      opt.textContent = d + '日';
-      daySelect.appendChild(opt);
-    }
-    // 組合生日格式
-    combineBirthday();
-  };
-
-  // 組合生日為 yyyy-mm-dd
-  const combineBirthday = () => {
-    const y = yearSelect.value;
-    const m = monthSelect.value;
-    const d = daySelect.value;
-    const birthdayInput = document.getElementById('birthday');
-    if (y && m && d) {
-      birthdayInput.value = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    } else {
-      birthdayInput.value = '';
-    }
-  };
-
-  yearSelect.addEventListener('change', updateDays);
-  monthSelect.addEventListener('change', updateDays);
-  daySelect.addEventListener('change', combineBirthday);
 }
 
 function gasRequest(action, params, callback) {
@@ -631,7 +546,6 @@ function renderStaff(date){
     if(!st) return;
     const el = document.createElement('div');
     el.className='staff-item';
-    // 顯示班表時間（與可預約時間完全一致）
     el.innerHTML = `<div class="staff-name">${st.name}</div><div class="staff-time">營業時間：${st.start}~${st.end}</div>`;
     el.onclick = function handleStaffClick() {
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
@@ -718,7 +632,7 @@ function loadAllData(){
   });
 }
 
-// 修復：提交前強校驗電話（10位手機）+ 生日下拉
+// 修復：提交前強校驗時間，防止空值 + 強校驗LINE用戶信息
 function submit(){
   // 強制校驗LINE登錄狀態
   if(!userId){
@@ -739,20 +653,14 @@ function submit(){
     extraInfo: document.getElementById('extraInfo').value.trim()
   };
   
-  // 強制校驗所有必填項
+  // 強制校驗所有必填項（包含時間）
   if(!data.service){ showModal('error','填寫錯誤','請選擇服務項目'); return; }
   if(!data.date){ showModal('error','填寫錯誤','請選擇預約日期'); return; }
   if(!data.staff){ showModal('error','填寫錯誤','請選擇美容師'); return; }
   if(!data.appointTime){ showModal('error','填寫錯誤','請選擇預約時間'); return; }
   if(!data.name){ showModal('error','填寫錯誤','請輸入您的姓名'); return; }
+  if(!data.phone || !/^[\d\-\+\(\) ]{8,}$/.test(data.phone)){ showModal('error','填寫錯誤','請輸入有效的聯絡電話'); return; }
   
-  // 修正：嚴格驗證10位台灣手機號
-  const cleanPhone = data.phone.replace(/\D/g, '');
-  if (!/^09\d{8}$/.test(cleanPhone)) {
-    showModal('error','填寫錯誤','請輸入有效的10位手機號（0912-345-678）');
-    return;
-  }
-
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
   submitBtn.textContent = '提交中...';
@@ -801,9 +709,6 @@ async function initLiff(){
 document.addEventListener('DOMContentLoaded',async function handleDOMContentLoaded(){
   document.getElementById('modalBtn').onclick = closeModal;
   
-  // 初始化生日下拉
-  initBirthdaySelect();
-
   const searchInput = document.getElementById('serviceSearch');
   const searchClear = document.getElementById('searchClear');
   searchInput.addEventListener('input', function handleSearchInput(e){
