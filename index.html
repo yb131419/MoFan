@@ -92,6 +92,7 @@
     .search-clear {width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;background:#f8f9fa;border-radius:50%;cursor:pointer;transition:0.3;border:1px solid #333;opacity:0;pointer-events:none;}
     .search-clear.show {opacity:1;pointer-events:all;}
     .search-clear:hover {background:#ff4d88;color:#fff;}
+
 .category-tabs{
   display:flex;
   gap:8px;
@@ -431,34 +432,46 @@ function formatPhoneNumber(phone) {
   return numbers;
 }
 
+// ====================== 【修復：精準台北時區計算（無瀏覽器誤差）】 ======================
 function getTaipeiDateString(date) {
-  const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' };
-  return new Date(date).toLocaleDateString('zh-CN', options).replace(/\//g, '-');
+  const formatter = new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(new Date(date));
+  const year = parts.find(p => p.type === 'year').value;
+  const month = parts.find(p => p.type === 'month').value;
+  const day = parts.find(p => p.type === 'day').value;
+  return `${year}-${month}-${day}`;
 }
 function getTodayTaipei() {
   return getTaipeiDateString(new Date());
 }
-
-// 獲取當下台北標準時間（時區校準）
 function getCurrentTaipeiTime() {
-  return new Date(new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }));
+  const now = new Date();
+  const taipeiTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+  return taipeiTime;
 }
+// ========================================================================
 
-// 【修正核心】時段驗證：當天只顯示未過期的時段，非當天只驗證營業時間
+// 【修復核心：時段驗證】徹底解決時間對比錯誤，保留所有規則
 function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration, selectedDate) {
   try {
     if (!slotTime || !workStart || !workEnd || !serviceDuration) return false;
 
     const today = getTodayTaipei();
     const nowTaipei = getCurrentTaipeiTime();
-    const slotDateTime = new Date(`${selectedDate} ${slotTime}`);
-    const start = new Date(`${selectedDate} ${workStart}`);
-    const end = new Date(`${selectedDate} ${workEnd}`);
+    
+    const slotDateTime = new Date(`${selectedDate}T${slotTime}:00+08:00`);
+    const startWork = new Date(`${selectedDate}T${workStart}:00+08:00`);
+    const endWork = new Date(`${selectedDate}T${workEnd}:00+08:00`);
     const serviceEndTime = new Date(slotDateTime.getTime() + serviceDuration * 60000);
 
-    // 1. 必須在營業時間內
-    const inBusinessHours = slotDateTime >= start && serviceEndTime <= end;
-    // 2. 如果是當天，必須晚於當前時間；非當天直接通過
+    // 1. 服務全程在營業時間內
+    const inBusinessHours = slotDateTime >= startWork && serviceEndTime <= endWork;
+    // 2. 當天時段晚於當前時間，非當天直接生效
     const notExpired = selectedDate !== today || slotDateTime > nowTaipei;
 
     return inBusinessHours && notExpired;
@@ -468,7 +481,7 @@ function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration, selected
   }
 }
 
-// 【修正核心】日期驗證：只顯示今天及以後的日期，徹底隱藏過期日期
+// 【修復：日期過濾】隱藏過期日期，只顯示可預約日期
 function getValidDatesByService(serviceName) {
   const today = getTodayTaipei();
   let validDates = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
@@ -768,7 +781,7 @@ function renderSlots(){
     let slots = res.slots || [];
     g.innerHTML = '';
 
-    // 傳入選中的日期，校準時段過期時間
+    // 修復後的時段過濾
     slots = slots.filter(item => {
       return item?.time && isTimeSlotValid(item.time, workStart, workEnd, serviceDuration, date);
     });
