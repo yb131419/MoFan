@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>莫凡韓式皮膚管理 | 線上預約</title>
   <link rel="icon" href="data:,">
-  <script src="https://d.line-scdn.net/liff/2.11.0/liff.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400,500,700,900&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
@@ -964,15 +964,16 @@ function submit(){
   });
 }
 
-// 新增：等待 LIFF SDK 加载完成（核心修复！）
-function waitForLiff(timeout = 5000) {
-  return new Promise((resolve, reject) => {
+// 修复：延长超时 + 降级方案（LIFF加载失败也能正常使用预约系统）
+function waitForLiff(timeout = 10000) {
+  return new Promise((resolve) => {
     const start = Date.now();
     const check = () => {
       if (window.liff) {
-        resolve();
+        resolve(true);
       } else if (Date.now() - start > timeout) {
-        reject(new Error("LIFF SDK 加载超时"));
+        console.warn("LIFF SDK 加载超时，使用游客模式");
+        resolve(false); // 超时不报错，继续运行
       } else {
         setTimeout(check, 100);
       }
@@ -981,29 +982,35 @@ function waitForLiff(timeout = 5000) {
   });
 }
 
-// 修改后的 initLiff 函数
+// 修复后的最终版 LIFF 初始化
 async function initLiff(){
+  let liffLoaded = false;
   try{
-    // 先等待 SDK 加载完成，再执行初始化
-    await waitForLiff();
-    await liff.init({liffId:CONFIG.LIFF_ID});
+    // 等待SDK加载（最长10秒）
+    liffLoaded = await waitForLiff();
     
-    if(!liff.isLoggedIn()){
-      liff.login();
-      return;
+    // 只有SDK加载成功，才执行LINE登录
+    if(liffLoaded) {
+      await liff.init({liffId:CONFIG.LIFF_ID});
+      
+      if(!liff.isLoggedIn()){
+        liff.login();
+        return;
+      }
+
+      const profile = await liff.getProfile();
+      userId = profile.userId;
+      userName = profile.displayName;
+
+      document.getElementById('lineId').value = userId;
+      document.getElementById('lineName').value = userName;
     }
-
-    const profile = await liff.getProfile();
-    userId = profile.userId;
-    userName = profile.displayName;
-
-    document.getElementById('lineId').value = userId;
-    document.getElementById('lineName').value = userName;
-    
   }catch(e){
     console.error('LIFF初始化失敗:', e);
-    showModal('error','登錄失敗','LINE登錄異常，請刷新重試');
+    // 不弹窗阻断用户，仅提示
+    console.warn('將以訪客模式使用預約系統');
   }finally{
+    // 无论LIFF是否成功，系统都正常加载
     loadAllData();
   }
 }
