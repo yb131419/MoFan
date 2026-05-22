@@ -47,6 +47,8 @@
     .step{
       display:flex;flex-direction:column;align-items:center;
       position:relative;z-index:2;width:33%;
+      cursor: pointer; /* 步骤可点击 */
+      transition: 0.3s;
     }
     .step-num{
       width:28px;height:28px;border-radius:50%;
@@ -59,6 +61,7 @@
     .step-text{font-size:12px;color:#999;font-weight:500}
     .step.active .step-num{background:#ff4d88;color:#fff}
     .step.active .step-text{color:#ff4d88;font-weight:700}
+    .step:hover:not(.active) .step-text{color:#ff4d88;}
 
     .section{margin-bottom:28px;display:none}
     .section.active{display:block}
@@ -139,17 +142,20 @@
       white-space: nowrap;
     }
 
-    /* 预约日期网格样式：手机端固定7天一行 */
+    /* 预约日期网格样式：手机端固定5天 + 居中显示 */
     .week-slider{
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      padding: 5px 0;
-      margin-bottom: 10px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 10px 0;
+      margin: 0 auto;
       overflow: hidden;
+      justify-content: center;
+      align-items: center;
+      max-width: 320px;
     }
     .week-day{
-      padding: 8px 2px;
+      padding: 10px 4px;
       border-radius: 12px;
       background:#fafbfc;
       border:1px solid #333;
@@ -173,6 +179,32 @@
     .time-btn.active{background:#ff4d88;color:#fff;}
     .time-btn:hover:not(.active){border-color:#ff8da1;background:#fdf2f8;}
 
+    /* 高质感加载动画 */
+    .loading{
+      text-align:center;
+      color:#999;
+      padding:20px;
+      font-size:14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .loading-icon{
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f0f0f0;
+      border-top: 2px solid #ff4d88;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin{100%{transform:rotate(360deg)}}
+    @keyframes pulse{
+      0%{opacity:0.6;}
+      50%{opacity:1;}
+      100%{opacity:0.6;}
+    }
+
     .form-group{margin-bottom:20px}
     label{font-weight:600;color:#333;display:block;margin-bottom:8px;}
     input,textarea,select{width:100%;height:54px;padding:0 20px;border-radius:16px;border:1px solid #333;background:#fafbfc;font-size:15px;font-family:'Noto Sans TC',sans-serif;}
@@ -184,11 +216,9 @@
     .btn-next{width:100%;height:58px;background:linear-gradient(135deg,#FF5D8F,#FF3377);border:1px solid #333;border-radius:20px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;margin-top:10px;transition:0.3s;}
     .btn-next:disabled{opacity:0.6;cursor:not-allowed;}
     .btn-next.loading {background:#ccc;pointer-events:none;}
-    .loading{text-align:center;color:#999;padding:20px;font-size:14px;}
 
     #loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}
     .loading-spinner{width:60px;height:60px;border:5px solid #fce8f3;border-top:5px solid #ff4d88;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px;}
-    @keyframes spin{100%{transform:rotate(360deg)}}
 
     .modal-overlay {position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;pointer-events:none;transition:opacity 0.3s ease;}
     .modal-overlay.active {opacity:1;pointer-events:all;}
@@ -244,26 +274,27 @@
       <div class="tab" data-cate="眉眼">眉眼唇</div>
       <div class="tab" data-cate="身體">身體<br>護理</div>
     </div>
-    <div class="service-grid" id="serviceGrid"><div class="loading">載入服務中...</div></div>
+    <div class="service-grid" id="serviceGrid"><div class="loading"><div class="loading-icon"></div>載入服務中...</div></div>
     <div class="pagination" id="pagination"></div>
     <button class="btn-next" id="nextToDate" disabled>下一步：選擇預約日期</button>
   </div>
 
   <div class="section" id="step2">
     <div class="section-title">選擇預約日期</div>
-    <!-- 日期显示区域：固定7天网格 -->
-    <div class="week-slider" id="weekSlider"><div class="loading">載入排班中...</div></div>
-    <!-- 🔥 百万级质感日期分页：日期下方 -->
+    <!-- 🔥 百万级质感日期分页：日期正上方 -->
     <div class="pagination" id="datePagination"></div>
+    <!-- 日期显示区域：固定5天网格 + 居中 -->
+    <div class="week-slider" id="weekSlider"><div class="loading"><div class="loading-icon"></div>載入排班中...</div></div>
     
     <div class="section-title">選擇美容師</div>
-    <div class="staff-list" id="staffList"><div class="loading">請先選擇日期</div></div>
+    <div class="staff-list" id="staffList"><div class="loading"><div class="loading-icon"></div>請先選擇日期</div></div>
     <div class="section-title">選擇預約時段</div>
-    <div class="time-grid" id="timeGrid"><div class="loading">請先選擇美容師</div></div>
+    <div class="time-grid" id="timeGrid"><div class="loading"><div class="loading-icon"></div>請先選擇美容師</div></div>
     <button class="btn-next" id="nextToInfo" disabled>下一步：填寫預約資訊</button>
   </div>
 
   <div class="section" id="step3">
+    <div class="section-title">預約資訊</div>
     <div class="form-group">
       <label>姓名 *</label>
       <input type="text" id="name" required placeholder="請輸入您的姓名">
@@ -305,8 +336,8 @@ let userId = "";
 let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
 const PAGE_SIZE = 8;
-// 日期分页配置：每页固定7天
-const DATE_PAGE_SIZE = 7;
+// 日期分页配置：每页固定5天
+const DATE_PAGE_SIZE = 5;
 let currentDatePage = 0;
 let totalDatePages = 0;
 let allDateList = [];
@@ -320,6 +351,14 @@ const CATEGORIES = {
   "眉眼":["霧眉","霧唇","洗眉","角蛋白","接睫毛"],
   "身體":["無痛粉嫩乳暈術","外泌體育髮","除私密毛","腋下私毛"]
 };
+
+// 步骤栏点击切换功能
+document.querySelectorAll('.step').forEach(step => {
+  step.addEventListener('click', () => {
+    const targetStep = step.dataset.step;
+    goStep(targetStep);
+  });
+});
 
 // 初始化生日下拉選單
 function initBirthdaySelect() {
@@ -450,7 +489,7 @@ function renderPagination(){
 function renderCurrentPage(){
   const g = document.getElementById('serviceGrid');
   g.innerHTML = '';
-  if(!currentServiceList.length){ g.innerHTML='<div class="loading">暫無符合條件的服務</div>'; renderPagination(); return; }
+  if(!currentServiceList.length){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>暫無符合條件的服務</div>'; renderPagination(); return; }
   
   const startIdx = (currentPage-1)*PAGE_SIZE;
   const list = currentServiceList.slice(startIdx, startIdx+PAGE_SIZE);
@@ -527,8 +566,6 @@ function renderCurrentDatePage(){
     };
     w.appendChild(el);
   });
-
-  // 🔥 已删除：默认选中第一个日期的代码
 }
 
 // 初始化日期数据
@@ -540,7 +577,7 @@ function renderDates(){
   currentDatePage = 0;
   
   if(!allDateList.length){ 
-    w.innerHTML='<div class="loading">暫無可預約的日期</div>'; 
+    w.innerHTML='<div class="loading"><div class="loading-icon"></div>暫無可預約的日期</div>'; 
     document.getElementById('datePagination').innerHTML = '';
     return; 
   }
@@ -551,14 +588,14 @@ function renderDates(){
 
 function renderStaff(date){
   const s = document.getElementById('staffList');
-  s.innerHTML = '<div class="loading">載入美容師中...</div>';
+  s.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入美容師中...</div>';
   document.getElementById('selectedStaff').value = '';
-  document.getElementById('timeGrid').innerHTML = '<div class="loading">請先選擇美容師</div>';
+  document.getElementById('timeGrid').innerHTML = '<div class="loading"><div class="loading-icon"></div>請先選擇美容師</div>';
   document.getElementById('nextToInfo').disabled = true;
   
-  if(!date || !GLOBAL_DATA.staffData){ s.innerHTML='<div class="loading">請選擇有效日期</div>'; return; }
+  if(!date || !GLOBAL_DATA.staffData){ s.innerHTML='<div class="loading"><div class="loading-icon"></div>請選擇有效日期</div>'; return; }
   const list = GLOBAL_DATA.staffData[date] || [];
-  if(!list.length){ s.innerHTML='<div class="loading">當日無美容師值班</div>'; return; }
+  if(!list.length){ s.innerHTML='<div class="loading"><div class="loading-icon"></div>當日無美容師值班</div>'; return; }
   
   s.innerHTML = '';
   list.forEach(st=>{
@@ -577,24 +614,24 @@ function renderStaff(date){
   });
 }
 
-// 刷新可用时段
+// 刷新可用时段 + 高质感加载动画
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
   const service = document.getElementById('selectedService').value.trim();
   const g = document.getElementById('timeGrid');
 
-  if(!service){ g.innerHTML='<div class="loading">❌ 請先選擇服務項目</div>'; return; }
-  if(!date || !staff){ g.innerHTML='<div class="loading">❌ 請先選擇日期和美容師</div>'; return; }
+  if(!service){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>❌ 請先選擇服務項目</div>'; return; }
+  if(!date || !staff){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>❌ 請先選擇日期和美容師</div>'; return; }
 
-  g.innerHTML = '<div class="loading">🔍 載入可用時段中...</div>';
+  g.innerHTML = '<div class="loading"><div class="loading-icon"></div>🔍 載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
 
   gasRequest("getSlots", { date, staff, service }, function handleSlotResponse(res){
     if(res?.status !== "success"){
       showModal('error','載入失敗',res?.message||'網路異常，無法載入時段');
-      g.innerHTML = '<div class="loading">❌ 載入時段失敗，請重新選擇</div>';
+      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>❌ 載入時段失敗，請重新選擇</div>';
       return;
     }
 
@@ -602,7 +639,7 @@ function renderSlots(){
     g.innerHTML = '';
 
     if(slots.length === 0){
-      g.innerHTML = '<div class="loading">😥 該美容師當日已無可用時段</div>';
+      g.innerHTML = '<div class="loading"><div class="loading-icon"></div>😥 該美容師當日已無可用時段</div>';
       return;
     }
 
