@@ -104,7 +104,6 @@
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
 
-    /* 百万级质感分页通用样式 */
     .pagination {
       display: flex;
       align-items: center;
@@ -142,7 +141,6 @@
       white-space: nowrap;
     }
 
-    /* 预约日期网格样式：手机端固定5天 + 居中显示 */
     .week-slider{
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -167,7 +165,6 @@
     .week-day-date{font-weight:700;margin-bottom:2px;font-size:14px;}
     .week-day-week{font-size:11px;}
 
-    /* 美容师圆形头像样式 */
     .staff-avatar {
       width: 48px;
       height: 48px;
@@ -193,13 +190,11 @@
     .staff-name{font-weight:700;margin-bottom:4px;font-size:16px;}
     .staff-time{font-size:12px;color:#666;}
 
-    /* 预约时段：一行四列 适配文字 */
     .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:320px;overflow-y:auto;padding-right:5px;}
     .time-btn{padding:12px 4px;border-radius:14px;background:#fafbfc;border:1px solid #333;text-align:center;font-weight:500;cursor:pointer;transition:0.3s;font-size:13px;}
     .time-btn.active{background:#ff4d88;color:#fff;}
     .time-btn:hover:not(.active){border-color:#ff8da1;background:#fdf2f8;}
 
-    /* 高质感加载动画 */
     .loading{
       text-align:center;
       color:#999;
@@ -303,15 +298,12 @@
 
   <div class="section" id="step2">
     <div class="section-title">選擇預約日期</div>
-    <!-- 百万级质感日期分页：日期正上方 -->
     <div class="pagination" id="datePagination"></div>
-    <!-- 日期显示区域：固定5天网格 + 居中 -->
     <div class="week-slider" id="weekSlider"><div class="loading"><div class="loading-icon"></div>載入排班中...</div></div>
     
     <div class="section-title">選擇美容師</div>
     <div class="staff-list" id="staffList"><div class="loading"><div class="loading-icon"></div>請先選擇日期</div></div>
     <div class="section-title">選擇預約時段</div>
-    <!-- 修正：提示文字单行显示 -->
     <div class="time-grid" id="timeGrid"><div class="loading"><div class="loading-icon"></div>請先選擇美容師</div></div>
     <button class="btn-next" id="nextToInfo" disabled>下一步：填寫預約資訊</button>
   </div>
@@ -359,17 +351,16 @@ let userId = "";
 let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
 const PAGE_SIZE = 8;
-// 日期分页配置：每页固定5天
 const DATE_PAGE_SIZE = 5;
 let currentDatePage = 0;
 let totalDatePages = 0;
 let allDateList = [];
 
 let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
-// 新增：当前选中分类（默认面部）
 let currentCategory = "面部";
 const GLOBAL_DATA = {dateList:[], allServices:[], staffData:{}};
 
+// 前后端统一服务分类（完全匹配后端SERVICE_LIST）
 const CATEGORIES = {
   "面部":["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
   "美甲":["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
@@ -378,7 +369,7 @@ const CATEGORIES = {
   "外泌體育髮":["外泌體育髮"]
 };
 
-// 步骤栏点击切换功能
+// 步骤切换
 document.querySelectorAll('.step').forEach(step => {
   step.addEventListener('click', () => {
     const targetStep = step.dataset.step;
@@ -386,13 +377,12 @@ document.querySelectorAll('.step').forEach(step => {
   });
 });
 
-// 初始化生日下拉選單
+// 初始化生日选择
 function initBirthdaySelect() {
   const yearSel = document.getElementById('birthYear');
   const monthSel = document.getElementById('birthMonth');
   const daySel = document.getElementById('birthDay');
   
-  // 年：1940 ~ 今年
   const now = new Date();
   const currentYear = now.getFullYear();
   for(let y=1940; y<=currentYear; y++){
@@ -401,14 +391,12 @@ function initBirthdaySelect() {
     opt.textContent = y + '年';
     yearSel.appendChild(opt);
   }
-  // 月
   for(let m=1; m<=12; m++){
     const opt = document.createElement('option');
     opt.value = m;
     opt.textContent = m + '月';
     monthSel.appendChild(opt);
   }
-  // 年月變更時刷新日
   const updateDays = () => {
     daySel.innerHTML = '<option value="">請選擇日</option>';
     const y = yearSel.value;
@@ -426,7 +414,7 @@ function initBirthdaySelect() {
   monthSel.addEventListener('change', updateDays);
 }
 
-// 電話號碼格式化 09xx-xxx-xxx
+// 手机号格式化
 function formatPhoneNumber(phone) {
   let numbers = phone.replace(/\D/g, '');
   if(numbers.startsWith('09')){
@@ -437,6 +425,7 @@ function formatPhoneNumber(phone) {
   return numbers;
 }
 
+// 台北时区日期格式化
 function getTaipeiDateString(date) {
   const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' };
   return new Date(date).toLocaleDateString('zh-CN', options).replace(/\//g, '-');
@@ -445,6 +434,7 @@ function getTodayTaipei() {
   return getTaipeiDateString(new Date());
 }
 
+// 后端接口请求
 function gasRequest(action, params, callback) {
   const safeParams = params || {};
   let url = CONFIG.SCRIPT_URL + "?action=" + encodeURIComponent(action);
@@ -474,6 +464,7 @@ function gasRequest(action, params, callback) {
   xhr.send();
 }
 
+// 弹窗提示
 function showModal(type,title,desc){
   const m = document.getElementById('modal');
   const iconEl = m.querySelector('.modal-icon');
@@ -484,14 +475,13 @@ function showModal(type,title,desc){
   iconEl.style.color = type==='success'?'#ff4d88':'#e74c3c';
   titleEl.textContent = title;
   descEl.textContent = desc;
-  
   m.classList.add('active');
 }
-
 function closeModal(){
   document.getElementById('modal').classList.remove('active');
 }
 
+// 切换步骤
 function goStep(s){
   document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
@@ -500,6 +490,7 @@ function goStep(s){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
+// 服务分页渲染
 function renderPagination(){
   const p = document.getElementById('pagination');
   if(totalPage<=1){ p.innerHTML=''; return; }
@@ -511,7 +502,6 @@ function renderPagination(){
     <button class="page-btn" ${currentPage===totalPage?'disabled':''} onclick="currentPage=totalPage;renderCurrentPage()">末頁</button>
   `;
 }
-
 function renderCurrentPage(){
   const g = document.getElementById('serviceGrid');
   g.innerHTML = '';
@@ -536,13 +526,11 @@ function renderCurrentPage(){
   renderPagination();
 }
 
-// 修复：分类+搜索双重筛选服务
+// 分类+搜索筛选服务
 function renderServices(){
   currentPage=1;
   const allServices = GLOBAL_DATA.allServices || [];
-  // 第一步：按当前分类筛选
   let filtered = allServices.filter(item => CATEGORIES[currentCategory].includes(item.name));
-  // 第二步：按搜索关键词筛选
   filtered = filtered.filter(s=> s?.name && (searchKeyword==='' || s.name.includes(searchKeyword)));
   
   currentServiceList = filtered;
@@ -550,13 +538,10 @@ function renderServices(){
   renderCurrentPage();
 }
 
-// 渲染日期分页（百万级质感）
+// 日期分页
 function renderDatePagination(){
   const p = document.getElementById('datePagination');
-  if(totalDatePages <= 1){ 
-    p.innerHTML = ''; 
-    return; 
-  }
+  if(totalDatePages <= 1){ p.innerHTML = ''; return; }
   p.innerHTML = `
     <button class="page-btn" ${currentDatePage === 0 ? 'disabled' : ''} onclick="goDatePage(0)">首頁</button>
     <button class="page-btn" ${currentDatePage === 0 ? 'disabled' : ''} onclick="goDatePage(currentDatePage - 1)">上一頁</button>
@@ -565,16 +550,12 @@ function renderDatePagination(){
     <button class="page-btn" ${currentDatePage === totalDatePages - 1 ? 'disabled' : ''} onclick="goDatePage(totalDatePages - 1)">末頁</button>
   `;
 }
-
-// 日期分页跳转
 function goDatePage(page){
   if(page < 0 || page >= totalDatePages) return;
   currentDatePage = page;
   renderCurrentDatePage();
   renderDatePagination();
 }
-
-// 渲染当前日期页（取消默认选中）
 function renderCurrentDatePage(){
   const w = document.getElementById('weekSlider');
   w.innerHTML = '';
@@ -599,7 +580,7 @@ function renderCurrentDatePage(){
   });
 }
 
-// 初始化日期数据
+// 渲染日期
 function renderDates(){
   const w = document.getElementById('weekSlider');
   const today = getTodayTaipei();
@@ -612,11 +593,11 @@ function renderDates(){
     document.getElementById('datePagination').innerHTML = '';
     return; 
   }
-
   renderCurrentDatePage();
   renderDatePagination();
 }
 
+// 渲染美容师
 function renderStaff(date){
   const s = document.getElementById('staffList');
   s.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入美容師中...</div>';
@@ -633,7 +614,6 @@ function renderStaff(date){
     if(!st) return;
     const el = document.createElement('div');
     el.className='staff-item';
-    // 帶圓形頭像的美容師卡片
     el.innerHTML = `
       <div class="staff-avatar"></div>
       <div class="staff-info">
@@ -651,7 +631,7 @@ function renderStaff(date){
   });
 }
 
-// 刷新可用时段 + 高质感加载动画（单行显示）
+// 渲染可用时段
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staff = document.getElementById('selectedStaff').value.trim();
@@ -661,7 +641,6 @@ function renderSlots(){
   if(!service){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇服務項目</div>'; return; }
   if(!date || !staff){ g.innerHTML='<div class="loading"><div class="loading-icon"></div>請先選擇日期和美容師</div>'; return; }
 
-  // 修正：加载文字单行显示
   g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
   document.getElementById('nextToInfo').disabled = true;
@@ -699,6 +678,7 @@ function renderSlots(){
   });
 }
 
+// 加载全局数据
 function loadAllData(){
   gasRequest("getAllData",{},function handleAllDataResponse(res){
     document.getElementById('loadingOverlay').style.display='none';
@@ -768,11 +748,11 @@ function submit(){
       setTimeout(()=>window.location.reload(),2000);
     }else{
       showModal('error','預約失敗',res?.message||'提交失敗，請稍後重試');
-      renderSlots();
     }
   });
 }
 
+// LIFF初始化
 async function initLiff(){
   try{
     await liff.init({liffId:CONFIG.LIFF_ID});
@@ -797,6 +777,7 @@ async function initLiff(){
   }
 }
 
+// 页面加载初始化
 document.addEventListener('DOMContentLoaded',async function handleDOMContentLoaded(){
   initBirthdaySelect();
   
@@ -821,19 +802,18 @@ document.addEventListener('DOMContentLoaded',async function handleDOMContentLoad
     renderServices();
   });
   
-  // 修复：分类标签点击联动筛选
-  document.querySelectorAll('.tab').forEach(function handleTabClick(tab){
+  // 分类切换
+  document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click',function(){
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       tab.classList.add('active');
-      // 更新当前分类并重新渲染服务
       currentCategory = tab.dataset.cate;
       renderServices();
     });
   });
   
-  document.getElementById('nextToDate').addEventListener('click',function(){goStep(2)});
-  document.getElementById('nextToInfo').addEventListener('click',function(){goStep(3)});
+  document.getElementById('nextToDate').addEventListener('click',()=>goStep(2));
+  document.getElementById('nextToInfo').addEventListener('click',()=>goStep(3));
   document.getElementById('submitBtn').addEventListener('click',submit);
   
   await initLiff();
