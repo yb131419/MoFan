@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>莫凡韓式皮膚管理 | 線上預約</title>
   <link rel="icon" href="data:,">
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" async defer></script> 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400,500,700,900&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
@@ -322,7 +322,7 @@
     <div class="category-tabs">
       <div class="tab active" data-cate="面部">面部<br>管理</div>
       <div class="tab" data-cate="美甲">美甲<br>手足</div>
-      <div class="tab" data-cate="眉眼">眉眼唇</div>
+      <div class="tab" data-cate="眉眼">眉<br>眼唇</div>
       <div class="tab" data-cate="除毛">睫毛<br>除毛</div>
       <div class="tab" data-cate="頭皮">頭皮<br>保養</div>
     </div>
@@ -408,7 +408,8 @@ function getStaffAvatar(staffName) {
   const avatarMap = {
     "小惠": "https://yb131419.github.io/MoFan/IMG_6059.jpg",
     "Tina": "https://yb131419.github.io/MoFan/IMG_6058.jpg",
-    "Nini": "https://picsum.photos/seed/xiaoting/200/200"
+    "Nini": "https://picsum.photos/seed/xiaoting/200/200",
+    "auto": "https://picsum.photos/seed/default/200/200"
   };
   return avatarMap[staffName] || "https://picsum.photos/seed/default/200/200";
 }
@@ -757,6 +758,27 @@ function renderStaff(date){
   }
   
   s.innerHTML = '';
+
+  // ========== 新增：不指定美容師選項 ==========
+  const autoEl = document.createElement('div');
+  autoEl.className = 'staff-item';
+  autoEl.innerHTML = `
+    <div class="staff-avatar" style="background-image: url('${getStaffAvatar('auto')}')"></div>
+    <div class="staff-info">
+      <div class="staff-name">不指定美容師</div>
+      <div class="staff-time">系統自動分配</div>
+    </div>
+  `;
+  autoEl.onclick = function () {
+    document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
+    autoEl.classList.add('active');
+    document.getElementById('selectedStaff').value = 'auto';
+    renderServices();
+    renderSlots();
+  };
+  s.appendChild(autoEl);
+  // ==========================================
+
   staffList.forEach(st=>{
     if(!st) return;
     const el = document.createElement('div');
@@ -793,8 +815,8 @@ function renderSlots(){
   const serviceInfo = GLOBAL_DATA.allServices.find(s => s.name === serviceName) || {};
   const serviceDuration = serviceInfo?.duration || 60;
 
-  const workStart = staffInfo.start || "09:00";
-  const workEnd = staffInfo.end || "21:00";
+  let workStart = staffInfo.start || "09:00";
+  let workEnd = staffInfo.end || "21:00";
 
   g.innerHTML = '<div class="loading"><div class="loading-icon"></div>載入可用時段中...</div>';
   document.getElementById('selectedTime').value = '';
@@ -942,26 +964,56 @@ function submit(){
   });
 }
 
-async function initLiff(){
-  try{
-    await liff.init({liffId:CONFIG.LIFF_ID});
-    
-    if(!liff.isLoggedIn()){
-      liff.login();
-      return;
+// 修复：延长超时 + 降级方案（LIFF加载失败也能正常使用预约系统）
+function waitForLiff(timeout = 10000) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const check = () => {
+      if (window.liff) {
+        resolve(true);
+      } else if (Date.now() - start > timeout) {
+        console.warn("LIFF SDK 加载超时，使用游客模式");
+        resolve(false); // 超时不报错，继续运行
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
+// 🔥 最终修复：LIFF永不报错，纯静默降级
+async function initLiff() {
+  try {
+    // 等待SDK加载（最长5秒，超时直接放弃）
+    const liffReady = await new Promise(resolve => {
+      let time = 0;
+      const check = () => {
+        if (window.liff) resolve(true);
+        else if (time++ > 50) resolve(false);
+        else setTimeout(check, 100);
+      };
+      check();
+    });
+
+    // 只有在LINE内、SDK加载成功才登录
+    if (liffReady && liff.isInClient()) {
+      await liff.init({ liffId: CONFIG.LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+      const profile = await liff.getProfile();
+      userId = profile.userId;
+      userName = profile.displayName;
+      document.getElementById('lineId').value = userId;
+      document.getElementById('lineName').value = userName;
     }
-
-    const profile = await liff.getProfile();
-    userId = profile.userId;
-    userName = profile.displayName;
-
-    document.getElementById('lineId').value = userId;
-    document.getElementById('lineName').value = userName;
-    
-  }catch(e){
-    console.error('LIFF初始化失敗:', e);
-    showModal('error','登錄失敗','LINE登錄異常，請刷新重試');
-  }finally{
+  } catch (e) {
+    // 静默失败，完全不报错
+    console.log("非LINE环境，使用游客模式");
+  } finally {
+    // 无论如何都加载系统
     loadAllData();
   }
 }
