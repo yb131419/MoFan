@@ -299,8 +299,8 @@
     .modal-btn:hover{background:#ff3377;}
   </style>
 </head>
-<body>
 
+<body>
 <div id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div style="color:#ff4d88;font-size:16px;font-weight:500;">🌸 系統初始化中，請稍候...</div>
@@ -379,8 +379,9 @@ const CONFIG = {
   LIFF_ID: "2009598216-MmBS77sp"
 };
 
-let userId = "guest_"+Date.now();
-let userName = "訪客";
+// 強制LINE登錄，禁止匿名
+let userId = "";
+let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
 const PAGE_SIZE = 8;
 let currentPage=1, totalPage=1, currentServiceList=[], searchKeyword="";
@@ -482,7 +483,7 @@ function renderCurrentPage(){
     const c = document.createElement('div');
     c.className='service-card';
     c.innerHTML = `${item.name}<span class="service-duration">${item.duration || 0}分</span>`;
-    c.onclick = ()=>{
+    c.onclick = function handleServiceClick() {
       document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));
       c.classList.add('active');
       document.getElementById('selectedService').value = item.name;
@@ -516,7 +517,7 @@ function renderDates(){
     const [,month,day] = d.split('-');
     const week = weekDays[new Date(d).getDay()];
     el.innerHTML = `<div class="week-day-date">${month}/${day}</div><div class="week-day-week">週${week}</div>`;
-    el.onclick = ()=>{
+    el.onclick = function handleDateClick() {
       document.querySelectorAll('.week-day').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('selectedDate').value = d;
@@ -546,7 +547,7 @@ function renderStaff(date){
     const el = document.createElement('div');
     el.className='staff-item';
     el.innerHTML = `<div class="staff-name">${st.name}</div><div class="staff-time">營業時間：${st.start}~${st.end}</div>`;
-    el.onclick = ()=>{
+    el.onclick = function handleStaffClick() {
       document.querySelectorAll('.staff-item').forEach(x=>x.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('selectedStaff').value = st.name;
@@ -575,7 +576,7 @@ function renderSlots(){
   document.getElementById('nextToInfo').disabled = true;
 
   // 獲取可用時段
-  gasRequest("getSlots", { date, staff, service }, res=>{
+  gasRequest("getSlots", { date, staff, service }, function handleSlotResponse(res){
     if(res?.status !== "success"){
       showModal('error','載入失敗',res?.message||'網路異常，無法載入時段');
       g.innerHTML = '<div class="loading">❌ 載入時段失敗，請重新選擇</div>';
@@ -591,7 +592,7 @@ function renderSlots(){
     }
 
     // 渲染時間按鈕 + 強制賦值
-    slots.forEach((item, idx)=>{
+    slots.forEach((item)=>{
       if(!item?.time) return;
       const timeText = item.time.trim();
       const b = document.createElement('div');
@@ -599,7 +600,7 @@ function renderSlots(){
       b.textContent = timeText;
       
       // 點擊事件：正確賦值時間
-      b.onclick = ()=>{
+      b.onclick = function handleTimeClick() {
         document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
         b.classList.add('active');
         document.getElementById('selectedTime').value = timeText;
@@ -617,7 +618,7 @@ function renderSlots(){
 }
 
 function loadAllData(){
-  gasRequest("getAllData",{},res=>{
+  gasRequest("getAllData",{},function handleAllDataResponse(res){
     document.getElementById('loadingOverlay').style.display='none';
     if(res?.status==="success"){
       GLOBAL_DATA.dateList = res.dateList || [];
@@ -631,8 +632,14 @@ function loadAllData(){
   });
 }
 
-// 修復：提交前強校驗時間，防止空值
+// 修復：提交前強校驗時間，防止空值 + 強校驗LINE用戶信息
 function submit(){
+  // 強制校驗LINE登錄狀態
+  if(!userId){
+    showModal('error','登錄異常','請使用LINE登錄後再提交預約');
+    return;
+  }
+
   const data = {
     lineId: userId,
     lineName: userName,
@@ -658,64 +665,77 @@ function submit(){
   submitBtn.disabled = true;
   submitBtn.textContent = '提交中...';
   
-  gasRequest("submit",data,res=>{
+  gasRequest("submit",data,function handleSubmitResponse(res){
     submitBtn.disabled = false;
     submitBtn.textContent = '確認提交預約';
     if(res?.status==="success"){
       showModal('success','預約成功','您的預約已提交，我們會盡快與您確認！');
-      setTimeout(()=>window.location.reload(),2000);
+      setTimeout(function reloadPage(){window.location.reload();},2000);
     }else{
       showModal('error','預約失敗',res?.message||'提交失敗，請稍後重試');
     }
   });
 }
 
+// 核心修復：強制LINE登錄，獲取標準U開頭用戶ID
 async function initLiff(){
   try{
     await liff.init({liffId:CONFIG.LIFF_ID});
-    if(liff.isLoggedIn()){
-      const p = await liff.getProfile();
-      userId = p?.userId || "guest";
-      userName = p?.displayName || "訪客";
+    
+    // 未登錄 → 強制跳轉登錄
+    if(!liff.isLoggedIn()){
+      liff.login();
+      return;
     }
-  }catch(e){
-    console.error('LIFF初始化失敗:', e);
-  }finally{
+
+    // 已登錄 → 獲取標準LINE用戶信息(U開頭ID)
+    const profile = await liff.getProfile();
+    userId = profile.userId;       // 標準U開頭LINE ID
+    userName = profile.displayName;// 正確暱稱
+
+    // 賦值到隱藏欄位
     document.getElementById('lineId').value = userId;
     document.getElementById('lineName').value = userName;
+    
+  }catch(e){
+    console.error('LIFF初始化失敗:', e);
+    showModal('error','登錄失敗','LINE登錄異常，請刷新重試');
+  }finally{
+    // 加載系統數據
     loadAllData();
   }
 }
 
-document.addEventListener('DOMContentLoaded',async()=>{
+document.addEventListener('DOMContentLoaded',async function handleDOMContentLoaded(){
   document.getElementById('modalBtn').onclick = closeModal;
   
   const searchInput = document.getElementById('serviceSearch');
   const searchClear = document.getElementById('searchClear');
-  searchInput.addEventListener('input', e=>{
+  searchInput.addEventListener('input', function handleSearchInput(e){
     searchKeyword = e.target.value.trim();
     searchClear.classList.toggle('show', searchKeyword!=='');
     renderServices(document.querySelector('.tab.active').dataset.cate);
   });
-  searchClear.addEventListener('click', ()=>{
+  searchClear.addEventListener('click', function handleSearchClear(){
     searchInput.value = '';
     searchKeyword = '';
     searchClear.classList.remove('show');
     renderServices(document.querySelector('.tab.active').dataset.cate);
   });
   
-  document.querySelectorAll('.tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(function handleTabClick(tab){
+    tab.addEventListener('click',function(){
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       tab.classList.add('active');
       renderServices(tab.dataset.cate);
     });
   });
   
-  document.getElementById('nextToDate').addEventListener('click',()=>goStep(2));
-  document.getElementById('nextToInfo').addEventListener('click',()=>goStep(3));
+  document.getElementById('nextToDate').addEventListener('click',function(){goStep(2)});
+  document.getElementById('nextToInfo').addEventListener('click',function(){goStep(3)});
   document.getElementById('submitBtn').addEventListener('click',submit);
   
+  // 初始化LIFF
   await initLiff();
 });
 </script>
