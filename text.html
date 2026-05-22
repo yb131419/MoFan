@@ -115,19 +115,20 @@
   background:#fafbfc;
   border:1px solid #333;
   text-align:center;
-  font-size:13px;
+  /* 文字加大 */
+  font-size:14px;
   font-weight:500;
   cursor:pointer;
   transition:0.3s;
-  /* 修复：移除固定居中，改为自适应排列 */
+  min-height:80px;
+  /* 核心修复：垂直居中 + 自动换行 + 防止文字挤压 */
   display:flex;
   flex-direction:column;
+  justify-content:center;
   align-items:center;
-  gap:4px;
-  /* 修复：允许文字自动换行，保证完整显示 */
+  line-height:1.5;
   word-break:break-word;
-  line-height:1.4;
-  min-height:80px;
+  gap:4px;
 }
     .service-card:hover{border-color:#ff8da1;background:#fdf2f8}
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
