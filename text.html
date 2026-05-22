@@ -176,15 +176,19 @@
     .week-day-date{font-weight:700;margin-bottom:2px;font-size:14px;}
     .week-day-week{font-size:11px;}
 
-    .staff-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #ff8da1, #ff4d88, #c77dff);
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(255,77,136,0.2);
-      border: 2px solid #fff;
-    }
+.staff-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  /* 原代码：background: #fff; → 会覆盖图片，修改为下方代码 */
+  background-color: #fff; 
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255,77,136,0.2);
+  border: 2px solid #fff;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
     .staff-list{display:flex;flex-direction:column;gap:10px;}
     .staff-item{
       padding:15px 20px;
@@ -378,6 +382,16 @@ const CATEGORIES = {
   "除毛":["無痛粉嫩乳暈術","除私密毛","腋下私毛","接睫毛","角蛋白"],
   "頭皮":["外泌體育髮"]
 };
+
+// 🔥 美容師自訂頭像（替換成你的圖片鏈接即可）
+function getStaffAvatar(staffName) {
+  const avatarMap = {
+    "小惠": "https://yb131419.github.io/MoFan/IMG_6059.jpg",
+    "Tina": "https://yb131419.github.io/MoFan/IMG_6058.jpg",
+    "Nini": "https://picsum.photos/seed/xiaoting/200/200"
+  };
+  return avatarMap[staffName] || "https://picsum.photos/seed/default/200/200";
+}
 
 document.querySelectorAll('.step').forEach(step => {
   step.addEventListener('click', () => {
@@ -728,7 +742,7 @@ function renderStaff(date){
     const el = document.createElement('div');
     el.className='staff-item';
     el.innerHTML = `
-      <div class="staff-avatar"></div>
+      <div class="staff-avatar" style="background-image: url('${getStaffAvatar(st.name)}')"></div>
       <div class="staff-info">
         <div class="staff-name">${st.name} 老師</div>
         <div class="staff-time">營業時間：${st.start}~${st.end}</div>
