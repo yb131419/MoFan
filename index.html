@@ -109,7 +109,27 @@
     .tab.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
 
     .service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:320px;overflow-y:auto;padding-right:5px;min-height:280px;}
-    .service-card{padding:12px 10px;border-radius:16px;background:#fafbfc;border:1px solid #333;text-align:center;font-size:13px;font-weight:500;cursor:pointer;transition:0.3s;min-height:80px;display:flex;flex-direction:column;justify-content:center;}
+.service-card{
+  padding:12px 10px;
+  border-radius:16px;
+  background:#fafbfc;
+  border:1px solid #333;
+  text-align:center;
+  /* 文字加大 */
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  transition:0.3s;
+  min-height:80px;
+  /* 核心修复：垂直居中 + 自动换行 + 防止文字挤压 */
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  line-height:1.5;
+  word-break:break-word;
+  gap:4px;
+}
     .service-card:hover{border-color:#ff8da1;background:#fdf2f8}
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
