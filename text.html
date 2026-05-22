@@ -351,7 +351,7 @@ const CONFIG = {
 let userId = "";
 let userName = "";
 const weekDays = ['日','一','二','三','四','五','六'];
-// ✅ 修改1：每頁顯示6個服務
+// 每頁顯示6個服務
 const PAGE_SIZE = 6;
 const DATE_PAGE_SIZE = 5;
 let currentDatePage = 0;
@@ -436,18 +436,18 @@ function getTodayTaipei() {
   return getTaipeiDateString(new Date());
 }
 
-// ✅ 新增：獲取當前台北時間（用於判斷時段是否過期）
+// 獲取當前台北時間（用於判斷時段是否過期）
 function getCurrentTaipeiTime() {
   const now = new Date();
   const taipeiTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
   return taipeiTime;
 }
 
-// ✅ 新增：判斷時段是否有效（未過期 + 在美容師上班時間內）
+// 判斷時段是否有效（未過期 + 在美容師上班時間內）
 function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration) {
   try {
     const now = getCurrentTaipeiTime();
-    const today = getTaipeiDateString(now);
+    const today = getTodayTaipei();
     const slotDateTime = new Date(`${today} ${slotTime}`);
     
     // 1. 判斷時段是否已過期
@@ -465,6 +465,29 @@ function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration) {
   } catch (e) {
     return false;
   }
+}
+
+// ✅ 新增：過濾有效日期（有美容師上班 + 能提供所選服務）
+function getValidDatesByService(serviceName) {
+  const today = getTodayTaipei();
+  // 基礎過濾：大於等於今天
+  let validDates = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
+
+  if (!serviceName) return validDates;
+
+  // 核心過濾：當天有美容師 + 至少一位能提供該服務
+  validDates = validDates.filter(date => {
+    const staffList = GLOBAL_DATA.staffData[date] || [];
+    if (staffList.length === 0) return false;
+
+    // 檢查是否有美容師能提供該服務
+    return staffList.some(staff => {
+      const staffServices = GLOBAL_DATA.staffServices[staff.name] || [];
+      return staffServices.some(item => item.name === serviceName);
+    });
+  });
+
+  return validDates;
 }
 
 // 后端接口请求
@@ -560,15 +583,37 @@ function renderCurrentPage(){
       <span class="service-duration">${item.duration || 0}分</span>
       <span class="service-desc">${descText}</span>
     `;
+    // ✅ 修改：選擇服務後，自動重新渲染有效日期
     c.onclick = function handleServiceClick() {
       document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));
       c.classList.add('active');
       document.getElementById('selectedService').value = item.name;
       document.getElementById('nextToDate').disabled = false;
+      
+      // 選擇服務後，立即過濾並刷新日期列表
+      renderFilteredDates();
     };
     g.appendChild(c);
   });
   renderPagination();
+}
+
+// ✅ 新增：渲染過濾後的日期（基於所選服務）
+function renderFilteredDates() {
+  const selectedService = document.getElementById('selectedService').value.trim();
+  allDateList = getValidDatesByService(selectedService);
+  totalDatePages = Math.ceil(allDateList.length / DATE_PAGE_SIZE);
+  currentDatePage = 0;
+  
+  const w = document.getElementById('weekSlider');
+  if (!allDateList.length) {
+    w.innerHTML = '<div class="loading"><div class="loading-icon"></div>暫無可預約的日期</div>';
+    document.getElementById('datePagination').innerHTML = '';
+    return;
+  }
+  
+  renderCurrentDatePage();
+  renderDatePagination();
 }
 
 // 分类+搜索筛选服务
@@ -635,14 +680,13 @@ function renderCurrentDatePage(){
   });
 }
 
-// 渲染日期
+// 渲染日期（初始化使用）
 function renderDates(){
-  const w = document.getElementById('weekSlider');
-  const today = getTodayTaipei();
-  allDateList = (GLOBAL_DATA.dateList || []).filter(d => d && d >= today);
+  allDateList = getValidDatesByService('');
   totalDatePages = Math.ceil(allDateList.length / DATE_PAGE_SIZE);
   currentDatePage = 0;
   
+  const w = document.getElementById('weekSlider');
   if(!allDateList.length){ 
     w.innerHTML='<div class="loading"><div class="loading-icon"></div>暫無可預約的日期</div>'; 
     document.getElementById('datePagination').innerHTML = '';
@@ -702,7 +746,7 @@ function renderStaff(date){
   });
 }
 
-// ✅ 修改2/3：渲染可用時段（過期不顯示 + 匹配美容師上班時間）
+// 渲染可用時段（過期不顯示 + 匹配美容師上班時間）
 function renderSlots(){
   const date = document.getElementById('selectedDate').value.trim();
   const staffName = document.getElementById('selectedStaff').value.trim();
