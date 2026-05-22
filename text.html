@@ -103,7 +103,7 @@
     .service-card:hover{border-color:#ff8da1;background:#fdf2f8}
     .service-card.active{background:#ff4d88;color:#fff;border-color:#ff4d88}
     .service-duration{font-size:11px;margin-top:3px;opacity:0.8}
-    /* ✅ 新增：服务说明文字样式 */
+    /* 新增：服务说明文字样式 */
     .service-desc{font-size:10px;color:#666;margin-top:2px;opacity:0.7;line-height:1.2;}
     .service-card.active .service-duration,.service-card.active .service-desc{color:#fff;opacity:1;}
 
@@ -492,7 +492,20 @@ function goStep(s){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-// 服务分页渲染 ✅ 修改：添加服务说明
+// ✅ 修復：補回缺失的分頁函數
+function renderPagination(){
+  const p = document.getElementById('pagination');
+  if(totalPage<=1){ p.innerHTML=''; return; }
+  p.innerHTML = `
+    <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage=1;renderCurrentPage()">首頁</button>
+    <button class="page-btn" ${currentPage===1?'disabled':''} onclick="currentPage--;renderCurrentPage()">上一頁</button>
+    <span class="page-text">${currentPage}/${totalPage}</span>
+    <button class="page-btn" ${currentPage===totalPage?'disabled':''} onclick="currentPage++;renderCurrentPage()">下一頁</button>
+    <button class="page-btn" ${currentPage===totalPage?'disabled':''} onclick="currentPage=totalPage;renderCurrentPage()">末頁</button>
+  `;
+}
+
+// 服务分页渲染
 function renderCurrentPage(){
   const g = document.getElementById('serviceGrid');
   g.innerHTML = '';
@@ -504,19 +517,15 @@ function renderCurrentPage(){
   list.forEach(item=>{
     if(!item?.name) return;
 
-    // ✅ 方式1：后端返回 desc 字段（推荐）
+    // 手动给服务添加说明
     let descText = item.desc || '';
-
-    // ✅ 方式2：前端手动写死说明（无需改后端，直接用这个）
     if(item.name === "外泌體育髮"){
-      descText = "（三個月份 無效全額退款）另送整套外泌體組合 總額 NT$35000";
+      descText = "（三個月份 無效全額退款\n另送整套外泌體組合\n總額 $35000"; // 👈 自定義說明文字
     }
-    // 可继续添加其他项目：
-    // if(item.name === "無痛清粉刺") descText = "深層清潔";
 
     const c = document.createElement('div');
     c.className='service-card';
-    // ✅ 渲染：名称 + 时长 + 说明
+    // 渲染：名称 + 时长 + 说明
     c.innerHTML = `
       ${item.name}
       <span class="service-duration">${item.duration || 0}分</span>
