@@ -280,10 +280,165 @@
     .modal-desc{margin-bottom:25px;color:#666;font-size:14px;}
     .modal-btn{width:100%;height:50px;border-radius:12px;border:1px solid #333;background:#ff4d88;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
     .modal-btn:hover{background:#ff3377;}
-  </style>
+
+    /* ====================== 管理員後台樣式（不影響原本介面） ====================== */
+    .admin-float {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 9999;
+      background: #ff4d88;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(255,77,136,0.3);
+      cursor: pointer;
+      display: none;
+    }
+    .admin-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .admin-box {
+      background: #fff;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 24px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px;
+      border: 1px solid #333;
+    }
+    .admin-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #ff4d88;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .admin-tab {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .admin-tab-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      border: 1px solid #333;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .admin-tab-btn.active {
+      background: #ff4d88;
+      color: #fff;
+    }
+    .admin-section {
+      display: none;
+    }
+    .admin-section.active {
+      display: block;
+    }
+    .admin-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .admin-form input, .admin-form select {
+      height: 48px;
+    }
+    .admin-btn {
+      width: 100%;
+      height: 50px;
+      border-radius: 14px;
+      background: #ff4d88;
+      color: #fff;
+      font-weight: 700;
+      border: 1px solid #333;
+      cursor: pointer;
+    }
+    .admin-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 8px;
+    }
+    .admin-item {
+      padding: 12px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+    .admin-item:last-child {
+      border-bottom: none;
+    }
+    .admin-close {
+      text-align: center;
+      margin-top: 16px;
+      color: #666;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .admin-del {
+      color: #ff4444;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+</style>
 </head>
 
 <body>
+
+<!-- 管理員浮窗按鈕 -->
+<div class="admin-float" id="adminFloat">🔒 管理後台</div>
+
+<!-- 管理員後台面板 -->
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-box">
+    <div class="admin-title">📊 莫凡美容 管理系統</div>
+    <div class="admin-tab">
+      <div class="admin-tab-btn active" data-admin="schedule">班表管理</div>
+      <div class="admin-tab-btn" data-admin="record">預約查詢</div>
+    </div>
+
+    <!-- 班表管理 -->
+    <div class="admin-section active" id="adminSchedule">
+      <div class="admin-form">
+        <select id="adminStaff">
+          <option value="">選擇美容師</option>
+        </select>
+        <input type="date" id="adminDate">
+        <input type="time" id="adminStart" placeholder="開始時間">
+        <input type="time" id="adminEnd" placeholder="結束時間">
+        <button class="admin-btn" id="saveSchedule">儲存班表</button>
+      </div>
+      <div class="admin-list" id="scheduleList"></div>
+    </div>
+
+    <!-- 預約查詢 -->
+    <div class="admin-section" id="adminRecord">
+      <div class="admin-form">
+        <input type="date" id="recordDate">
+        <button class="admin-btn" id="queryRecord">查詢當日預約</button>
+      </div>
+      <div class="admin-list" id="recordList"></div>
+    </div>
+
+    <div class="admin-close" id="adminClose">關閉</div>
+  </div>
+</div>
+
 <div id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div style="color:#ff4d88;font-size:16px;font-weight:500;">🌸 系統初始化中，請稍候...</div>
@@ -1019,10 +1174,132 @@ async function initLiff() {
     // 静默失败，完全不报错
     console.log("非LINE环境，使用游客模式");
   } finally {
-    // 无论如何都加载系统
+    checkAdmin();
     loadAllData();
   }
 }
+
+// ====================== 管理員功能 ======================
+function checkAdmin() {
+  if (!userId) return;
+  gasRequest("checkAdmin", { uid: userId }, res => {
+    if (res.status === "success" && res.isAdmin) {
+      document.getElementById("adminFloat").style.display = "block";
+      loadAdminStaff();
+    }
+  });
+}
+
+function loadAdminStaff() {
+  gasRequest("getAdminStaff", {}, res => {
+    if (res.status === "success") {
+      const sel = document.getElementById("adminStaff");
+      sel.innerHTML = '<option value="">選擇美容師</option>';
+      res.staffList.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        sel.appendChild(opt);
+      });
+    }
+  });
+}
+
+document.getElementById("adminFloat").onclick = () => {
+  document.getElementById("adminPanel").style.display = "flex";
+  loadScheduleList();
+};
+document.getElementById("adminClose").onclick = () => {
+  document.getElementById("adminPanel").style.display = "none";
+};
+
+document.querySelectorAll(".admin-tab-btn").forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll(".admin-tab-btn").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".admin-section").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    document.getElementById("admin" + t.dataset.admin.charAt(0).toUpperCase() + t.dataset.admin.slice(1)).classList.add("active");
+  };
+});
+
+document.getElementById("saveSchedule").onclick = () => {
+  const staff = document.getElementById("adminStaff").value;
+  const date = document.getElementById("adminDate").value;
+  const start = document.getElementById("adminStart").value;
+  const end = document.getElementById("adminEnd").value;
+  if (!staff || !date || !start || !end) {
+    showModal("error", "錯誤", "請填寫完整");
+    return;
+  }
+  gasRequest("saveSchedule", { staff, date, start, end }, res => {
+    if (res.status === "success") {
+      showModal("success", "成功", "班表儲存完成");
+      loadScheduleList();
+      loadAllData();
+    } else {
+      showModal("error", "失敗", res.message);
+    }
+  });
+};
+
+function loadScheduleList() {
+  const staff = document.getElementById("adminStaff").value;
+  if (!staff) return;
+  gasRequest("getScheduleList", { staff }, res => {
+    const list = document.getElementById("scheduleList");
+    list.innerHTML = "";
+    if (res.status === "success" && res.list.length > 0) {
+      res.list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "admin-item";
+        div.innerHTML = `${item.date} ${item.start}~${item.end} <span class="admin-del" onclick="delSchedule('${staff}','${item.date}','${item.start}','${item.end}')">刪除</span>`;
+        list.appendChild(div);
+      });
+    } else {
+      list.innerHTML = "<div class='loading'>無班表</div>";
+    }
+  });
+}
+
+function delSchedule(staff, date, start, end) {
+  if (!confirm("確定刪除？")) return;
+  gasRequest("delSchedule", { staff, date, start, end }, res => {
+    if (res.status === "success") {
+      showModal("success", "成功", "已刪除");
+      loadScheduleList();
+      loadAllData();
+    } else {
+      showModal("error", "失敗", res.message);
+    }
+  });
+}
+
+document.getElementById("queryRecord").onclick = () => {
+  const date = document.getElementById("recordDate").value;
+  if (!date) {
+    showModal("error", "錯誤", "請選擇日期");
+    return;
+  }
+  gasRequest("getRecordByDate", { date }, res => {
+    const list = document.getElementById("recordList");
+    list.innerHTML = "";
+    if (res.status === "success" && res.list.length > 0) {
+      res.list.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "admin-item";
+        div.innerHTML = `
+          ${r.staff} | ${r.service}<br>
+          ${r.time} | ${r.name} ${r.phone}<br>
+          備註：${r.note || '無'}
+        `;
+        list.appendChild(div);
+      });
+    } else {
+      list.innerHTML = "<div class='loading'>當日無預約</div>";
+    }
+  });
+};
+// ======================================================
 
 document.addEventListener('DOMContentLoaded',async function handleDOMContentLoaded(){
   initBirthdaySelect();
