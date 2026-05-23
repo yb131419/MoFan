@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
@@ -7,7 +6,6 @@
   <title>莫凡韓式皮膚管理 | 線上預約</title>
   <link rel="icon" href="data:,">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" async defer></script>
-  <!-- 引入CSS樣式 -->
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -25,7 +23,6 @@
       <div class="admin-tab-btn" data-admin="record">預約查詢</div>
     </div>
 
-    <!-- 班表管理 -->
     <div class="admin-section active" id="adminSchedule">
       <div class="admin-form">
         <select id="adminStaff">
@@ -39,7 +36,6 @@
       <div class="admin-list" id="scheduleList"></div>
     </div>
 
-    <!-- 預約查詢 -->
     <div class="admin-section" id="adminRecord">
       <div class="admin-form">
         <input type="date" id="recordDate">
@@ -145,7 +141,9 @@
   <input type="hidden" id="lineName">
 </main>
 
-<!-- 引入JS腳本 -->
-<script src="script.js"></script>
+<!-- ✅ 修复：引入3个模块化JS文件（必须加 type="module"） -->
+<script type="module" src="config-utils.js"></script>
+<script type="module" src="ui-api.js"></script>
+<script type="module" src="main.js"></script>
 </body>
 </html>
