@@ -493,7 +493,7 @@ function getCurrentTaipeiTime() {
 }
 // ========================================================================
 
-// 【修復核心：時段驗證】徹底解決時間對比錯誤，保留所有規則
+// 【修復核心：時段驗證】徹底解決時間對比錯誤，保留所有規則 + 隱藏2小時內時段
 function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration, selectedDate) {
   try {
     if (!slotTime || !workStart || !workEnd || !serviceDuration) return false;
@@ -508,8 +508,9 @@ function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration, selected
 
     // 1. 服務全程在營業時間內
     const inBusinessHours = slotDateTime >= startWork && serviceEndTime <= endWork;
-    // 2. 當天時段晚於當前時間，非當天直接生效
-    const notExpired = selectedDate !== today || slotDateTime > nowTaipei;
+    // 2. 當天時段需晚於當前時間2小時，非當天直接生效
+    const twoHoursLater = new Date(nowTaipei.getTime() + 2 * 60 * 60 * 1000);
+    const notExpired = selectedDate !== today || slotDateTime > twoHoursLater;
 
     return inBusinessHours && notExpired;
   } catch (e) {
