@@ -325,6 +325,7 @@
       <div class="tab" data-cate="眉眼">眉<br>眼唇</div>
       <div class="tab" data-cate="除毛">睫毛<br>除毛</div>
       <div class="tab" data-cate="頭皮">頭皮<br>保養</div>
+      <div class="tab" data-cate="乳暈">無痛<br>粉嫩術</div>
     </div>
     <div class="service-grid" id="serviceGrid"><div class="loading"><div class="loading-icon"></div>載入服務中...</div></div>
     <div class="pagination" id="pagination"></div>
@@ -354,7 +355,7 @@
       <input type="tel" id="phone" required placeholder="請輸入手機號碼" maxlength="12">
     </div>
     <div class="form-group">
-      <label>生日</label>
+      <label>生日（ 填寫會贈送『生日優惠』 ）</label>
       <div class="birthday-row">
         <select id="birthYear"><option value="">請選擇年</option></select>
         <select id="birthMonth"><option value="">請選擇月</option></select>
@@ -399,8 +400,9 @@ const CATEGORIES = {
   "面部":["液態飛梭","無痛清粉刺","無痛清粉刺+修護敏感項目","無痛清粉刺+靚白水光肌項目","進化黑矽晶重返年輕課程","黑臉娃娃","除疣","除斑","臉部深層保濕課程","臉部皮秒課程","臉部白藻針課程","臉部清粉刺","高階保養"],
   "美甲":["光療美甲","卸甲","光療美甲加卸甲","剪手腳指甲","手部保養","足部保養"],
   "眉眼":["霧眉","霧唇","洗眉"],
-  "除毛":["無痛粉嫩乳暈術","除私密毛","腋下私毛","接睫毛","角蛋白"],
-  "頭皮":["外泌體育髮"]
+  "除毛":["除私密毛","腋下私毛","接睫毛","角蛋白"],
+  "頭皮":["外泌體育髮"],
+  "乳暈":["無痛粉嫩乳暈術"]
 };
 
 // 🔥 美容師自訂頭像（替換成你的圖片鏈接即可）
@@ -615,6 +617,9 @@ function renderCurrentPage(){
     let descText = item.desc || '';
     if(item.name === "外泌體育髮"){
       descText = "（三個月份 無效全額退款)<br>另送整套外泌體組合<br>總額 $35000";
+    }
+    if(item.name === "無痛粉嫩乳暈術"){
+      descText = "不需做2~3次<br>做一次就能還回<br>嬰兒時期的『粉嫩色澤』";
     }
 
     const c = document.createElement('div');
