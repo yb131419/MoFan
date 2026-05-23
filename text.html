@@ -286,7 +286,7 @@
 <body>
 <div id="loadingOverlay">
   <div class="loading-spinner"></div>
-  <div style="color:#ff4d88;font-size:16px;font-weight:500;">🌸 莫凡系統初始化中，請稍候...</div>
+  <div style="color:#ff4d88;font-size:16px;font-weight:500;">🌸 系統初始化中，請稍候...</div>
 </div>
 
 <div class="modal-overlay" id="modal">
@@ -493,13 +493,14 @@ function getCurrentTaipeiTime() {
 }
 // ========================================================================
 
-// 【修復核心：時段驗證】徹底解決時間對比錯誤，保留所有規則
+// 【核心修復：強制2小時預約緩衝】隱藏2小時內的時段，解決車程趕不到問題
 function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration, selectedDate) {
   try {
     if (!slotTime || !workStart || !workEnd || !serviceDuration) return false;
 
-    const today = getTodayTaipei();
     const nowTaipei = getCurrentTaipeiTime();
+    // 🔥 強制2小時緩衝（車程專用）：預約時間必須晚於當前時間+120分鐘
+    const minAvailableTime = new Date(nowTaipei.getTime() + 2 * 60 * 60 * 1000);
     
     const slotDateTime = new Date(`${selectedDate}T${slotTime}:00+08:00`);
     const startWork = new Date(`${selectedDate}T${workStart}:00+08:00`);
@@ -508,10 +509,10 @@ function isTimeSlotValid(slotTime, workStart, workEnd, serviceDuration, selected
 
     // 1. 服務全程在營業時間內
     const inBusinessHours = slotDateTime >= startWork && serviceEndTime <= endWork;
-    // 2. 當天時段晚於當前時間，非當天直接生效
-    const notExpired = selectedDate !== today || slotDateTime > nowTaipei;
+    // 2. 預約時間 ≥ 當前時間+2小時（強制規則）
+    const enoughBuffer = slotDateTime >= minAvailableTime;
 
-    return inBusinessHours && notExpired;
+    return inBusinessHours && enoughBuffer;
   } catch (e) {
     console.error("時段驗證錯誤:", e);
     return false;
@@ -842,7 +843,7 @@ function renderSlots(){
     let slots = res.slots || [];
     g.innerHTML = '';
 
-    // 修復後的時段過濾
+    // 修復後的時段過濾：強制隱藏2小時內時段
     slots = slots.filter(item => {
       return item?.time && isTimeSlotValid(item.time, workStart, workEnd, serviceDuration, date);
     });
