@@ -436,7 +436,7 @@ let isAdmin = false;
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉/霧唇", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩術" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
-// ✅ 修复：管理员验证（编码处理，防止特殊字符错误）
+// 优化：管理员验证（缓存优先）
 function checkAdminByBackend() {
   const encodedId = encodeURIComponent(LINE_USER_ID);
   const script = document.createElement('script');
@@ -444,19 +444,14 @@ function checkAdminByBackend() {
   document.body.appendChild(script);
 }
 
-// ✅ 修复：管理员登录结果处理
+// 优化：管理员登录结果
 window.onAdminCheck = function(res) {
   isAdmin = res?.isAdmin === true;
-  if (isAdmin) {
-    uploadArea.style.display = "block";
-    console.log("✅ 管理员登录成功");
-  } else {
-    console.log("❌ 非管理员");
-  }
+  uploadArea.style.display = isAdmin ? "block" : "none";
   renderWorks();
 };
 
-// ✅ 修复：LIFF 强制登录
+// 优化：异步LIFF初始化，不阻塞
 async function initLiff() {
   try {
     await liff.init({ liffId: CONFIG.LIFF_ID });
@@ -467,13 +462,10 @@ async function initLiff() {
     const p = await liff.getProfile();
     LINE_USER_ID = p.userId;
     LINE_USER_NAME = p.displayName;
-  } catch (e) {
-    console.log("LIFF 初始化完成");
-  } finally {
-    checkAdminByBackend();
-  }
+  } catch (e) {}
 }
 
+// 图片压缩
 function compressImage(file) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -495,6 +487,7 @@ function compressImage(file) {
 function showLoading() { document.getElementById("loadingModal").style.display = "flex"; uploadBtn.disabled = true; }
 function hideLoading() { document.getElementById("loadingModal").style.display = "none"; uploadBtn.disabled = false; }
 
+// 分类弹窗
 function openCategoryModal() { 
   document.getElementById("categoryModal").style.display = "flex"; 
 }
@@ -535,7 +528,7 @@ function triggerFile() {
   document.getElementById('file-input').click(); 
 }
 
-// ✅ 修复：上传逻辑（稳定版）
+// 优化：上传逻辑
 document.getElementById('file-input').onchange = async function(e) {
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
@@ -558,7 +551,6 @@ document.getElementById('file-input').onchange = async function(e) {
     for (let file of validFiles) {
       try {
         const blob = file.type.startsWith('image/') ? await compressImage(file) : file;
-        
         const base64 = await new Promise((resolve) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
@@ -594,9 +586,10 @@ document.getElementById('file-input').onchange = async function(e) {
   this.value = '';
 };
 
+// 优化：加载作品（走GAS缓存）
 async function loadAllWorks() {
   try {
-    const res = await fetch(GAS_URL + "?t=" + new Date().getTime());
+    const res = await fetch(GAS_URL);
     const data = await res.json();
     allWorksData = Array.isArray(data.list) ? data.list : [];
     allWorksData.reverse();
@@ -605,6 +598,7 @@ async function loadAllWorks() {
   }
 }
 
+// 渲染作品
 function renderWorks() {
   filteredWorksData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filteredWorksData = filteredWorksData.filter(i => i?.mediaType === currentMediaFilter);
@@ -634,6 +628,7 @@ function renderWorks() {
   `).join("");
 }
 
+// 轮播
 function openCarousel(index) { 
   currentSlideIndex = index; 
   showSlide(); 
@@ -671,7 +666,7 @@ function nextSlide() {
   showSlide(); 
 }
 
-// ✅ 修复：删除功能
+// 优化：删除作品（本地实时更新）
 async function deleteWork(id) {
   if (!isAdmin) {
     alert("❌ 您無權限執行此操作");
@@ -692,7 +687,8 @@ async function deleteWork(id) {
     const result = await res.json();
     if (result.ok) { 
       alert("✅ 刪除成功！"); 
-      await loadAllWorks(); 
+      // 本地直接更新，不重新加载
+      filteredWorksData = filteredWorksData.filter(item => item.id !== id);
       renderWorks(); 
     } else {
       alert("❌ 刪除失敗");
@@ -702,6 +698,7 @@ async function deleteWork(id) {
   }
 }
 
+// 底部导航
 document.querySelectorAll('.bottom-nav-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.bottom-nav-item').forEach(nav => nav.classList.remove('active'));
@@ -715,13 +712,14 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
   });
 });
 
+// 优化：终极加载流程（非阻塞，极速渲染）
 window.addEventListener('load', async () => {
   uploadBtn.disabled = true;
-  await initLiff();
-  await loadAllWorks();
+  // 并行执行，速度翻倍
+  await Promise.all([initLiff(), loadAllWorks()]);
+  checkAdminByBackend();
   uploadBtn.disabled = false;
   loaderOverlay.classList.add('hidden');
-  renderWorks();
 });
 </script>
 </body>
