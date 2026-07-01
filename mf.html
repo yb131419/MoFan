@@ -218,6 +218,7 @@
       overflow: hidden;
       cursor: pointer;
       position: relative;
+      background: #f5f0f1;
     }
     .work-img, .work-video-cover {
       width: 100%;
@@ -393,7 +394,7 @@
   <button class="carousel-close" onclick="closeCarousel()">&times;</button>
   <button class="carousel-btn carousel-prev" onclick="prevSlide()"><i class="fa fa-chevron-left"></i></button>
   <div class="carousel-content">
-    <img id="carouselImg" class="carousel-media" style="display:none;">
+    <img id="carouselImg" class="carousel-media" style="display:none;" referrerpolicy="no-referrer">
     <video id="carouselVideo" class="carousel-media" controls style="display:none;"></video>
   </div>
   <button class="carousel-btn carousel-next" onclick="nextSlide()"><i class="fa fa-chevron-right"></i></button>
@@ -436,7 +437,6 @@ let isAdmin = false;
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉/霧唇", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩術" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
-// ✅ 修复：管理员验证（编码处理，防止特殊字符错误）
 function checkAdminByBackend() {
   const encodedId = encodeURIComponent(LINE_USER_ID);
   const script = document.createElement('script');
@@ -444,7 +444,6 @@ function checkAdminByBackend() {
   document.body.appendChild(script);
 }
 
-// ✅ 修复：管理员登录结果处理
 window.onAdminCheck = function(res) {
   isAdmin = res?.isAdmin === true;
   if (isAdmin) {
@@ -456,7 +455,6 @@ window.onAdminCheck = function(res) {
   renderWorks();
 };
 
-// ✅ 修复：LIFF 强制登录
 async function initLiff() {
   try {
     await liff.init({ liffId: CONFIG.LIFF_ID });
@@ -474,19 +472,42 @@ async function initLiff() {
   }
 }
 
+// 🔧 修正：原本用 ctx.drawImage(img, 0, 0, maxSize, maxSize) 直接把長方形照片
+// 硬拉伸塞進正方形畫布，非等比例縮放會造成畫面變形。
+// 改為置中裁切（cover）後再縮放，維持原始比例、避免變形。
 function compressImage(file) {
   return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.src = url;
     img.onload = function() {
+      const maxSize = 1080;
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      const maxSize = 900;
       canvas.width = maxSize;
       canvas.height = maxSize;
-      ctx.drawImage(img, 0,0, maxSize,maxSize);
-      canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.65);
+
+      const srcW = img.naturalWidth;
+      const srcH = img.naturalHeight;
+      const srcRatio = srcW / srcH;
+
+      let sx, sy, sw, sh;
+      if (srcRatio > 1) {
+        // 原圖較寬：以高度為基準，左右裁切
+        sh = srcH;
+        sw = srcH;
+        sx = (srcW - sw) / 2;
+        sy = 0;
+      } else {
+        // 原圖較高或正方形：以寬度為基準，上下裁切
+        sw = srcW;
+        sh = srcW;
+        sx = 0;
+        sy = (srcH - sh) / 2;
+      }
+
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, maxSize, maxSize);
+      canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.75);
       URL.revokeObjectURL(url);
     };
   });
@@ -535,7 +556,6 @@ function triggerFile() {
   document.getElementById('file-input').click(); 
 }
 
-// ✅ 修复：上传逻辑（稳定版）
 document.getElementById('file-input').onchange = async function(e) {
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
@@ -594,6 +614,8 @@ document.getElementById('file-input').onchange = async function(e) {
   this.value = '';
 };
 
+// 🔧 效能修正：後端現在只回傳輕量 JSON（縮圖網址字串），
+// 不再包含完整 Base64 圖片/影片內容，讀取速度大幅提升
 async function loadAllWorks() {
   try {
     const res = await fetch(GAS_URL + "?t=" + new Date().getTime());
@@ -617,12 +639,14 @@ function renderWorks() {
 
   const deleteBtnDisplay = isAdmin ? "block" : "none";
 
-  listDom.innerHTML = filteredWorksData.filter(i => i?.url).map((item, index) => `
+  // 🔧 網格縮圖改用 item.thumbUrl（Google 圖片代理產生的小尺寸圖），
+  // 而不是完整原圖，載入更快
+  listDom.innerHTML = filteredWorksData.filter(i => i?.thumbUrl).map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
         ${item.mediaType==="image" 
-          ? `<img src="${item.url}" class="work-img" loading="lazy">` 
-          : `<img src="${DEFAULT_VIDEO_COVER}" class="work-video-cover"><div class="video-play-icon">▶</div>`}
+          ? `<img src="${item.thumbUrl}" class="work-img" loading="lazy" referrerpolicy="no-referrer">` 
+          : `<img src="${DEFAULT_VIDEO_COVER}" class="work-video-cover" loading="lazy"><div class="video-play-icon">▶</div>`}
       </div>
       <div class="work-info">
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
@@ -653,11 +677,12 @@ function showSlide() {
   img.style.display="none"; 
   video.style.display="none";
   
+  // 放大檢視使用 item.fullUrl（較高解析度版本），只有點開才載入，節省流量
   if (item.mediaType === "image") { 
-    img.src=item.url; 
+    img.src=item.fullUrl; 
     img.style.display="block"; 
   } else { 
-    video.src=item.url; 
+    video.src=item.fullUrl; 
     video.style.display="block"; 
     video.play().catch(()=>{}); 
   }
@@ -671,7 +696,6 @@ function nextSlide() {
   showSlide(); 
 }
 
-// ✅ 修复：删除功能
 async function deleteWork(id) {
   if (!isAdmin) {
     alert("❌ 您無權限執行此操作");
