@@ -218,13 +218,30 @@
       overflow: hidden;
       cursor: pointer;
       position: relative;
-      background: #f5f0f1;
+      background: #f2ecee;
     }
     .work-img, .work-video-cover {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .work-img.loaded, .work-video-cover.loaded {
+      opacity: 1;
+    }
+    .img-skeleton {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(100deg, #f2ecee 30%, #faf6f7 50%, #f2ecee 70%);
+      background-size: 200% 100%;
+      animation: skeleton-shine 1.4s ease-in-out infinite;
+    }
+    .img-skeleton.hidden { display: none; }
+    @keyframes skeleton-shine {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
     .video-play-icon {
       position: absolute;
@@ -290,6 +307,7 @@
     #carouselModal { background: rgba(0,0,0,0.95); }
     .carousel-content { position: relative; width: 92%; max-width: 500px; text-align: center; margin: 0 auto; }
     .carousel-media { width: 100%; max-height: 80vh; object-fit: contain; }
+    .carousel-loading { color: #fff; font-size: 14px; letter-spacing: 1px; }
     .carousel-btn {
       position: absolute; top: 50%; transform: translateY(-50%);
       background: rgba(255,255,250,0.1); color: #fff; border: none;
@@ -394,7 +412,8 @@
   <button class="carousel-close" onclick="closeCarousel()">&times;</button>
   <button class="carousel-btn carousel-prev" onclick="prevSlide()"><i class="fa fa-chevron-left"></i></button>
   <div class="carousel-content">
-    <img id="carouselImg" class="carousel-media" style="display:none;" referrerpolicy="no-referrer">
+    <div class="carousel-loading" id="carouselLoading" style="display:none;">載入中...</div>
+    <img id="carouselImg" class="carousel-media" style="display:none;">
     <video id="carouselVideo" class="carousel-media" controls style="display:none;"></video>
   </div>
   <button class="carousel-btn carousel-next" onclick="nextSlide()"><i class="fa fa-chevron-right"></i></button>
@@ -437,6 +456,10 @@ let isAdmin = false;
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉/霧唇", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩術" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
+// 🔧 圖片懶載入快取：抓過的圖存這裡，切換篩選分類、或格子圖再進放大檢視都不用重抓
+const imageDataCache = new Map();
+let gridObserver = null;
+
 function checkAdminByBackend() {
   const encodedId = encodeURIComponent(LINE_USER_ID);
   const script = document.createElement('script');
@@ -472,16 +495,23 @@ async function initLiff() {
   }
 }
 
+function blobToBase64(blob) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+}
+
 // 🔧 修正：原本用 ctx.drawImage(img, 0, 0, maxSize, maxSize) 直接把長方形照片
 // 硬拉伸塞進正方形畫布，非等比例縮放會造成畫面變形。
 // 改為置中裁切（cover）後再縮放，維持原始比例、避免變形。
-function compressImage(file) {
+function compressImage(file, maxSize, quality) {
   return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.src = url;
     img.onload = function() {
-      const maxSize = 1080;
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       canvas.width = maxSize;
@@ -493,24 +523,40 @@ function compressImage(file) {
 
       let sx, sy, sw, sh;
       if (srcRatio > 1) {
-        // 原圖較寬：以高度為基準，左右裁切
-        sh = srcH;
-        sw = srcH;
-        sx = (srcW - sw) / 2;
-        sy = 0;
+        sh = srcH; sw = srcH; sx = (srcW - sw) / 2; sy = 0;
       } else {
-        // 原圖較高或正方形：以寬度為基準，上下裁切
-        sw = srcW;
-        sh = srcW;
-        sx = 0;
-        sy = (srcH - sh) / 2;
+        sw = srcW; sh = srcW; sx = 0; sy = (srcH - sh) / 2;
       }
 
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, maxSize, maxSize);
-      canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.75);
+      canvas.toBlob((blob) => resolve(blob), "image/jpeg", quality);
       URL.revokeObjectURL(url);
     };
   });
+}
+
+// 🔧 新增：確保壓縮後的圖片絕對塞得進 Google Sheets 單一儲存格 50,000 字元上限。
+// 從 1080px / 0.75 品質開始，若 Base64 長度超標，自動降品質、再降尺寸，最多重試 6 次。
+const SHEET_CELL_SAFE_LIMIT = 48000;
+async function compressImageSafe(file) {
+  let maxSize = 1080;
+  let quality = 0.75;
+  let blob = await compressImage(file, maxSize, quality);
+  let base64 = await blobToBase64(blob);
+  let attempts = 0;
+
+  while (base64.length > SHEET_CELL_SAFE_LIMIT && attempts < 6) {
+    if (quality > 0.35) {
+      quality = Math.max(0.35, quality - 0.1);
+    } else {
+      maxSize = Math.round(maxSize * 0.8);
+    }
+    blob = await compressImage(file, maxSize, quality);
+    base64 = await blobToBase64(blob);
+    attempts++;
+  }
+
+  return { base64, tooLarge: base64.length > SHEET_CELL_SAFE_LIMIT };
 }
 
 function showLoading() { document.getElementById("loadingModal").style.display = "flex"; uploadBtn.disabled = true; }
@@ -573,17 +619,24 @@ document.getElementById('file-input').onchange = async function(e) {
   try {
     showLoading();
     let successCount = 0;
+    let tooLargeCount = 0;
     const categoryName = categoryMap[selectedCategory] || '未分類';
 
     for (let file of validFiles) {
       try {
-        const blob = file.type.startsWith('image/') ? await compressImage(file) : file;
-        
-        const base64 = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(blob);
-        });
+        const isImage = file.type.startsWith('image/');
+        let base64;
+
+        if (isImage) {
+          const result = await compressImageSafe(file);
+          if (result.tooLarge) {
+            tooLargeCount++;
+            continue; // 壓不進 Sheets 上限，跳過這張，不上傳
+          }
+          base64 = result.base64;
+        } else {
+          base64 = await blobToBase64(file);
+        }
 
         const res = await fetch(GAS_URL, {
           method: "POST",
@@ -592,7 +645,7 @@ document.getElementById('file-input').onchange = async function(e) {
             action: "upload",
             lineId: LINE_USER_ID,
             type: selectedCategory,
-            mediaType: file.type.startsWith('image/') ? "image" : "video",
+            mediaType: isImage ? "image" : "video",
             title: `${categoryName} - 作品`,
             url: base64
           })
@@ -600,11 +653,14 @@ document.getElementById('file-input').onchange = async function(e) {
 
         const result = await res.json();
         if (result.ok) successCount++;
+        else if (result.error === "image_too_large") tooLargeCount++;
       } catch (err) {}
     }
 
     hideLoading();
-    alert(`✅ 上傳完成：${successCount}/${validFiles.length} 個`);
+    let msg = `✅ 上傳完成：${successCount}/${validFiles.length} 個`;
+    if (tooLargeCount > 0) msg += `\n⚠️ ${tooLargeCount} 張圖片壓縮後仍過大，已略過`;
+    alert(msg);
     await loadAllWorks();
     renderWorks();
   } catch (err) {
@@ -614,8 +670,8 @@ document.getElementById('file-input').onchange = async function(e) {
   this.value = '';
 };
 
-// 🔧 效能修正：後端現在只回傳輕量 JSON（縮圖網址字串），
-// 不再包含完整 Base64 圖片/影片內容，讀取速度大幅提升
+// 🔧 效能修正：列表 API 現在只回傳輕量中繼資料（圖片不含內容，影片是 Drive 短網址），
+// 圖片內容改由 fetchImageContent() 依需要另外抓取
 async function loadAllWorks() {
   try {
     const res = await fetch(GAS_URL + "?t=" + new Date().getTime());
@@ -625,6 +681,41 @@ async function loadAllWorks() {
   } catch (e) { 
     allWorksData = []; 
   }
+}
+
+async function fetchImageContent(id) {
+  if (imageDataCache.has(id)) return imageDataCache.get(id);
+  try {
+    const res = await fetch(`${GAS_URL}?action=getImage&id=${encodeURIComponent(id)}&t=${Date.now()}`);
+    const data = await res.json();
+    const url = data.url || "";
+    imageDataCache.set(id, url);
+    return url;
+  } catch (e) {
+    return "";
+  }
+}
+
+function setupLazyImageObserver() {
+  if (gridObserver) gridObserver.disconnect();
+
+  gridObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      observer.unobserve(el);
+      const id = el.dataset.id;
+      fetchImageContent(id).then(url => {
+        if (!url) return;
+        el.src = url;
+        el.classList.add('loaded');
+        const skeleton = el.parentElement.querySelector('.img-skeleton');
+        if (skeleton) skeleton.classList.add('hidden');
+      });
+    });
+  }, { rootMargin: "200px 0px" }); // 提前200px開始載入，捲動時比較不會看到空白
+
+  document.querySelectorAll('.lazy-img').forEach(el => gridObserver.observe(el));
 }
 
 function renderWorks() {
@@ -639,14 +730,12 @@ function renderWorks() {
 
   const deleteBtnDisplay = isAdmin ? "block" : "none";
 
-  // 🔧 網格縮圖改用 item.thumbUrl（Google 圖片代理產生的小尺寸圖），
-  // 而不是完整原圖，載入更快
-  listDom.innerHTML = filteredWorksData.filter(i => i?.thumbUrl).map((item, index) => `
+  listDom.innerHTML = filteredWorksData.map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
-        ${item.mediaType==="image" 
-          ? `<img src="${item.thumbUrl}" class="work-img" loading="lazy" referrerpolicy="no-referrer">` 
-          : `<img src="${DEFAULT_VIDEO_COVER}" class="work-video-cover" loading="lazy"><div class="video-play-icon">▶</div>`}
+        ${item.mediaType === "image"
+          ? `<div class="img-skeleton"></div><img data-id="${item.id}" class="work-img lazy-img" loading="lazy">`
+          : `<img src="${DEFAULT_VIDEO_COVER}" class="work-video-cover loaded" loading="lazy"><div class="video-play-icon">▶</div>`}
       </div>
       <div class="work-info">
         <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
@@ -656,12 +745,14 @@ function renderWorks() {
       </div>
     </div>
   `).join("");
+
+  setupLazyImageObserver();
 }
 
-function openCarousel(index) { 
-  currentSlideIndex = index; 
-  showSlide(); 
-  document.getElementById("carouselModal").style.display = "flex"; 
+async function openCarousel(index) {
+  currentSlideIndex = index;
+  document.getElementById("carouselModal").style.display = "flex";
+  await showSlide();
 }
 function closeCarousel() { 
   document.getElementById("carouselModal").style.display = "none"; 
@@ -669,22 +760,26 @@ function closeCarousel() {
   video.pause(); 
   video.src = '';
 }
-function showSlide() {
-  if(filteredWorksData.length === 0) return;
+async function showSlide() {
+  if (filteredWorksData.length === 0) return;
   const item = filteredWorksData[currentSlideIndex];
   const img = document.getElementById("carouselImg");
   const video = document.getElementById("carouselVideo");
-  img.style.display="none"; 
-  video.style.display="none";
-  
-  // 放大檢視使用 item.fullUrl（較高解析度版本），只有點開才載入，節省流量
-  if (item.mediaType === "image") { 
-    img.src=item.fullUrl; 
-    img.style.display="block"; 
-  } else { 
-    video.src=item.fullUrl; 
-    video.style.display="block"; 
-    video.play().catch(()=>{}); 
+  const loading = document.getElementById("carouselLoading");
+  img.style.display = "none";
+  video.style.display = "none";
+
+  if (item.mediaType === "image") {
+    loading.style.display = "block";
+    const url = await fetchImageContent(item.id); // 若格子圖已載過會直接吃快取，不用重抓
+    loading.style.display = "none";
+    if (!url) return;
+    img.src = url;
+    img.style.display = "block";
+  } else {
+    video.src = item.fullUrl;
+    video.style.display = "block";
+    video.play().catch(() => {});
   }
 }
 function prevSlide() { 
@@ -715,6 +810,7 @@ async function deleteWork(id) {
     });
     const result = await res.json();
     if (result.ok) { 
+      imageDataCache.delete(id);
       alert("✅ 刪除成功！"); 
       await loadAllWorks(); 
       renderWorks(); 
