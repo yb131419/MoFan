@@ -448,25 +448,30 @@
       position: relative;
     }
     .work-tag {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
+      gap: 7px;
+      width: 100%;
       font-family: var(--serif);
       font-size: 13px;
       font-weight: 500;
-      letter-spacing: 3px;
-      text-indent: 3px;
+      letter-spacing: 1.5px;
+      text-indent: 1.5px;
       color: var(--rose-deep);
+      /* 🔧 修正：長分類名（如「韓式皮膚管理」）禁止換行，
+         窄卡片時由兩側飾線自動收縮讓位，文字永遠保持單行 */
+      white-space: nowrap;
     }
     .work-tag::before,
     .work-tag::after {
       content: "";
       display: inline-block;
-      width: 14px;
+      flex: 1 1 4px;      /* 可伸縮：空間不夠時自動縮短，空間充裕時撐開 */
+      max-width: 16px;    /* 最長不超過16px，維持精緻比例 */
+      min-width: 0;
       height: 1px;
       background: linear-gradient(90deg, transparent, var(--rose));
-      flex-shrink: 0;
       opacity: 0.7;
     }
     .work-tag::after {
