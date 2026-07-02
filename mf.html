@@ -107,6 +107,34 @@
     .page-subtitle::before { left: 0; }
     .page-subtitle::after { right: 0; }
 
+    /* 🔧 新增：管理介面／使用介面 切換開關（僅管理員登入後才會顯示） */
+    .mode-switch {
+      display: none;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 20px 24px;
+    }
+    .mode-btn {
+      padding: 10px 20px;
+      border-radius: 100px;
+      border: 1px solid #f0e9eb;
+      background: #ffffff;
+      color: #888;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mode-btn.active {
+      background: linear-gradient(135deg, #d4b2b8, #b8a2a8);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(212, 178, 184, 0.15);
+    }
+
     .filter-nav {
       padding: 0 20px 30px;
       display: flex;
@@ -353,6 +381,16 @@
   <p class="page-subtitle">Beauty Portfolio</p>
 </div>
 
+<!-- 🔧 新增：管理介面／使用介面切換（僅管理員可見） -->
+<div class="mode-switch" id="modeSwitch">
+  <button class="mode-btn active" id="modeUserBtn" onclick="setViewMode('user')">
+    <i class="fa fa-eye"></i> 使用介面
+  </button>
+  <button class="mode-btn" id="modeAdminBtn" onclick="setViewMode('admin')">
+    <i class="fa fa-cog"></i> 管理介面
+  </button>
+</div>
+
 <div class="filter-nav">
   <div class="tab-group media-tabs">
     <div class="filter-tab active" data-type="all-media">全部</div>
@@ -420,9 +458,7 @@
 </div>
 
 <div class="bottom-nav">
-  <div class="bottom-nav-item active" id="navReserve">
-  </div>
-  <div class="bottom-nav-item" id="navAddress">
+  <div class="bottom-nav-item active" id="navAddress">
     <i class="fa fa-map-marker"></i><span>地址</span>
   </div>
   <div class="bottom-nav-item" id="navShare">
@@ -452,10 +488,14 @@ let LINE_USER_ID = "guest_" + Date.now();
 let LINE_USER_NAME = "LINE使用者";
 let isAdmin = false;
 
+// 🔧 新增：目前檢視模式，'user'＝使用介面（一般顧客看到的畫面）、'admin'＝管理介面（可上傳/刪除）
+// 管理員登入後預設先看「使用介面」，避免不小心誤觸上傳/刪除，要主動切換才會進管理模式
+let viewMode = 'user';
+
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉/霧唇", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩術" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
-// 🔧 圖片懶載入快取：抓過的圖存這裡，切換篩選分類、或格子圖再進放大檢視都不用重抓
+// 圖片懶載入快取：抓過的圖存這裡，切換篩選分類、或格子圖再進放大檢視都不用重抓
 const imageDataCache = new Map();
 let gridObserver = null;
 
@@ -469,13 +509,29 @@ function checkAdminByBackend() {
 window.onAdminCheck = function(res) {
   isAdmin = res?.isAdmin === true;
   if (isAdmin) {
-    uploadArea.style.display = "block";
+    document.getElementById('modeSwitch').style.display = 'flex';
     console.log("✅ 管理员登录成功");
   } else {
     console.log("❌ 非管理员");
   }
-  renderWorks();
+  applyViewMode();
 };
+
+// 🔧 新增：切換管理介面／使用介面
+function setViewMode(mode) {
+  if (!isAdmin) return; // 非管理員不可切換，保險起見擋一下
+  viewMode = mode;
+  document.getElementById('modeUserBtn').classList.toggle('active', mode === 'user');
+  document.getElementById('modeAdminBtn').classList.toggle('active', mode === 'admin');
+  applyViewMode();
+}
+
+// 🔧 新增：依目前身分＋模式，決定要不要顯示上傳區塊／刪除按鈕
+function applyViewMode() {
+  const showAdminUI = isAdmin && viewMode === 'admin';
+  uploadArea.style.display = showAdminUI ? 'block' : 'none';
+  renderWorks();
+}
 
 async function initLiff() {
   try {
@@ -502,9 +558,7 @@ function blobToBase64(blob) {
   });
 }
 
-// 🔧 修正：原本用 ctx.drawImage(img, 0, 0, maxSize, maxSize) 直接把長方形照片
-// 硬拉伸塞進正方形畫布，非等比例縮放會造成畫面變形。
-// 改為置中裁切（cover）後再縮放，維持原始比例、避免變形。
+// 置中裁切（cover）後再縮放，維持原始比例、避免變形
 function compressImage(file, maxSize, quality) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -534,8 +588,7 @@ function compressImage(file, maxSize, quality) {
   });
 }
 
-// 🔧 新增：確保壓縮後的圖片絕對塞得進 Google Sheets 單一儲存格 50,000 字元上限。
-// 從 1080px / 0.75 品質開始，若 Base64 長度超標，自動降品質、再降尺寸，最多重試 6 次。
+// 確保壓縮後的圖片絕對塞得進 Google Sheets 單一儲存格 50,000 字元上限
 const SHEET_CELL_SAFE_LIMIT = 48000;
 async function compressImageSafe(file) {
   let maxSize = 1080;
@@ -630,7 +683,7 @@ document.getElementById('file-input').onchange = async function(e) {
           const result = await compressImageSafe(file);
           if (result.tooLarge) {
             tooLargeCount++;
-            continue; // 壓不進 Sheets 上限，跳過這張，不上傳
+            continue;
           }
           base64 = result.base64;
         } else {
@@ -669,8 +722,6 @@ document.getElementById('file-input').onchange = async function(e) {
   this.value = '';
 };
 
-// 🔧 效能修正：列表 API 現在只回傳輕量中繼資料（圖片不含內容，影片是 Drive 短網址），
-// 圖片內容改由 fetchImageContent() 依需要另外抓取
 async function loadAllWorks() {
   try {
     const res = await fetch(GAS_URL + "?t=" + new Date().getTime());
@@ -712,7 +763,7 @@ function setupLazyImageObserver() {
         if (skeleton) skeleton.classList.add('hidden');
       });
     });
-  }, { rootMargin: "200px 0px" }); // 提前200px開始載入，捲動時比較不會看到空白
+  }, { rootMargin: "200px 0px" });
 
   document.querySelectorAll('.lazy-img').forEach(el => gridObserver.observe(el));
 }
@@ -727,7 +778,10 @@ function renderWorks() {
     return; 
   }
 
-  const deleteBtnDisplay = isAdmin ? "block" : "none";
+  // 🔧 修正：刪除按鈕現在同時看身分「與」目前選的模式，
+  // 管理員切到「使用介面」時就跟一般顧客看到的畫面完全一樣，不會誤觸刪除
+  const showDelete = isAdmin && viewMode === 'admin';
+  const deleteBtnDisplay = showDelete ? "block" : "none";
 
   listDom.innerHTML = filteredWorksData.map((item, index) => `
     <div class="work-card" data-id="${item.id}">
@@ -770,7 +824,7 @@ async function showSlide() {
 
   if (item.mediaType === "image") {
     loading.style.display = "block";
-    const url = await fetchImageContent(item.id); // 若格子圖已載過會直接吃快取，不用重抓
+    const url = await fetchImageContent(item.id);
     loading.style.display = "none";
     if (!url) return;
     img.src = url;
@@ -791,7 +845,7 @@ function nextSlide() {
 }
 
 async function deleteWork(id) {
-  if (!isAdmin) {
+  if (!isAdmin || viewMode !== 'admin') {
     alert("❌ 您無權限執行此操作");
     return;
   }
@@ -821,6 +875,7 @@ async function deleteWork(id) {
   }
 }
 
+// 🔧 已移除「預約」項目，底部導覽現在只有 地址／分享
 document.querySelectorAll('.bottom-nav-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.bottom-nav-item').forEach(nav => nav.classList.remove('active'));
