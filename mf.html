@@ -6,32 +6,56 @@
 <title>莫凡韓式皮膚管理 | 作品集</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+TC:wght@400;500;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
+    /* ==============================================
+       🎨 設計系統：全站統一色彩／字體變數
+       porcelain 瓷白底 × morandi rose 玫瑰棕 × 宋體標題
+       ============================================== */
+    :root {
+      --bg: #FBF8F6;            /* 瓷白底 */
+      --card: #FFFFFF;          /* 卡片白 */
+      --ink: #3D3236;           /* 深玫瑰炭（主文字） */
+      --ink-soft: #7A6A6E;      /* 次要文字 */
+      --ink-faint: #B3A4A8;     /* 弱化文字 */
+      --rose: #B98A93;          /* 主玫瑰棕 */
+      --rose-deep: #8C6B73;     /* 深玫瑰棕 */
+      --rose-mist: #F3E9EA;     /* 玫瑰霧粉（淡底） */
+      --line: #ECE0E1;          /* 髮絲分隔線 */
+      --shadow-sm: 0 1px 2px rgba(96, 72, 78, 0.05);
+      --shadow-md: 0 2px 6px rgba(96, 72, 78, 0.05), 0 12px 32px rgba(96, 72, 78, 0.08);
+      --serif: 'Noto Serif TC', serif;
+      --sans: 'Noto Sans TC', 'PingFang TC', 'Helvetica Neue', sans-serif;
+      --latin-serif: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    }
+
     * {
       margin: 0;
       padding: 0; 
       box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
     }
     body {
-      background: #fdfbfc;
-      font-family: 'PingFang SC', 'Helvetica Neue', 'Noto Sans TC', sans-serif;
+      background: var(--bg);
+      font-family: var(--sans);
+      font-weight: 300;
       padding-bottom: 120px;
-      color: #2a2a2a;
+      color: var(--ink);
     }
 
+    /* ============ 開場載入 ============ */
     .loader-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(253,251,252,0.92);
+      inset: 0;
+      background: var(--bg);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
     }
     .loader-overlay.hidden {
       opacity: 0;
@@ -41,101 +65,104 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
+      gap: 22px;
     }
     .loader-ring {
-      width: 50px;
-      height: 50px;
-      border: 2px solid transparent;
-      border-top: 2px solid #d4b2b8;
-      border-right: 2px solid #b8929a;
+      width: 46px;
+      height: 46px;
+      border: 1px solid var(--line);
+      border-top: 1px solid var(--rose);
       border-radius: 50%;
       animation: loader-spin 1.2s linear infinite;
     }
     .loader-text {
-      font-size: 15px;
-      color: #b8929a;
-      letter-spacing: 2px;
-      font-weight: 300;
+      font-family: var(--serif);
+      font-size: 14px;
+      color: var(--rose);
+      letter-spacing: 6px;
+      text-indent: 6px;
+      font-weight: 400;
     }
     @keyframes loader-spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      to { transform: rotate(360deg); }
     }
 
+    /* ============ 頁首：宋體直式氣質排版 ============ */
     .page-header {
-      padding: 60px 20px 40px;
+      padding: 64px 20px 34px;
       text-align: center;
       position: relative;
     }
-    .page-header::before,
-    .page-header::after {
-      content: "";
-      display: block;
-      width: 40px;
-      height: 1px;
-      background: linear-gradient(90deg, #d4b2b8, #e8c8d0);
-      margin: 0 auto 12px;
-      opacity: 0.8;
+    .header-eyebrow {
+      font-family: var(--latin-serif);
+      font-size: 13px;
+      font-style: italic;
+      color: var(--rose);
+      letter-spacing: 4px;
+      margin-bottom: 16px;
     }
     .page-title {
-      font-size: 32px;
-      font-weight: 600;
-      background: linear-gradient(135deg, #b8929a, #d4b2b8, #a88890);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 12px;
-      letter-spacing: 3px;
-      box-shadow: 0 2px 4px rgba(212,178,184,0.1);
+      font-family: var(--serif);
+      font-size: 30px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: 8px;
+      text-indent: 8px;
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+    .header-rule {
+      width: 1px;
+      height: 26px;
+      background: linear-gradient(180deg, var(--rose), transparent);
+      margin: 0 auto 14px;
     }
     .page-subtitle {
-      font-size: 13px;
-      color: #b0b0b0;
-      letter-spacing: 2px;
+      font-size: 12px;
+      color: var(--ink-faint);
+      letter-spacing: 5px;
+      text-indent: 5px;
       font-weight: 300;
-      position: relative;
-      padding: 0 15px;
     }
-    .page-subtitle::before,
-    .page-subtitle::after {
-      content: "·";
-      position: absolute;
-      top: 0;
-      color: #d4b2b8;
-    }
-    .page-subtitle::before { left: 0; }
-    .page-subtitle::after { right: 0; }
 
+    /* ============ 管理／使用介面切換 ============ */
     .mode-switch {
       display: none;
       justify-content: center;
-      gap: 10px;
-      padding: 0 20px 24px;
+      padding: 0 20px 26px;
+    }
+    .mode-switch-inner {
+      display: flex;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 100px;
+      padding: 4px;
+      box-shadow: var(--shadow-sm);
     }
     .mode-btn {
-      padding: 10px 20px;
+      padding: 9px 22px;
       border-radius: 100px;
-      border: 1px solid #f0e9eb;
-      background: #ffffff;
-      color: #888;
+      border: none;
+      background: transparent;
+      color: var(--ink-faint);
+      font-family: var(--sans);
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 400;
+      letter-spacing: 1px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.35s ease;
       display: flex;
       align-items: center;
       gap: 6px;
     }
     .mode-btn.active {
-      background: linear-gradient(135deg, #d4b2b8, #b8a2a8);
+      background: var(--rose-deep);
       color: #fff;
-      border-color: transparent;
-      box-shadow: 0 4px 12px rgba(212, 178, 184, 0.15);
     }
 
+    /* ============ 篩選列 ============ */
     .filter-nav {
-      padding: 0 20px 30px;
+      padding: 0 20px 26px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -143,149 +170,175 @@
     .tab-group {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       overflow-x: auto;
-      padding: 4px;
+      padding: 2px;
     }
     .tab-group::-webkit-scrollbar { display: none; }
     .filter-tab {
-      padding: 12px 24px;
+      padding: 10px 24px;
       border-radius: 100px;
-      background: #ffffff;
-      border: 1px solid #f0e9eb;
-      color: #888;
-      font-size: 14px;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 13.5px;
       font-weight: 400;
+      letter-spacing: 2px;
       white-space: nowrap;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .filter-tab.active {
-      background: linear-gradient(135deg, #d4b2b8, #b8a2a8);
+      background: var(--rose-deep);
       color: #fff;
-      border-color: transparent;
-      box-shadow: 0 4px 12px rgba(212, 178, 184, 0.15);
+      border-color: var(--rose-deep);
+      box-shadow: 0 6px 16px rgba(140, 107, 115, 0.22);
     }
     .filter-select-btn {
       width: 100%;
-      padding: 16px;
-      border: 1px solid #f0e9eb;
-      border-radius: 20px;
-      background: #fdfbfc;
-      font-size: 14px;
+      padding: 15px 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+      font-family: var(--sans);
+      font-size: 13.5px;
+      letter-spacing: 1px;
       text-align: left;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      color: #555;
+      color: var(--ink-soft);
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.3s ease;
+    }
+    .filter-select-btn i {
+      color: var(--rose);
+      font-size: 12px;
     }
 
-    /* 作品數量統計列 */
+    /* ============ 作品統計 ============ */
     .works-count {
       text-align: center;
-      font-size: 12px;
-      color: #c4b2b6;
-      letter-spacing: 1.5px;
-      padding-bottom: 18px;
-      font-weight: 300;
+      font-family: var(--latin-serif);
+      font-size: 13px;
+      color: var(--ink-faint);
+      letter-spacing: 2px;
+      padding-bottom: 6px;
+      font-weight: 400;
     }
     .works-count b {
-      color: #b8929a;
-      font-weight: 600;
-      font-size: 14px;
+      font-family: var(--serif);
+      color: var(--rose-deep);
+      font-weight: 500;
+      font-size: 15px;
       margin: 0 3px;
     }
+    .grid-hint {
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--ink-faint);
+      letter-spacing: 3px;
+      text-indent: 3px;
+      margin: 0 0 22px;
+    }
 
+    /* ============ 上傳區（管理介面） ============ */
     .upload-area {
       padding: 0 20px 30px;
       display: none;
     }
     .upload-card {
-      background: #fff;
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.02);
-      border: 1px solid #f8f3f5;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--line);
     }
     .category-select-btn {
       width: 100%;
-      padding: 16px;
-      border: 1px solid #f0e9eb;
-      border-radius: 20px;
-      background: #fdfbfc;
-      font-size: 14px;
+      padding: 15px 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--bg);
+      font-family: var(--sans);
+      font-size: 13.5px;
+      letter-spacing: 1px;
       text-align: left;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 14px;
-      color: #555;
+      color: var(--ink-soft);
     }
+    .category-select-btn i { color: var(--rose); font-size: 12px; }
     .upload-btn {
       width: 100%;
-      padding: 17px;
-      border-radius: 20px;
+      padding: 16px;
+      border-radius: 14px;
       border: none;
-      background: linear-gradient(135deg, #d4b2b8, #b8a2a8);
+      background: var(--rose-deep);
       color: #fff;
-      font-size: 15px;
+      font-family: var(--sans);
+      font-size: 14px;
       font-weight: 400;
+      letter-spacing: 2px;
       cursor: pointer;
       transition: all 0.3s ease;
+      box-shadow: 0 6px 16px rgba(140, 107, 115, 0.22);
     }
+    .upload-btn:active { transform: scale(0.98); }
     .upload-btn:disabled {
-      background: #f0f0f0;
+      background: #E9E2E3;
+      color: #B7ABAE;
+      box-shadow: none;
       cursor: not-allowed;
     }
     #file-input { display: none; }
 
-    /* ==============================
-       🎨 作品卡片 全新升級版
-       ============================== */
+    /* ==============================================
+       🖼️ 作品卡片：藝廊裱框式設計（本次質感升級核心）
+       每件作品如同裱在畫框中的攝影作品：
+       白框留邊（裱框 mat）＋ 髮絲內線 ＋ 宋體標籤說明卡
+       ============================================== */
     .works-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      gap: 18px 14px;
       padding: 0 20px;
     }
     .work-card {
-      background: #ffffff;
-      border-radius: 20px;
+      background: var(--card);
+      border-radius: 6px; /* 畫框式的小圓角，比大圓角更沉穩高級 */
       overflow: hidden;
-      border: 1px solid rgba(212, 178, 184, 0.14);
-      box-shadow:
-        0 1px 2px rgba(140, 107, 115, 0.04),
-        0 8px 24px rgba(140, 107, 115, 0.07);
-      transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.35s ease;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+      padding: 8px 8px 0; /* 裱框留邊：圖片四周留出白色框邊 */
+      transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.35s ease;
       cursor: default;
       opacity: 0;
       transform: translateY(14px);
-      animation: card-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: card-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
-    /* 進場動畫：交錯漸入，前12張依序延遲，之後統一 */
     .work-card:nth-child(1)  { animation-delay: 0.02s; }
-    .work-card:nth-child(2)  { animation-delay: 0.07s; }
-    .work-card:nth-child(3)  { animation-delay: 0.12s; }
-    .work-card:nth-child(4)  { animation-delay: 0.17s; }
-    .work-card:nth-child(5)  { animation-delay: 0.22s; }
-    .work-card:nth-child(6)  { animation-delay: 0.27s; }
-    .work-card:nth-child(7)  { animation-delay: 0.32s; }
-    .work-card:nth-child(8)  { animation-delay: 0.37s; }
-    .work-card:nth-child(9)  { animation-delay: 0.42s; }
-    .work-card:nth-child(10) { animation-delay: 0.47s; }
-    .work-card:nth-child(11) { animation-delay: 0.52s; }
-    .work-card:nth-child(12) { animation-delay: 0.57s; }
+    .work-card:nth-child(2)  { animation-delay: 0.08s; }
+    .work-card:nth-child(3)  { animation-delay: 0.14s; }
+    .work-card:nth-child(4)  { animation-delay: 0.20s; }
+    .work-card:nth-child(5)  { animation-delay: 0.26s; }
+    .work-card:nth-child(6)  { animation-delay: 0.32s; }
+    .work-card:nth-child(7)  { animation-delay: 0.38s; }
+    .work-card:nth-child(8)  { animation-delay: 0.44s; }
+    .work-card:nth-child(9)  { animation-delay: 0.50s; }
+    .work-card:nth-child(10) { animation-delay: 0.56s; }
+    .work-card:nth-child(11) { animation-delay: 0.62s; }
+    .work-card:nth-child(12) { animation-delay: 0.68s; }
     @keyframes card-enter {
       to { opacity: 1; transform: translateY(0); }
     }
-    /* 按壓回饋（手機上點擊時的微縮效果） */
     .work-card:active {
-      transform: scale(0.97);
-      box-shadow:
-        0 1px 2px rgba(140, 107, 115, 0.05),
-        0 4px 12px rgba(140, 107, 115, 0.09);
+      transform: scale(0.975);
+      box-shadow: var(--shadow-sm);
     }
 
     .media-box {
@@ -294,7 +347,18 @@
       overflow: hidden;
       cursor: pointer;
       position: relative;
-      background: #f2ecee;
+      background: var(--rose-mist);
+      border-radius: 3px; /* 框內照片的極小圓角 */
+    }
+    /* 裱框髮絲內線：照片邊緣一圈極細的內框線 */
+    .media-box::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(140, 107, 115, 0.10);
+      border-radius: 3px;
+      z-index: 3;
+      pointer-events: none;
     }
     .work-img, .work-video-cover {
       width: 100%;
@@ -302,66 +366,52 @@
       object-fit: cover;
       display: block;
       opacity: 0;
-      transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .work-img.loaded, .work-video-cover.loaded {
       opacity: 1;
     }
     .media-box:active .work-img,
     .media-box:active .work-video-cover {
-      transform: scale(1.05);
+      transform: scale(1.04);
     }
 
-    /* 影片時長角標（右上角小標示） */
+    /* 右上角媒材小標（照片/影片） */
     .card-type-icon {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 26px;
-      height: 26px;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      background: rgba(42, 42, 42, 0.55);
+      background: rgba(61, 50, 54, 0.42);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
-      font-size: 10px;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 9.5px;
       z-index: 2;
       pointer-events: none;
     }
 
-    /* 圖片底部漸層薄紗（讓標籤與圖片過渡更柔和） */
-    .media-box::after {
-      content: "";
-      position: absolute;
-      left: 0; right: 0; bottom: 0;
-      height: 34%;
-      background: linear-gradient(to top, rgba(140, 107, 115, 0.16), transparent);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    .media-box.media-loaded::after {
-      opacity: 1;
-    }
-
+    /* 骨架載入：品牌花飾 */
     .img-skeleton {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(100deg, #f2ecee 30%, #faf6f7 50%, #f2ecee 70%);
+      inset: 0;
+      background: linear-gradient(100deg, var(--rose-mist) 30%, #FAF3F4 50%, var(--rose-mist) 70%);
       background-size: 200% 100%;
-      animation: skeleton-shine 1.4s ease-in-out infinite;
+      animation: skeleton-shine 1.5s ease-in-out infinite;
     }
     .img-skeleton::after {
-      content: "\2740"; /* 花朵符號，讓等待畫面更有品牌感 */
+      content: "\2740";
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 22px;
-      color: rgba(212, 178, 184, 0.5);
+      font-size: 20px;
+      color: rgba(185, 138, 147, 0.45);
     }
     .img-skeleton.hidden { display: none; }
     @keyframes skeleton-shine {
@@ -373,81 +423,74 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 52px;
-      height: 52px;
-      background: rgba(255, 255, 255, 0.28);
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.24);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.55);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-size: 18px;
-      padding-left: 4px; /* 視覺置中：播放三角形往右偏一點 */
+      font-size: 15px;
+      padding-left: 4px;
       pointer-events: none;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
       z-index: 2;
     }
 
-    /* ==============================
-       🎨 卡片資訊區 全新升級版：
-       淡玫瑰漸層底 + 兩側花瓣飾線 + 漸層字色
-       ============================== */
+    /* 說明卡：如裱框下方的作品名牌，宋體置中 */
     .work-info {
-      padding: 14px 14px 15px;
+      padding: 12px 6px 13px;
       text-align: center;
       position: relative;
-      background: linear-gradient(180deg, #ffffff 0%, #fdf7f8 100%);
-      border-top: 1px solid rgba(212, 178, 184, 0.14);
     }
     .work-tag {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 9px;
+      font-family: var(--serif);
       font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      background: linear-gradient(135deg, #a88890, #c99aa3, #8c6b73);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: #9d848b; /* 不支援漸層字的舊瀏覽器備援色 */
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-indent: 3px;
+      color: var(--rose-deep);
     }
-    /* 兩側精緻飾線：由中心向外淡出的髮絲線 */
     .work-tag::before,
     .work-tag::after {
       content: "";
       display: inline-block;
-      width: 16px;
+      width: 14px;
       height: 1px;
-      background: linear-gradient(90deg, transparent, #d4b2b8);
+      background: linear-gradient(90deg, transparent, var(--rose));
       flex-shrink: 0;
+      opacity: 0.7;
     }
     .work-tag::after {
-      background: linear-gradient(90deg, #d4b2b8, transparent);
+      background: linear-gradient(90deg, var(--rose), transparent);
     }
-    .work-operate { display: flex; margin-top: 10px; }
+    .work-operate { display: flex; margin-top: 10px; padding: 0 2px; }
 
-    /* 刪除按鈕：改為柔和外框樣式，避免搶走作品風采 */
     .delete-btn {
       width: 100%;
       padding: 8px 0;
-      border-radius: 12px;
-      border: 1px solid rgba(224, 130, 130, 0.45);
-      background: rgba(224, 130, 130, 0.07);
-      color: #cf7f7f;
+      border-radius: 8px;
+      border: 1px solid rgba(196, 121, 121, 0.4);
+      background: transparent;
+      color: #C47979;
+      font-family: var(--sans);
       font-size: 11.5px;
-      font-weight: 500;
-      letter-spacing: 1px;
+      font-weight: 400;
+      letter-spacing: 2px;
       cursor: pointer;
       display: none;
       transition: all 0.25s ease;
     }
     .delete-btn:active {
-      background: #e0a8a8;
+      background: #C47979;
       color: #fff;
       border-color: transparent;
     }
@@ -455,24 +498,26 @@
     .empty-tip {
       text-align: center;
       padding: 80px 20px;
-      color: #d0d0d0;
-      font-size: 14px;
+      color: var(--ink-faint);
+      font-size: 13px;
+      letter-spacing: 3px;
       grid-column: span 2;
     }
     .empty-tip i {
       display: block;
-      font-size: 34px;
-      margin-bottom: 14px;
-      color: rgba(212, 178, 184, 0.55);
+      font-size: 30px;
+      margin-bottom: 16px;
+      color: var(--rose);
+      opacity: 0.4;
     }
 
+    /* ============ 彈窗 ============ */
     .modal {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.88);
+      inset: 0;
+      background: rgba(43, 34, 37, 0.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       z-index: 1000;
       display: none;
       align-items: center !important;
@@ -480,68 +525,135 @@
       padding: 20px;
     }
     .modal-content {
-      background: #fff;
+      background: var(--card);
       width: 100%;
       max-width: 320px;
-      border-radius: 28px;
-      padding: 30px;
+      border-radius: 22px;
+      padding: 28px 24px;
       text-align: center;
       margin: 0 auto;
+      box-shadow: 0 24px 64px rgba(43, 34, 37, 0.3);
+    }
+    .modal-content h3 {
+      font-family: var(--serif);
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-indent: 3px;
+      color: var(--ink);
+      margin-bottom: 18px;
     }
     .category-item {
-      padding: 15px; margin: 8px 0; border-radius: 18px;
-      background: #fdfbfc; cursor: pointer; font-size: 15px; color: #666;
+      padding: 14px;
+      margin: 8px 0;
+      border-radius: 14px;
+      background: var(--bg);
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 14px;
+      letter-spacing: 2px;
+      color: var(--ink-soft);
+      transition: all 0.25s ease;
     }
-    .category-item.active { background: linear-gradient(135deg, #d4b2b8, #b8a2a8); color: #fff; }
-    .loading-modal .loading-text { margin-top: 12px; font-size: 14px; color: #666; }
-    .loading-modal .loader {
-      width: 40px; height: 40px; border: 4px solid #f0e9eb;
-      border-top: 4px solid #d4b2b8; border-radius: 50%;
-      animation: spin 1s linear infinite; margin: 0 auto;
+    .category-item.active {
+      background: var(--rose-deep);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(140, 107, 115, 0.25);
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    #carouselModal { background: rgba(0,0,0,0.95); }
-    .carousel-content { position: relative; width: 92%; max-width: 500px; text-align: center; margin: 0 auto; }
-    .carousel-media { width: 100%; max-height: 80vh; object-fit: contain; border-radius: 12px; }
-    .carousel-loading { color: #fff; font-size: 14px; letter-spacing: 1px; }
-    .carousel-counter {
-      position: absolute;
-      top: -38px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255, 255, 255, 0.8);
+    .loading-modal .loading-text {
+      margin-top: 14px;
       font-size: 13px;
       letter-spacing: 2px;
+      color: var(--ink-soft);
+    }
+    .loading-modal .loader {
+      width: 38px; height: 38px;
+      border: 1px solid var(--line);
+      border-top: 1px solid var(--rose);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ============ 放大檢視 ============ */
+    #carouselModal {
+      background: rgba(28, 22, 24, 0.96);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .carousel-content { position: relative; width: 92%; max-width: 500px; text-align: center; margin: 0 auto; }
+    .carousel-media {
+      width: 100%;
+      max-height: 78vh;
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    }
+    .carousel-loading {
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 13px;
+      letter-spacing: 4px;
+      font-family: var(--serif);
+    }
+    .carousel-counter {
+      position: absolute;
+      top: -42px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.7);
+      font-family: var(--latin-serif);
+      font-size: 14px;
+      letter-spacing: 4px;
     }
     .carousel-btn {
       position: absolute; top: 50%; transform: translateY(-50%);
-      background: rgba(255,255,250,0.1); color: #fff; border: none;
-      width: 48px; height: 48px; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 1001;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #fff;
+      width: 46px; height: 46px; border-radius: 50%; font-size: 15px; cursor: pointer; z-index: 1001;
+      transition: background 0.25s ease;
     }
-    .carousel-prev { left: 10px; }
-    .carousel-next { right: 10px; }
+    .carousel-prev { left: 8px; }
+    .carousel-next { right: 8px; }
     .carousel-close {
-      position: absolute; top: 25px; right: 25px; background: transparent;
-      color: #fff; border: none; font-size: 36px; cursor: pointer;
+      position: absolute; top: 22px; right: 22px; background: transparent;
+      color: rgba(255, 255, 255, 0.85); border: none; font-size: 34px; cursor: pointer;
+      font-weight: 300;
     }
 
+    /* ============ 底部導覽：霧面玻璃 ============ */
     .bottom-nav {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      width: 92%; max-width: 500px; background: #ffffff;
-      border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      padding: 12px 8px; display: flex; z-index: 99;
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+      width: 92%; max-width: 500px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(236, 224, 225, 0.9);
+      border-radius: 22px;
+      box-shadow: 0 10px 36px rgba(96, 72, 78, 0.14);
+      padding: 10px 8px; display: flex; z-index: 99;
     }
     .bottom-nav-item {
       flex: 1; display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 6px; color: #777; font-size: 12px;
-      cursor: pointer; transition: all 0.3s ease; border-radius: 16px; padding: 8px 0;
+      justify-content: center; gap: 5px;
+      color: var(--ink-faint);
+      font-size: 11.5px;
+      letter-spacing: 2px;
+      cursor: pointer; transition: all 0.3s ease; border-radius: 15px; padding: 9px 0;
     }
     .bottom-nav-item.active {
-      color: #8c6b73;
-      background: linear-gradient(135deg, rgba(184,146,154,0.28), rgba(168,136,144,0.28));
+      color: var(--rose-deep);
+      background: var(--rose-mist);
     }
-    .bottom-nav-item i { font-size: 18px; }
+    .bottom-nav-item i { font-size: 17px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .work-card { animation: none; opacity: 1; transform: none; }
+      .img-skeleton { animation: none; }
+    }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
@@ -555,17 +667,21 @@
 </div>
 
 <div class="page-header">
+  <p class="header-eyebrow">Beauty Portfolio</p>
   <h1 class="page-title">莫凡<br>韓式皮膚管理</h1>
-  <p class="page-subtitle">Beauty Portfolio</p>
+  <div class="header-rule"></div>
+  <p class="page-subtitle">專業 · 精緻 · 客製化</p>
 </div>
 
 <div class="mode-switch" id="modeSwitch">
-  <button class="mode-btn active" id="modeUserBtn" onclick="setViewMode('user')">
-    <i class="fa fa-eye"></i> 使用介面
-  </button>
-  <button class="mode-btn" id="modeAdminBtn" onclick="setViewMode('admin')">
-    <i class="fa fa-cog"></i> 管理介面
-  </button>
+  <div class="mode-switch-inner">
+    <button class="mode-btn active" id="modeUserBtn" onclick="setViewMode('user')">
+      <i class="fa fa-eye"></i> 使用介面
+    </button>
+    <button class="mode-btn" id="modeAdminBtn" onclick="setViewMode('admin')">
+      <i class="fa fa-cog"></i> 管理介面
+    </button>
+  </div>
 </div>
 
 <div class="filter-nav">
@@ -592,12 +708,12 @@
 </div>
 
 <div class="works-count" id="worksCount"></div>
-<p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
+<p class="grid-hint">輕觸作品即可放大瀏覽</p>
 <div class="works-grid" id="worksList"></div>
 
 <div class="modal" id="categoryModal">
   <div class="modal-content">
-    <h3 style="margin-bottom:16px; font-size:16px;">選擇作品分類</h3>
+    <h3>選擇作品分類</h3>
     <div class="category-item active" data-val="nail">美甲</div>
     <div class="category-item" data-val="eyelash">美睫</div>
     <div class="category-item" data-val="eyebrow">霧眉/霧唇</div>
@@ -609,7 +725,7 @@
 
 <div class="modal" id="filterCategoryModal">
   <div class="modal-content">
-    <h3 style="margin-bottom:16px; font-size:16px;">篩選作品分類</h3>
+    <h3>篩選作品分類</h3>
     <div class="category-item active" data-val="all">全部</div>
     <div class="category-item" data-val="nail">美甲</div>
     <div class="category-item" data-val="eyelash">美睫</div>
@@ -629,7 +745,7 @@
   <button class="carousel-btn carousel-prev" onclick="prevSlide()"><i class="fa fa-chevron-left"></i></button>
   <div class="carousel-content">
     <div class="carousel-counter" id="carouselCounter"></div>
-    <div class="carousel-loading" id="carouselLoading" style="display:none;">載入中...</div>
+    <div class="carousel-loading" id="carouselLoading" style="display:none;">載入中</div>
     <img id="carouselImg" class="carousel-media" style="display:none;">
     <video id="carouselVideo" class="carousel-media" controls style="display:none;"></video>
   </div>
@@ -934,8 +1050,6 @@ function setupLazyImageObserver() {
         if (!url) return;
         el.src = url;
         el.classList.add('loaded');
-        const box = el.closest('.media-box');
-        if (box) box.classList.add('media-loaded');
         const skeleton = el.parentElement.querySelector('.img-skeleton');
         if (skeleton) skeleton.classList.add('hidden');
       });
@@ -958,7 +1072,7 @@ function updateWorksCount() {
   let parts = [];
   if (imgCount > 0) parts.push(`照片<b>${imgCount}</b>`);
   if (vidCount > 0) parts.push(`影片<b>${vidCount}</b>`);
-  countDom.innerHTML = `— 共<b>${total}</b>件作品 · ${parts.join(' · ')} —`;
+  countDom.innerHTML = `共<b>${total}</b>件作品 · ${parts.join(' · ')}`;
 }
 
 function renderWorks() {
@@ -1014,7 +1128,6 @@ async function showSlide() {
   const img = document.getElementById("carouselImg");
   const video = document.getElementById("carouselVideo");
   const loading = document.getElementById("carouselLoading");
-  // 頁碼指示：目前第幾張 / 總共幾張
   document.getElementById("carouselCounter").innerText = `${currentSlideIndex + 1} / ${filteredWorksData.length}`;
   img.style.display = "none";
   video.style.display = "none";
