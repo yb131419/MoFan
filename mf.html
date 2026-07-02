@@ -107,7 +107,6 @@
     .page-subtitle::before { left: 0; }
     .page-subtitle::after { right: 0; }
 
-    /* 🔧 新增：管理介面／使用介面 切換開關（僅管理員登入後才會顯示） */
     .mode-switch {
       display: none;
       justify-content: center;
@@ -182,6 +181,22 @@
       color: #555;
     }
 
+    /* 作品數量統計列 */
+    .works-count {
+      text-align: center;
+      font-size: 12px;
+      color: #c4b2b6;
+      letter-spacing: 1.5px;
+      padding-bottom: 18px;
+      font-weight: 300;
+    }
+    .works-count b {
+      color: #b8929a;
+      font-weight: 600;
+      font-size: 14px;
+      margin: 0 3px;
+    }
+
     .upload-area {
       padding: 0 20px 30px;
       display: none;
@@ -226,20 +241,53 @@
     }
     #file-input { display: none; }
 
+    /* ==============================
+       🎨 作品卡片 全新升級版
+       ============================== */
     .works-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      gap: 16px;
       padding: 0 20px;
     }
     .work-card {
-      background: #fff;
-      border-radius: 22px;
+      background: #ffffff;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 3px 18px rgba(0,0,0,0.03);
-      transition: all 0.3s ease;
+      border: 1px solid rgba(212, 178, 184, 0.14);
+      box-shadow:
+        0 1px 2px rgba(140, 107, 115, 0.04),
+        0 8px 24px rgba(140, 107, 115, 0.07);
+      transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.35s ease;
       cursor: default;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: card-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
+    /* 進場動畫：交錯漸入，前12張依序延遲，之後統一 */
+    .work-card:nth-child(1)  { animation-delay: 0.02s; }
+    .work-card:nth-child(2)  { animation-delay: 0.07s; }
+    .work-card:nth-child(3)  { animation-delay: 0.12s; }
+    .work-card:nth-child(4)  { animation-delay: 0.17s; }
+    .work-card:nth-child(5)  { animation-delay: 0.22s; }
+    .work-card:nth-child(6)  { animation-delay: 0.27s; }
+    .work-card:nth-child(7)  { animation-delay: 0.32s; }
+    .work-card:nth-child(8)  { animation-delay: 0.37s; }
+    .work-card:nth-child(9)  { animation-delay: 0.42s; }
+    .work-card:nth-child(10) { animation-delay: 0.47s; }
+    .work-card:nth-child(11) { animation-delay: 0.52s; }
+    .work-card:nth-child(12) { animation-delay: 0.57s; }
+    @keyframes card-enter {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* 按壓回饋（手機上點擊時的微縮效果） */
+    .work-card:active {
+      transform: scale(0.97);
+      box-shadow:
+        0 1px 2px rgba(140, 107, 115, 0.05),
+        0 4px 12px rgba(140, 107, 115, 0.09);
+    }
+
     .media-box {
       width: 100%;
       aspect-ratio: 1 / 1;
@@ -254,17 +302,86 @@
       object-fit: cover;
       display: block;
       opacity: 0;
-      transition: opacity 0.35s ease;
+      transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .work-img.loaded, .work-video-cover.loaded {
       opacity: 1;
     }
+    .media-box:active .work-img,
+    .media-box:active .work-video-cover {
+      transform: scale(1.05);
+    }
+
+    /* 玻璃質感分類標籤（浮在圖片左上角） */
+    .card-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 5px 12px;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      font-size: 11px;
+      font-weight: 600;
+      color: #8c6b73;
+      letter-spacing: 0.8px;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(140, 107, 115, 0.12);
+      pointer-events: none;
+    }
+
+    /* 影片時長角標（右上角小標示） */
+    .card-type-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(42, 42, 42, 0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 10px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* 圖片底部漸層薄紗（讓標籤與圖片過渡更柔和） */
+    .media-box::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 34%;
+      background: linear-gradient(to top, rgba(140, 107, 115, 0.16), transparent);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .media-box.media-loaded::after {
+      opacity: 1;
+    }
+
     .img-skeleton {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       background: linear-gradient(100deg, #f2ecee 30%, #faf6f7 50%, #f2ecee 70%);
       background-size: 200% 100%;
       animation: skeleton-shine 1.4s ease-in-out infinite;
+    }
+    .img-skeleton::after {
+      content: "\2740"; /* 花朵符號，讓等待畫面更有品牌感 */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 22px;
+      color: rgba(212, 178, 184, 0.5);
     }
     .img-skeleton.hidden { display: none; }
     @keyframes skeleton-shine {
@@ -276,26 +393,82 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 50px;
-      height: 50px;
-      background: rgba(0,0,0,0.5);
+      width: 52px;
+      height: 52px;
+      background: rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-size: 20px;
+      font-size: 18px;
+      padding-left: 4px; /* 視覺置中：播放三角形往右偏一點 */
       pointer-events: none;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+      z-index: 2;
     }
-    .work-info { padding: 14px; text-align: center; }
-    .work-tag { font-size: 13px; color: #b8a2a8; font-weight: 500; letter-spacing: 0.5px; }
+
+    /* 卡片資訊區：分類名 + 精緻小裝飾線 */
+    .work-info {
+      padding: 13px 14px 14px;
+      text-align: center;
+      position: relative;
+    }
+    .work-info::before {
+      content: "";
+      display: block;
+      width: 22px;
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #e8c8d0, #d4b2b8);
+      margin: 0 auto 9px;
+      opacity: 0.85;
+    }
+    .work-tag {
+      font-size: 12.5px;
+      color: #9d848b;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+    }
     .work-operate { display: flex; margin-top: 10px; }
+
+    /* 刪除按鈕：改為柔和外框樣式，避免搶走作品風采 */
     .delete-btn {
-      width: 100%; padding: 6px 0; border-radius: 8px; border: none;
-      background: #e0a8a8; color: #fff; font-size: 11px; cursor: pointer;
+      width: 100%;
+      padding: 8px 0;
+      border-radius: 12px;
+      border: 1px solid rgba(224, 130, 130, 0.45);
+      background: rgba(224, 130, 130, 0.07);
+      color: #cf7f7f;
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      cursor: pointer;
       display: none;
+      transition: all 0.25s ease;
     }
-    .empty-tip { text-align: center; padding: 80px 20px; color: #d0d0d0; font-size: 14px; grid-column: span 2; }
+    .delete-btn:active {
+      background: #e0a8a8;
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .empty-tip {
+      text-align: center;
+      padding: 80px 20px;
+      color: #d0d0d0;
+      font-size: 14px;
+      grid-column: span 2;
+    }
+    .empty-tip i {
+      display: block;
+      font-size: 34px;
+      margin-bottom: 14px;
+      color: rgba(212, 178, 184, 0.55);
+    }
 
     .modal {
       position: fixed;
@@ -334,8 +507,17 @@
 
     #carouselModal { background: rgba(0,0,0,0.95); }
     .carousel-content { position: relative; width: 92%; max-width: 500px; text-align: center; margin: 0 auto; }
-    .carousel-media { width: 100%; max-height: 80vh; object-fit: contain; }
+    .carousel-media { width: 100%; max-height: 80vh; object-fit: contain; border-radius: 12px; }
     .carousel-loading { color: #fff; font-size: 14px; letter-spacing: 1px; }
+    .carousel-counter {
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 13px;
+      letter-spacing: 2px;
+    }
     .carousel-btn {
       position: absolute; top: 50%; transform: translateY(-50%);
       background: rgba(255,255,250,0.1); color: #fff; border: none;
@@ -381,7 +563,6 @@
   <p class="page-subtitle">Beauty Portfolio</p>
 </div>
 
-<!-- 🔧 新增：管理介面／使用介面切換（僅管理員可見） -->
 <div class="mode-switch" id="modeSwitch">
   <button class="mode-btn active" id="modeUserBtn" onclick="setViewMode('user')">
     <i class="fa fa-eye"></i> 使用介面
@@ -414,6 +595,7 @@
   </div>
 </div>
 
+<div class="works-count" id="worksCount"></div>
 <p class="page-subtitle" style="text-align: center; margin: 0 0 20px;">點圖可放大</p>
 <div class="works-grid" id="worksList"></div>
 
@@ -450,6 +632,7 @@
   <button class="carousel-close" onclick="closeCarousel()">&times;</button>
   <button class="carousel-btn carousel-prev" onclick="prevSlide()"><i class="fa fa-chevron-left"></i></button>
   <div class="carousel-content">
+    <div class="carousel-counter" id="carouselCounter"></div>
     <div class="carousel-loading" id="carouselLoading" style="display:none;">載入中...</div>
     <img id="carouselImg" class="carousel-media" style="display:none;">
     <video id="carouselVideo" class="carousel-media" controls style="display:none;"></video>
@@ -488,14 +671,12 @@ let LINE_USER_ID = "guest_" + Date.now();
 let LINE_USER_NAME = "LINE使用者";
 let isAdmin = false;
 
-// 🔧 新增：目前檢視模式，'user'＝使用介面（一般顧客看到的畫面）、'admin'＝管理介面（可上傳/刪除）
-// 管理員登入後預設先看「使用介面」，避免不小心誤觸上傳/刪除，要主動切換才會進管理模式
+// 'user'＝使用介面（一般顧客畫面）、'admin'＝管理介面（可上傳/刪除）
 let viewMode = 'user';
 
 const categoryMap = { nail: "美甲", eyelash: "美睫", eyebrow: "霧眉/霧唇", skin: "韓式皮膚管理", exosome: "外泌體育髮", private: "私密粉嫩術" };
 const DEFAULT_VIDEO_COVER = "https://picsum.photos/id/1048/1080/1080";
 
-// 圖片懶載入快取：抓過的圖存這裡，切換篩選分類、或格子圖再進放大檢視都不用重抓
 const imageDataCache = new Map();
 let gridObserver = null;
 
@@ -517,16 +698,14 @@ window.onAdminCheck = function(res) {
   applyViewMode();
 };
 
-// 🔧 新增：切換管理介面／使用介面
 function setViewMode(mode) {
-  if (!isAdmin) return; // 非管理員不可切換，保險起見擋一下
+  if (!isAdmin) return;
   viewMode = mode;
   document.getElementById('modeUserBtn').classList.toggle('active', mode === 'user');
   document.getElementById('modeAdminBtn').classList.toggle('active', mode === 'admin');
   applyViewMode();
 }
 
-// 🔧 新增：依目前身分＋模式，決定要不要顯示上傳區塊／刪除按鈕
 function applyViewMode() {
   const showAdminUI = isAdmin && viewMode === 'admin';
   uploadArea.style.display = showAdminUI ? 'block' : 'none';
@@ -759,6 +938,8 @@ function setupLazyImageObserver() {
         if (!url) return;
         el.src = url;
         el.classList.add('loaded');
+        const box = el.closest('.media-box');
+        if (box) box.classList.add('media-loaded');
         const skeleton = el.parentElement.querySelector('.img-skeleton');
         if (skeleton) skeleton.classList.add('hidden');
       });
@@ -768,32 +949,51 @@ function setupLazyImageObserver() {
   document.querySelectorAll('.lazy-img').forEach(el => gridObserver.observe(el));
 }
 
+// 更新作品數量統計列（依目前篩選結果顯示）
+function updateWorksCount() {
+  const countDom = document.getElementById('worksCount');
+  const total = filteredWorksData.length;
+  if (total === 0) {
+    countDom.innerHTML = "";
+    return;
+  }
+  const imgCount = filteredWorksData.filter(i => i.mediaType === "image").length;
+  const vidCount = total - imgCount;
+  let parts = [];
+  if (imgCount > 0) parts.push(`照片<b>${imgCount}</b>`);
+  if (vidCount > 0) parts.push(`影片<b>${vidCount}</b>`);
+  countDom.innerHTML = `— 共<b>${total}</b>件作品 · ${parts.join(' · ')} —`;
+}
+
 function renderWorks() {
   filteredWorksData = [...allWorksData];
   if (currentMediaFilter !== "all-media") filteredWorksData = filteredWorksData.filter(i => i?.mediaType === currentMediaFilter);
   if (currentCategoryFilter !== "all") filteredWorksData = filteredWorksData.filter(i => i?.category === currentCategoryFilter);
 
+  updateWorksCount();
+
   if (filteredWorksData.length === 0) { 
-    listDom.innerHTML = `<div class="empty-tip">暫無作品</div>`; 
+    listDom.innerHTML = `<div class="empty-tip"><i class="fa fa-picture-o"></i>暫無作品</div>`; 
     return; 
   }
 
-  // 🔧 修正：刪除按鈕現在同時看身分「與」目前選的模式，
-  // 管理員切到「使用介面」時就跟一般顧客看到的畫面完全一樣，不會誤觸刪除
   const showDelete = isAdmin && viewMode === 'admin';
   const deleteBtnDisplay = showDelete ? "block" : "none";
 
   listDom.innerHTML = filteredWorksData.map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
+        <span class="card-badge">${categoryMap[item.category] || '未分類'}</span>
         ${item.mediaType === "image"
-          ? `<div class="img-skeleton"></div><img data-id="${item.id}" class="work-img lazy-img" loading="lazy">`
-          : `<img src="${DEFAULT_VIDEO_COVER}" class="work-video-cover loaded" loading="lazy"><div class="video-play-icon">▶</div>`}
+          ? `<span class="card-type-icon"><i class="fa fa-camera"></i></span>
+             <div class="img-skeleton"></div><img data-id="${item.id}" class="work-img lazy-img" loading="lazy">`
+          : `<span class="card-type-icon"><i class="fa fa-video-camera"></i></span>
+             <img src="${DEFAULT_VIDEO_COVER}" class="work-video-cover loaded" loading="lazy"><div class="video-play-icon">▶</div>`}
       </div>
       <div class="work-info">
-        <div class="work-tag">${categoryMap[item.category]||'未分類'}</div>
+        <div class="work-tag">${categoryMap[item.category] || '未分類'}</div>
         <div class="work-operate">
-          <button class="delete-btn" onclick="deleteWork('${item.id}')" style="display:${deleteBtnDisplay}">刪除</button>
+          <button class="delete-btn" onclick="deleteWork('${item.id}')" style="display:${deleteBtnDisplay}"><i class="fa fa-trash-o"></i> 刪除作品</button>
         </div>
       </div>
     </div>
@@ -819,6 +1019,8 @@ async function showSlide() {
   const img = document.getElementById("carouselImg");
   const video = document.getElementById("carouselVideo");
   const loading = document.getElementById("carouselLoading");
+  // 頁碼指示：目前第幾張 / 總共幾張
+  document.getElementById("carouselCounter").innerText = `${currentSlideIndex + 1} / ${filteredWorksData.length}`;
   img.style.display = "none";
   video.style.display = "none";
 
@@ -875,7 +1077,6 @@ async function deleteWork(id) {
   }
 }
 
-// 🔧 已移除「預約」項目，底部導覽現在只有 地址／分享
 document.querySelectorAll('.bottom-nav-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.bottom-nav-item').forEach(nav => nav.classList.remove('active'));
