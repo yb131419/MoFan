@@ -312,26 +312,6 @@
       transform: scale(1.05);
     }
 
-    /* 玻璃質感分類標籤（浮在圖片左上角） */
-    .card-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      padding: 5px 12px;
-      border-radius: 100px;
-      background: rgba(255, 255, 255, 0.72);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      font-size: 11px;
-      font-weight: 600;
-      color: #8c6b73;
-      letter-spacing: 0.8px;
-      z-index: 2;
-      box-shadow: 0 2px 8px rgba(140, 107, 115, 0.12);
-      pointer-events: none;
-    }
-
     /* 影片時長角標（右上角小標示） */
     .card-type-icon {
       position: absolute;
@@ -411,27 +391,43 @@
       z-index: 2;
     }
 
-    /* 卡片資訊區：分類名 + 精緻小裝飾線 */
+    /* ==============================
+       🎨 卡片資訊區 全新升級版：
+       淡玫瑰漸層底 + 兩側花瓣飾線 + 漸層字色
+       ============================== */
     .work-info {
-      padding: 13px 14px 14px;
+      padding: 14px 14px 15px;
       text-align: center;
       position: relative;
-    }
-    .work-info::before {
-      content: "";
-      display: block;
-      width: 22px;
-      height: 2px;
-      border-radius: 2px;
-      background: linear-gradient(90deg, #e8c8d0, #d4b2b8);
-      margin: 0 auto 9px;
-      opacity: 0.85;
+      background: linear-gradient(180deg, #ffffff 0%, #fdf7f8 100%);
+      border-top: 1px solid rgba(212, 178, 184, 0.14);
     }
     .work-tag {
-      font-size: 12.5px;
-      color: #9d848b;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13px;
       font-weight: 600;
-      letter-spacing: 1.2px;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #a88890, #c99aa3, #8c6b73);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: #9d848b; /* 不支援漸層字的舊瀏覽器備援色 */
+    }
+    /* 兩側精緻飾線：由中心向外淡出的髮絲線 */
+    .work-tag::before,
+    .work-tag::after {
+      content: "";
+      display: inline-block;
+      width: 16px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #d4b2b8);
+      flex-shrink: 0;
+    }
+    .work-tag::after {
+      background: linear-gradient(90deg, #d4b2b8, transparent);
     }
     .work-operate { display: flex; margin-top: 10px; }
 
@@ -983,7 +979,6 @@ function renderWorks() {
   listDom.innerHTML = filteredWorksData.map((item, index) => `
     <div class="work-card" data-id="${item.id}">
       <div class="media-box" onclick="openCarousel(${index})">
-        <span class="card-badge">${categoryMap[item.category] || '未分類'}</span>
         ${item.mediaType === "image"
           ? `<span class="card-type-icon"><i class="fa fa-camera"></i></span>
              <div class="img-skeleton"></div><img data-id="${item.id}" class="work-img lazy-img" loading="lazy">`
